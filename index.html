@@ -12,13 +12,14 @@
   <style>
     html { scroll-behavior: smooth; }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    body { margin: 0; background: #FBF9F6; color: #29211A; font-family: 'Archivo', -apple-system, sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; }
-    a { color: #9C3A20; }
-    a:hover { color: #7C2D17; }
+    body { margin: 0; background: var(--hueso); color: var(--tinta); font-family: 'Archivo', -apple-system, sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    a { color: var(--terracota); }
+    a:hover { color: var(--terracota-oscuro); }
     [id] { scroll-margin-top: 96px; }
     button, input, select, textarea { font-family: inherit; }
     ::selection { background: rgba(156,58,32,0.18); }
   </style>
+
 
 <link rel="stylesheet" href="src/estilos.css">
 </head>
@@ -96,8 +97,7 @@
               <span style="font-size:12px;color:var(--gris-calido)">6 unidades</span>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px">
-              <div data-lista="unidadesNorte"></div>
-<template data-plantilla="unidadesNorte" data-alias="u">
+              <template data-lista="unidadesNorte" data-alias="u">
                 <button data-click="u.sel" data-estilo="u.st" data-fx="fx-5">
                   <span style="display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:1px">
                     <strong data-estilo="u.stCode"><span data-txt="u.codigo"></span></strong>
@@ -117,8 +117,7 @@
               <span style="font-size:12px;color:var(--gris-calido)">6 unidades</span>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px">
-              <div data-lista="unidadesSur"></div>
-<template data-plantilla="unidadesSur" data-alias="u">
+              <template data-lista="unidadesSur" data-alias="u">
                 <button data-click="u.sel" data-estilo="u.st" data-fx="fx-5">
                   <span style="display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:1px">
                     <strong data-estilo="u.stCode"><span data-txt="u.codigo"></span></strong>
@@ -160,8 +159,7 @@
           <span style="display:block;padding:8px 12px;font-size:12px;color:var(--gris-calido);text-align:left;background:#fff;border-top:1px solid rgba(41,33,26,0.12)"><i class="fa-solid fa-magnifying-glass-plus" style="margin-right:7px"></i>Ver la lámina completa con el plano</span>
         </button>
         <div style="margin-top:14px">
-          <div data-lista="ficha.specs"></div>
-<template data-plantilla="ficha.specs" data-alias="s">
+          <template data-lista="ficha.specs" data-alias="s">
             <div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid rgba(41,33,26,0.08);font-size:14px">
               <span style="color:var(--gris-calido)"><span data-txt="s.k"></span></span>
               <span style="color:var(--tinta);font-weight:500;text-align:right"><span data-txt="s.v"></span></span>
@@ -197,15 +195,14 @@
     <div data-reveal="1">
       <h2 style="font-family:'Prata',serif;font-weight:400;font-size:clamp(28px,3.6vw,40px);margin:0;color:var(--crema)">Simular la financiación</h2>
       <div style="width:64px;height:2px;background:var(--crema);margin:16px 0 12px"></div>
-      <p style="margin:0;color:rgba(243,234,218,0.82);font-size:16px;max-width:72ch">Anticipo al boleto y saldo en cuotas de obra con ajuste CAC. Los valores son estimativos, en USD, y se confirman al momento de la consulta.</p>
+      <p style="margin:0;color:rgba(243,234,218,0.86);font-size:16px;max-width:72ch">Anticipo al boleto y saldo en cuotas de obra con ajuste CAC. Los valores son estimativos, en USD, y se confirman al momento de la consulta.</p>
     </div>
     <div style="margin-top:34px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(400px,100%),1fr));gap:22px;align-items:stretch">
       <div data-reveal="1" style="background:var(--hueso);border-radius:6px;padding:26px">
         <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--gris-calido)">
           Unidad
           <select data-valor="sim.uId" data-change="sim.setU" style="width:100%;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none" data-fx="fx-8">
-            <div data-lista="sim.opciones"></div>
-<template data-plantilla="sim.opciones" data-alias="o">
+            <template data-lista="sim.opciones" data-alias="o">
               <option data-valor="o.id"><span data-txt="o.label"></span></option>
             </template>
           </select>
@@ -252,7 +249,7 @@
             <span style="font-size:14px;color:rgba(243,234,218,0.75)">Cuota mensual estimada · <span data-txt="sim.cuotasFmt"></span></span>
             <span style="font-family:'Prata',serif;font-size:32px"><span data-txt="sim.cuotaFmt"></span></span>
           </div>
-          <div style="font-size:12px;color:rgba(243,234,218,0.65);margin-top:6px">Más ajuste por índice CAC (Cámara Argentina de la Construcción) sobre las cuotas de obra.</div>
+          <div style="font-size:12px;color:rgba(243,234,218,0.75);margin-top:6px">Más ajuste por índice CAC (Cámara Argentina de la Construcción) sobre las cuotas de obra.</div>
         </div>
         <div style="margin-top:auto;padding-top:16px">
           <button data-click="sim.enviar" style="width:100%;background:var(--crema);color:var(--terracota-oscuro);border:none;border-radius:4px;padding:14px 20px;font-size:15px;font-weight:600;cursor:pointer;transition:background 180ms ease" data-fx="fx-9">Enviar la simulación como consulta</button>
@@ -271,8 +268,7 @@
       <p style="margin:0;color:var(--gris-calido);font-size:16px;max-width:70ch">Del monoambiente al dormitorio en suite. Cada tipología con su lámina, su superficie y las unidades donde se repite.</p>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 16px">
-      <div data-lista="tipos"></div>
-<template data-plantilla="tipos" data-alias="t">
+      <template data-lista="tipos" data-alias="t">
         <button data-click="t.sel" data-estilo="t.st">
           <span data-estilo="t.stN"><span data-txt="t.num"></span></span><span data-txt="t.nombre"></span>
         </button>
@@ -333,19 +329,19 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px">
       <div data-reveal="1" style="border:1px solid rgba(243,234,218,0.18);border-radius:6px;padding:16px 18px;color:var(--crema)">
         <div style="font-family:'Prata',serif;font-size:18px">Portal Salta Shopping</div>
-        <div style="font-size:13px;color:rgba(243,234,218,0.65);margin-top:4px">600 metros</div>
+        <div style="font-size:13px;color:rgba(243,234,218,0.75);margin-top:4px">600 metros</div>
       </div>
       <div data-reveal="1" style="border:1px solid rgba(243,234,218,0.18);border-radius:6px;padding:16px 18px;color:var(--crema)">
         <div style="font-family:'Prata',serif;font-size:18px">Paseo Balcarce</div>
-        <div style="font-size:13px;color:rgba(243,234,218,0.65);margin-top:4px">700 metros</div>
+        <div style="font-size:13px;color:rgba(243,234,218,0.75);margin-top:4px">700 metros</div>
       </div>
       <div data-reveal="1" style="border:1px solid rgba(243,234,218,0.18);border-radius:6px;padding:16px 18px;color:var(--crema)">
         <div style="font-family:'Prata',serif;font-size:18px">Hospital Materno Infantil</div>
-        <div style="font-size:13px;color:rgba(243,234,218,0.65);margin-top:4px">700 metros</div>
+        <div style="font-size:13px;color:rgba(243,234,218,0.75);margin-top:4px">700 metros</div>
       </div>
       <a data-reveal="1" href="https://www.google.com/maps/search/?api=1&query=Aniceto+Latorre+y+Balcarce,+Salta,+Argentina" target="_blank" rel="noreferrer" style="border:1px solid rgba(243,234,218,0.4);border-radius:6px;padding:16px 18px;color:var(--crema);text-decoration:none;transition:border-color 180ms ease,background 180ms ease;display:block" data-fx="fx-10">
         <div style="font-family:'Prata',serif;font-size:18px"><i class="fa-solid fa-location-dot" style="margin-right:9px"></i>Abrir en Google Maps</div>
-        <div style="font-size:13px;color:rgba(243,234,218,0.65);margin-top:4px">Aniceto Latorre y Balcarce, Salta Capital</div>
+        <div style="font-size:13px;color:rgba(243,234,218,0.75);margin-top:4px">Aniceto Latorre y Balcarce, Salta Capital</div>
       </a>
     </div>
   </div>
@@ -377,17 +373,16 @@
     <form data-reveal="1" data-submit="form.enviar" style="background:#fff;border:1px solid rgba(41,33,26,0.14);border-radius:6px;padding:26px;display:flex;flex-direction:column;gap:14px">
       <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gris-calido)">
         Nombre y apellido
-        <input required="<span data-txt="true"></span>" data-valor="form.nombre" data-change="form.setNombre" placeholder="Tu nombre" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none" data-fx="fx-8">
+        <input data-attr-required="true" data-valor="form.nombre" data-change="form.setNombre" placeholder="Tu nombre" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none" data-fx="fx-8">
       </label>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gris-calido)">
         Teléfono
-        <input type="tel" required="<span data-txt="true"></span>" data-valor="form.tel" data-change="form.setTel" placeholder="387 000 0000" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none" data-fx="fx-8">
+        <input type="tel" data-attr-required="true" data-valor="form.tel" data-change="form.setTel" placeholder="387 000 0000" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none" data-fx="fx-8">
       </label>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gris-calido)">
         Unidad de interés
         <select data-valor="form.unidad" data-change="form.setUnidad" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none" data-fx="fx-8">
-          <div data-lista="form.opciones"></div>
-<template data-plantilla="form.opciones" data-alias="o">
+          <template data-lista="form.opciones" data-alias="o">
             <option data-valor="o.id"><span data-txt="o.label"></span></option>
           </template>
         </select>
@@ -396,7 +391,7 @@
         Mensaje
         <textarea rows="3" data-valor="form.msg" data-change="form.setMsg" placeholder="Contanos qué estás buscando" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid rgba(41,33,26,0.22);border-radius:4px;background:#fff;font-size:15px;color:var(--tinta);outline:none;resize:vertical;font-family:inherit" data-fx="fx-8"></textarea>
       </label>
-      <button type="submit" disabled="<span data-txt="form.enviando"></span>" style="background:var(--terracota);color:var(--crema-claro);border:none;border-radius:4px;padding:14px 20px;font-size:15px;font-weight:600;cursor:pointer;transition:background 180ms ease" data-fx="fx-2"><span data-txt="form.btnLabel"></span></button>
+      <button type="submit" data-attr-disabled="form.enviando" style="background:var(--terracota);color:var(--crema-claro);border:none;border-radius:4px;padding:14px 20px;font-size:15px;font-weight:600;cursor:pointer;transition:background 180ms ease" data-fx="fx-2"><span data-txt="form.btnLabel"></span></button>
       <div data-si="form.ok" hidden>
         <div style="background:rgba(47,107,78,0.1);border:1px solid rgba(47,107,78,0.3);color:var(--estado-libre);border-radius:4px;padding:12px 14px;font-size:14px">Recibimos tu consulta. Francisco te va a contactar a la brevedad. Si preferís, <a data-href="form.waHref" target="_blank" rel="noreferrer" style="color:var(--estado-libre);font-weight:600">seguila por WhatsApp</a>.</div>
       </div>
@@ -444,6 +439,8 @@
     </div>
   </div>
 </div>
+
+<script src="src/pintor.js"></script>
 
 <script src="src/app.js"></script>
 </body>

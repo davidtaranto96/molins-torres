@@ -15,6 +15,15 @@
   --ambar-texto: #6E5119;  /* corregido por contraste, venía #7A5A20 */
 }
 
+/* `sc-if` en el editor NO crea un nodo: rinde como fragmento. El envase que
+   emite el transpilador sí lo crea, y eso rompe todo layout donde los hijos
+   tenían que ser hermanos — en el encabezado, la navegación y el botón
+   quedaban adentro de UN solo item de flex. `display:contents` borra la caja
+   y deja pasar a los hijos, que es exactamente lo que hacía el fragmento.
+   El !important del hidden le gana, así que ocultar sigue funcionando. */
+[data-si]{display:contents}
+[hidden]{display:none !important}
+
 /* Los hover y foco que el editor guardaba en atributos propios. */
 [data-fx~="fx-1"]:hover{color:var(--terracota);}
 [data-fx~="fx-2"]:hover{background:var(--terracota-oscuro);}
@@ -40,3 +49,4 @@
      y el logotipo queda fuera del recorte, así que el título se lee limpio. */
   .hero-img { object-position: 22% center !important; }
 }
+

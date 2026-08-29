@@ -66,7 +66,7 @@
   const st = {
     sel: "4B", tipoActiva: "Horizonte",
     simU: "4B", simPct: 35, simCuotas: 24, simCochera: false,
-    fUnidad: "4B", fMsg: "", envio: "idle",
+    fUnidad: "4B", fMsg: "", fNombre: "", fTel: "", envio: "idle",
     modal: null, consent: "pend",
   };
   const ctx = { campania: CFG.campaniaPorDefecto, origen: "directo", unidadAviso: null };
@@ -123,11 +123,34 @@
     fetch(base() + "/api/publico/clics", { method: "POST", headers: cabeceras(), body: cuerpo, keepalive: true }).catch(() => {});
   }
 
+  /**
+   * Manda la consulta al CRM.
+   *
+   * OJO CON LOS NOMBRES DE LOS CAMPOS: el esquema de `/api/publico/consultas`
+   * es un objeto de Zod, y Zod TIRA en silencio lo que no declara — no da
+   * error. La primera versión de acá mandaba `campania`, `origen`,
+   * `unidadAviso`, `url`, `unidad` y `origen_formulario`, ninguno de los cuales
+   * existe en el esquema: la consulta habría entrado sin unidad y sin campaña,
+   * que es justo lo único que hace falta saber. Se manda con los nombres que la
+   * ruta declara, y nada más.
+   */
   async function postConsulta(datos) {
+    const cuerpo = {
+      nombre: datos.nombre,
+      telefono: datos.telefono,
+      interes: datos.unidad ? "Edificio La Torre — unidad " + datos.unidad : "Edificio La Torre",
+      mensaje: datos.mensaje || null,
+      canal: "PORTAL",
+      utm_campaign: ctx.campania || null,
+      utm_source: ctx.origen || null,
+      paginaConsulta: location.href,
+      dispositivo: window.innerWidth < 768 ? "celular" : "escritorio",
+      idioma: "es",
+    };
     const r = await fetch(base() + "/api/publico/consultas", {
       method: "POST",
       headers: cabeceras(),
-      body: JSON.stringify(Object.assign({ campania: ctx.campania, origen: ctx.origen, unidadAviso: ctx.unidadAviso, url: location.href }, datos)),
+      body: JSON.stringify(cuerpo),
     });
     if (!r.ok) throw new Error("crm");
   }
@@ -203,7 +226,7 @@
         sel: () => { st.sel = x.id; st.tipoActiva = x.tip; pintar(); },
         st: aEstilo(celda(x)),
         stCode: aEstilo({ fontFamily: "'Prata',serif", fontSize: "16px", fontWeight: "400", color: s ? "var(--crema)" : x.estado === "vendida" ? "var(--gris-claro)" : "var(--tinta)" }),
-        stSub: aEstilo({ fontSize: "12px", color: s ? "rgba(243,234,218,0.8)" : "var(--gris-calido)" }),
+        stSub: aEstilo({ fontSize: "12px", color: s ? "rgba(243,234,218,0.86)" : "var(--gris-calido)" }),
         stEstado: aEstilo({ fontSize: "11px", fontWeight: "600", letterSpacing: "0.02em", color: s ? "rgba(243,234,218,0.9)" : em.color }),
         stDot: aEstilo({ width: "8px", height: "8px", borderRadius: "50%", background: s ? "var(--crema)" : em.color, flex: "none" }),
       };
@@ -294,6 +317,13 @@
       },
       form: {
         unidad: st.fUnidad, msg: st.fMsg,
+        /* El HTML pide `form.nombre` y `form.setNombre` desde que se transpiló,
+           y acá no existían: los campos nunca escribían en el estado y
+           `enviarForm` los leía por un id que el marcado tampoco tiene. Con las
+           dos cosas juntas el formulario no se podía mandar nunca. */
+        nombre: st.fNombre, tel: st.fTel,
+        setNombre: (ev) => { st.fNombre = ev.target.value; },
+        setTel: (ev) => { st.fTel = ev.target.value; },
         opciones: UN.map((x) => ({ id: x.id, label: x.codigo + " — " + x.tip + " (" + torre(x) + ")" }))
           .concat([{ id: "cochera", label: "Cochera en planta baja" }, { id: "general", label: "Consulta general por el edificio" }]),
         enviando: st.envio === "enviando",
@@ -315,78 +345,15 @@
   }
 
   // ── El pintor ─────────────────────────────────────────────────────────────
-  const plantillas = new Map();
-
+  // Ya no vive acá: lo emite el transpilador en `src/pintor.js`, junto con los
+  // atributos que escribe en el HTML. Los dos sitios de Molins usan el mismo,
+  // así que el que pone las marcas y el que las lee no pueden desincronizarse.
+  //
+  // Se cambió el 2026-08-29, cuando el transpilador dejó de envolver las listas
+  // en un <div> y pasó a anclar en la propia plantilla. El pintor de acá
+  // esperaba el envase viejo y con el HTML nuevo no dibujaba nada.
   function pintar() {
-    const m = vista();
-
-    // Listas
-    for (const cont of $$("[data-lista]")) {
-      const nombre = cont.dataset.lista;
-      const datos = leer(m, nombre) || [];
-      if (!plantillas.has(nombre)) {
-        const t = $('template[data-plantilla="' + nombre + '"]');
-        plantillas.set(nombre, t ? { html: t.innerHTML, alias: t.dataset.alias } : null);
-      }
-      const p = plantillas.get(nombre);
-      if (!p) continue;
-      cont.replaceChildren();
-      datos.forEach((fila, i) => {
-        const caja = document.createElement("div");
-        caja.innerHTML = p.html;
-        aplicar(caja, fila, p.alias, nombre + "." + i);
-        while (caja.firstChild) cont.appendChild(caja.firstChild);
-      });
-      // La lista hereda el layout del contenedor original
-      cont.style.display = cont.style.display || "contents";
-    }
-
-    // Condicionales
-    for (const el of $$("[data-si]")) el.hidden = !leer(m, el.dataset.si);
-
-    // Todo lo demás
-    aplicar(document.body, m, null, "");
-  }
-
-  /** Aplica el modelo a un subárbol. `alias` mapea "u.codigo" al item de la lista. */
-  function aplicar(raiz, modelo, alias, prefijo) {
-    const val = (ruta) => {
-      if (alias && (ruta === alias || ruta.startsWith(alias + "."))) {
-        return ruta === alias ? modelo : leer(modelo, ruta.slice(alias.length + 1));
-      }
-      return alias ? undefined : leer(modelo, ruta);
-    };
-    const cada = (sel, fn) => $$(sel, raiz).forEach((el) => fn(el, el));
-
-    cada("[data-txt]", (el) => { const v = val(el.dataset.txt); if (v !== undefined) el.textContent = v == null ? "" : String(v); });
-    cada("[data-estilo]", (el) => { const v = val(el.dataset.estilo); if (typeof v === "string") el.setAttribute("style", v); });
-    cada("[data-src]", (el) => { const v = val(el.dataset.src); if (v) el.setAttribute("src", v); });
-    cada("[data-href]", (el) => { const v = val(el.dataset.href); if (v) el.setAttribute("href", v); });
-    cada("[data-valor]", (el) => { const v = val(el.dataset.valor); if (v !== undefined && el.value !== String(v)) el.value = v; });
-    cada("[data-click]", (el) => { const v = val(el.dataset.click); if (typeof v === "function") { el.__click = v; if (!el.__enganchado) { el.__enganchado = 1; el.addEventListener("click", (e) => { e.preventDefault(); el.__click(e); }); } } });
-    // Un deslizador que sólo avisa al soltarlo se siente trabado: el número no
-    // acompaña al dedo. El diseño los cableó con `change`, así que acá se
-    // escucha además `input` para que el valor cambie mientras se arrastra.
-    cada("input[type=range][data-change]", (el) => {
-      if (el.__enganchadoVivo) return;
-      el.__enganchadoVivo = 1;
-      el.addEventListener("input", (e) => { if (typeof el.__change === "function") el.__change(e); });
-    });
-
-    for (const ev of ["input", "change", "submit"]) {
-      cada("[data-" + ev + "]", (el) => {
-        const v = val(el.dataset[ev]);
-        if (typeof v === "function") { el["__" + ev] = v; if (!el["__eng" + ev]) { el["__eng" + ev] = 1; el.addEventListener(ev, (e) => { if (ev === "submit") e.preventDefault(); el["__" + ev](e); }); } }
-      });
-    }
-    // Las opciones de un <select> que vienen de una lista
-    cada("select[data-opciones]", (el) => {
-      const ops = val(el.dataset.opciones) || [];
-      if (el.dataset.pintadas === String(ops.length)) return;
-      el.replaceChildren();
-      ops.forEach((o) => { const op = document.createElement("option"); op.value = o.id; op.textContent = o.label; el.appendChild(op); });
-      el.dataset.pintadas = String(ops.length);
-    });
+    window.Pintor.pintar(vista());
   }
 
   // ── Acciones sueltas ──────────────────────────────────────────────────────
@@ -409,8 +376,8 @@
 
   async function enviarForm() {
     if (st.envio === "enviando") return;
-    const nombre = ($("#f-nombre") || {}).value || "";
-    const tel = ($("#f-tel") || {}).value || "";
+    const nombre = st.fNombre || "";
+    const tel = st.fTel || "";
     if (nombre.trim().length < 2 || tel.trim().length < 6) return;
     st.envio = "enviando"; pintar();
     try {
