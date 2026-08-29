@@ -1,0 +1,8 @@
+.DS_Store
+
+# Los renders originales en PNG: 97 MB que el sitio NO usa (el HTML referencia
+# sólo los .jpg). Se dejan fuera del repo a propósito — en git lo que entra
+# queda en el historial para siempre, y clonar el proyecto pesaría cinco veces
+# más para nada. Los originales viven en la carpeta de trabajo y en el material
+# que mandó el desarrollador.
+*.png
