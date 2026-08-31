@@ -17,6 +17,25 @@ Francisco y Luis igual que las demás.
 
 ## Estado
 
+### Ronda de correcciones del 31/8 (móvil)
+
+Rediseño narrativo + QA completo del celular, sobre las capturas de David.
+Lo que quedó, y lo que hay que saber para no repetirlo:
+
+- **El bug del menú**: con la página scrolleada el header lleva `backdrop-filter`,
+  y **un ancestro con backdrop-filter se vuelve el bloque contenedor de sus hijos
+  `position:fixed`** — el panel quedaba encerrado en la franja del header. Con el
+  menú abierto el header no filtra nada.
+- **Los carteles quemados en los renders mandan sobre el encuadre**: el hero trae
+  el logotipo del proyecto (es el titular: el texto de la página va abajo y chico)
+  y el render de cocheras traía «Cocheras | Disponibles» al medio (se recortó la
+  franja de abajo en `cochera-bloque.jpg`).
+- **Precios tapados** con `CFG.mostrarPrecios` (`window.TORRE_CONFIG` lo revierte).
+- **Cookies y pie** calcados de Aires: barra al pie en celular, tarjeta abajo a la
+  izquierda en escritorio, las dos opciones con el mismo peso, y «Volver a elegir
+  tus cookies» en la barra inferior del pie.
+
+
 | | |
 |---|---|
 | Presupuesto | **USD 300**, aprobado el 26/8. Dos pagos de 150. |
