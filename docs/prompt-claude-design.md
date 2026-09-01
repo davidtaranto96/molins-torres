@@ -25,7 +25,7 @@ folleto lindo, es la pieza que convierte un anuncio en una consulta con nombre y
 número de unidad.
 
 Comercializa **Molins Negocios Inmobiliarios** (Francisco Molins, corredor
-matriculado CUCIS MP 251, LPZ Grupo y Molins). El edificio es el protagonista;
+matriculado CUCIS 251, Grupo LPZ-Molins). El edificio es el protagonista;
 la inmobiliaria firma abajo.
 
 ## La marca
