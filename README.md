@@ -2,7 +2,7 @@
 
 Sitio propio del **Edificio La Torre**, el emprendimiento de 12 unidades sobre
 Balcarce y Aniceto Latorre, Salta Capital, que comercializa **Molins Negocios
-Inmobiliarios** (Francisco Molins · CUCIS MP 251 · LPZ Grupo y Molins).
+Inmobiliarios** (Francisco Molins · CUCIS 251 · Grupo LPZ-Molins).
 
 Se separa del portal de Molins por decisión comercial, escrita en el
 presupuesto aprobado el 26/8:
