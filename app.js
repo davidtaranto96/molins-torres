@@ -53,8 +53,8 @@
   /* ── 2 · el diccionario ────────────────────────────────────────────────── */
   const DICC = {
     es: {
-      "contacto.t1": "Dejá",
-      "contacto.t2": "tu consulta",
+      "contacto.t1": "Consultá",
+      "contacto.t2": "tu unidad",
       "contacto.modo.consulta": "Consulta",
       "contacto.modo.llamada": "Que me llamen",
       "contacto.modo.visita": "Visitar la obra",
@@ -169,8 +169,8 @@
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
     },
     en: {
-      "contacto.t1": "Send",
-      "contacto.t2": "an inquiry",
+      "contacto.t1": "Ask about",
+      "contacto.t2": "your unit",
       "contacto.modo.consulta": "Inquiry",
       "contacto.modo.llamada": "Call me back",
       "contacto.modo.visita": "Visit the site",
@@ -343,8 +343,8 @@
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
     },
     pt: {
-      "contacto.t1": "Deixe",
-      "contacto.t2": "sua consulta",
+      "contacto.t1": "Consulte",
+      "contacto.t2": "sua unidade",
       "contacto.modo.consulta": "Consulta",
       "contacto.modo.llamada": "Me liguem",
       "contacto.modo.visita": "Visitar a obra",
@@ -604,8 +604,9 @@
   const EJE = { x: 0.43, y: 0.5 };
   // el dibujo termina a los 4,8 s y se SOSTIENE hasta los 5,7: en el video el
   // boceto completo se ve entero un momento antes de volverse arcilla
-  const DUR = { lineas: 4.8, cotas: 1.5, arcilla: 1.2, materiales: 2.8, cierre: 0.6 };
-  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.7, materiales: 6.8, cierre: 9.6 };
+  // al doble de lo que era (pedido del 3/9: «que se aprecie más la portada»)
+  const DUR = { lineas: 9.6, cotas: 3.0, arcilla: 2.4, materiales: 5.6, cierre: 1.2 };
+  const INICIO = { lineas: 0, cotas: 5.8, arcilla: 11.4, materiales: 13.6, cierre: 19.2 };
   const TOTAL = INICIO.cierre + DUR.cierre;
   const esCelular = Math.min(screen.width, screen.height) < 700;
   let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
@@ -1013,13 +1014,19 @@
     // el cuadro baja una franja (16 % del alto): la azotea y su cota quedan a la
     // vista debajo de la cabecera, y arriba el cielo sigue con las primeras
     // filas del propio cuadro estiradas (pedido del 3/9: «bajar un poco el hero»)
-    const franja = Math.round(ph * 0.16);
-    const esc = Math.max(pw / e.W, (ph - franja) / e.H), dw = e.W * esc, dh = e.H * esc, dx = (pw - dw) / 2, dy = franja;
+    const franja = Math.round(ph * 0.10);
+    // el cuadro entra entero de arriba abajo (la azotea y la base, las dos a la
+    // vista); se admite hasta un 10 % de recorte abajo antes de dejar papel a
+    // los costados en pantallas muy apaisadas: el cuadro montado en la hoja
+    const esc = Math.max((ph - franja) / e.H, Math.min(pw / e.W, (ph - franja) / (e.H * 0.90)));
+    const dw = e.W * esc, dh = e.H * esc, dx = (pw - dw) / 2, dy = franja;
+    heroSec.style.setProperty("--hero-dx", (dx / dpr).toFixed(1) + "px");   // el texto se alinea con el borde del cuadro
     const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph);
     // la franja de arriba es papel, y el cuadro se funde al papel en un borde
     // corto: el render queda montado en la hoja, como el boceto. (Estirar o
     // reflejar las primeras filas del cuadro arrastraba la antena y el techo.)
     g.drawImage(e.papel, dx, dy - dh, dw, dh);                // el mismo papel con grano: sin costura en el boceto
+    if (dw < pw) { g.drawImage(e.papel, dx - dw, 0, dw, ph); g.drawImage(e.papel, dx + dw, 0, dw, ph); }
     g.drawImage(e.out, dx, dy, dw, dh);
     if (e.fundido > 0) {
       const fundido = Math.round(ph * 0.05);
@@ -1125,6 +1132,42 @@
 
     // la burbuja de WhatsApp se esconde donde ya hay un botón grande
     ScrollTrigger.create({ trigger: "#contacto", start: "top 65%", end: "bottom top", onToggle: (st) => document.body.classList.toggle("en-contacto", st.isActive) });
+
+    // la visita, horizontal y pinneada
+    const riel = $("#visita-riel");
+    if (riel) {
+      const recorrido = () => riel.scrollWidth - innerWidth;
+      gsap.to(riel, { x: () => -recorrido(), ease: "none",
+        scrollTrigger: { trigger: "#vida", start: "top top", end: () => "+=" + recorrido(), pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1 } });
+    }
+
+    // el texto aparece por palabras, las fotos entran, los objetos chicos suben
+    // (como la demo: nada llega quieto). Todo con once:true y sin tocar el hero.
+    const partirPalabras = (el) => {
+      if (el.querySelector(".w") || el.closest(".hero, .cab, .ficha, .intro")) return [];
+      el.innerHTML = el.textContent.split(/(\s+)/).map((p) => /\s+/.test(p) ? " " : `<span class="w">${p}</span>`).join("");
+      return $$(".w", el);
+    };
+    const PARRAFOS = ".parrafo, .partida-lista li, .contacto-texto, .res-desc, .diseno-titulo, .partida-titulo, .visita-panel p, .adentro-cab .parrafo";
+    $$(PARRAFOS).forEach((el) => {
+      const ws = partirPalabras(el); if (!ws.length) return;
+      gsap.from(ws, { yPercent: 70, opacity: 0, duration: .7, ease: "power2.out", stagger: 0.014, scrollTrigger: { trigger: el, start: "top 90%", once: true } });
+    });
+    const SUBEN = ".rotulo, .boton, .lista-materiales li, .form-modos, .form label, .boton-pildora, .form-pie, .firma, .unidad, .leyenda, .nota, .pasos li, .cerca li, .ab, .visita-panel h3, .res-ficha, .res-pie, .tresd-marco, .adentro-marco .adentro-pie";
+    $$(SUBEN).forEach((el) => {
+      if (el.closest(".hero, .cab, .ficha, .intro, .cookies")) return;
+      gsap.from(el, { y: 22, opacity: 0, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
+    });
+    const FOTOS = ".blob img, .partida-foto img, .bloque-media img, .visita-panel img, .contacto-foto img, .res-foto";
+    $$(FOTOS).forEach((el) => {
+      gsap.from(el, { scale: 1.12, opacity: 0, duration: 1.3, ease: "power2.out", scrollTrigger: { trigger: el.parentElement, start: "top 88%", once: true } });
+    });
+    // las palabras grandes derivan de a poco con el scroll
+    $$(".partida-palabra, .res-palabra").forEach((el) => {
+      gsap.fromTo(el, { xPercent: 4 }, { xPercent: -4, ease: "none", scrollTrigger: { trigger: el.closest("section"), start: "top bottom", end: "bottom top", scrub: true } });
+    });
+    // al cambiar de idioma el texto se repinta: se vuelve a partir, ya visible
+    document.addEventListener("idioma-pintado", () => $$(PARRAFOS).forEach((el) => partirPalabras(el)));
 
     // las partidas: la lista entra escalonada y la palabra grande sube
     $$(".partida").forEach((sec) => {

@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilos.css?v=202609031447">
+<link rel="stylesheet" href="estilos.css?v=202609031500">
 </head>
 <body data-idioma="es">
 
@@ -65,7 +65,7 @@
           <a href="#diseno" data-t="nav.diseno"></a>
           <a href="#tipologias" data-t="nav.tipologias"></a>
           <a href="#unidades" data-t="nav.unidades"></a>
-          <a href="#vida" data-t="nav.espacios"></a>
+          <a href="#espacios" data-t="nav.espacios"></a>
           <a href="#tresd" data-t="nav.tresd"></a>
           <a href="#ubicacion" data-t="nav.ubicacion"></a>
           <a href="#plan" data-t="nav.plan"></a>
@@ -91,10 +91,8 @@
       <div class="hero-velo"></div>
       <div class="hero-texto">
         <div class="hero-arriba">
-          <div class="hero-col">
-            <p class="rotulo rotulo-claro hero-rotulo" data-t="hero.rotulo"></p>
-            <p class="hero-bajada" data-t="hero.bajada"></p>
-          </div>
+          <p class="rotulo rotulo-claro hero-rotulo" data-t="hero.rotulo"></p>
+          <p class="hero-bajada" data-t="hero.bajada"></p>
           <div class="hero-ctas">
           <a href="#unidades" class="boton boton-lleno" data-t="cta.elegir"></a>
           <a href="#vida" class="boton boton-linea" data-t="cta.visita"></a>
@@ -190,8 +188,25 @@
     <p class="nota" data-t="unidades.nota"></p>
   </section>
 
+  <!-- ══ LA VISITA (horizontal, pinneada por GSAP) ══ -->
+  <section id="vida" class="visita" data-screen-label="La visita">
+    <div class="visita-cab">
+      <p class="rotulo" data-t="vida.rotulo"></p>
+      <h2 class="titulo partir" data-t="vida.titulo"></h2>
+      <p class="parrafo" data-t="vida.texto"></p>
+    </div>
+    <div class="visita-riel" id="visita-riel">
+      <article class="visita-panel"><img src="img/render-nocturno.jpg" alt="" loading="lazy"><div><span>01</span><h3 data-t="vida.llegada.t"></h3><p data-t="vida.llegada.p"></p></div></article>
+      <article class="visita-panel"><img src="img/cochera-bloque.jpg" alt="" loading="lazy"><div><span>02</span><h3 data-t="vida.cochera.t"></h3><p data-t="vida.cochera.p"></p></div></article>
+      <article class="visita-panel"><img src="img/pasillo-verde.jpg" alt="" loading="lazy"><div><span>03</span><h3 data-t="vida.ascenso.t"></h3><p data-t="vida.ascenso.p"></p></div></article>
+      <article class="visita-panel"><img src="img/area-cocina.jpg" alt="" loading="lazy"><div><span>04</span><h3 data-t="vida.cocina.t"></h3><p data-t="vida.cocina.p"></p></div></article>
+      <article class="visita-panel"><img src="img/area-suite.jpg" alt="" loading="lazy"><div><span>05</span><h3 data-t="vida.suite.t"></h3><p data-t="vida.suite.p"></p></div></article>
+      <article class="visita-panel"><img src="img/area-terraza.jpg" alt="" loading="lazy"><div><span>06</span><h3 data-t="vida.terraza.t"></h3><p data-t="vida.terraza.p"></p></div></article>
+    </div>
+  </section>
+
   <!-- ══ ESPACIOS: partida, foto + panel terracota con la palabra grande ══ -->
-  <section id="vida" class="partida" data-screen-label="Espacios">
+  <section id="espacios" class="partida" data-screen-label="Espacios">
     <div class="partida-foto"><img class="parallax" src="img/pasillo-verde.jpg" alt="" loading="lazy"></div>
     <div class="partida-panel partida-terracota">
       <p class="rotulo" data-t="espacios.rotulo"></p>
@@ -396,6 +411,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
-<script src="app.js?v=202609031447"></script>
+<script src="app.js?v=202609031500"></script>
 </body>
 </html>

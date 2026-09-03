@@ -101,24 +101,24 @@ body.menu-abierto .cab-fondo{opacity:1;pointer-events:auto}
 .hero-render,.hero-boceto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%}
 .hero-render{opacity:1}
 .hero-boceto{opacity:1;z-index:2}
-.hero-velo{position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(18,12,9,.28) 0%,rgba(18,12,9,0) 30%,rgba(18,12,9,.12) 60%,rgba(18,12,9,.86) 100%);opacity:0;transition:opacity .9s ease}
+.hero-velo{position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(18,12,9,.28) 0%,rgba(18,12,9,0) 30%,rgba(18,12,9,.18) 55%,rgba(18,12,9,.9) 100%);opacity:0;transition:opacity .9s ease}
 .hero.claro .hero-velo{opacity:1}
-.hero-texto{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(16px,3vh,30px);opacity:0;transition:opacity .4s ease}
+.hero-texto{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(16px,3vh,30px) max(var(--lado),var(--hero-dx,0px));opacity:0;transition:opacity .4s ease}
 .hero-texto.visible{opacity:1}
 /* Editorial, como la referencia: el título va al pie, de una sola línea, sobre
    la base del render y no sobre la fachada. Arriba, en una fila, el rótulo con
    la bajada y los dos botones. */
-.hero-arriba{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 28px;margin-bottom:clamp(14px,2.6vh,28px)}
-.hero-rotulo{margin:0}
-.hero-bajada{margin:8px 0 0;max-width:40ch;font-size:clamp(14px,1.1vw,16px);line-height:1.55;color:rgba(243,234,218,.86)}
-.hero-ctas{display:flex;flex-wrap:wrap;gap:10px}
+.hero-arriba{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-bottom:clamp(16px,3vh,30px)}
+.hero-rotulo{margin:0;white-space:nowrap;color:#E9A98E;text-shadow:0 1px 10px rgba(18,12,9,.7)}
+.hero-bajada{margin:0;max-width:40ch;text-shadow:0 1px 10px rgba(18,12,9,.6);font-size:clamp(14px,1.1vw,16px);line-height:1.55;color:rgba(243,234,218,.86)}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
 .hero-ctas .boton-linea{background:rgba(18,12,9,.38);border-color:rgba(243,234,218,.55);color:var(--crema);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .hero-ctas .boton-linea:hover{border-color:var(--crema);background:rgba(18,12,9,.55)}
 .hero-titulo{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(56px,11vw,176px);line-height:.85;letter-spacing:.06em;color:var(--crema);white-space:nowrap;text-shadow:0 2px 24px rgba(18,12,9,.35)}
 .hero-titulo .letra{display:inline-block;will-change:transform,opacity}
 .hero-titulo .esp{width:.26em}
 .hero-pista{display:none}
-@media (max-width:640px){.hero-titulo{white-space:normal;font-size:clamp(56px,21vw,110px);line-height:.9}.hero-titulo .esp{display:block;width:0;height:0}.hero-arriba{flex-direction:column;align-items:flex-start;gap:14px}}
+@media (max-width:640px){.hero-titulo{white-space:normal;font-size:clamp(56px,21vw,110px);line-height:.9}.hero-titulo .esp{display:block;width:0;height:0}}
 
 /* ── manifiesto ── */
 .manifiesto{padding:clamp(84px,14vh,160px) var(--lado);max-width:980px;margin:0 auto;text-align:center}
@@ -229,6 +229,22 @@ body.con-ficha{overflow:hidden}
 @media (min-width:760px){.ficha{left:auto;top:0;bottom:0;width:min(460px,92vw);max-height:none;border-radius:0;transform:translateX(100%)}.ficha-ctas{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.ficha,.ficha-fondo{transition:none}}
 
+/* ── la visita (horizontal, pinneada por GSAP) ── */
+.visita{background:var(--crema-claro);color:var(--tinta);overflow:hidden}
+.visita-cab{padding:clamp(72px,11vh,130px) var(--lado) 28px;max-width:var(--ancho);margin:0 auto}
+.visita-riel{display:flex;gap:22px;padding:0 var(--lado) 56px;width:max-content}
+.visita-panel{flex:0 0 auto;width:min(80vw,560px);border-radius:8px;overflow:hidden;background:#fff;border:1px solid rgba(41,33,26,.1)}
+.visita-panel img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.visita-panel div{display:grid;grid-template-columns:auto 1fr;column-gap:18px;padding:18px 20px 22px;align-items:start}
+.visita-panel div>span{grid-row:1/3}
+.visita-panel div>span{font-family:var(--serif);font-size:44px;line-height:.9;color:var(--terracota)}
+.visita-panel h3{margin:0;font-family:var(--serif);font-weight:400;font-size:21px}
+.visita-panel p{margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--gris-calido)}
+@media (prefers-reduced-motion:reduce){.visita-riel{overflow-x:auto;width:auto;scroll-snap-type:x proximity}.visita-panel{scroll-snap-align:start}}
+
+/* ── animaciones de texto y de fotos (las arma app.js; sin JS todo se ve) ── */
+.w{display:inline-block;will-change:transform,opacity}
+
 /* ── partidas: foto de un lado, panel de color del otro, la palabra grande al pie ── */
 .partida{display:grid;background:var(--crema-claro)}
 .partida-foto{position:relative;overflow:hidden;min-height:min(72vw,480px)}
@@ -303,7 +319,7 @@ body.con-ficha{overflow:hidden}
 .contacto-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .contacto-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,12,9,0) 30%,rgba(18,12,9,.78) 100%)}
 .contacto-sobre{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:0 var(--lado) clamp(28px,5vh,56px)}
-.contacto-titulo{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(46px,6.6vw,100px);line-height:.92;text-transform:uppercase;letter-spacing:.01em;color:var(--crema)}
+.contacto-titulo{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(44px,6.2vw,96px);line-height:1;text-transform:uppercase;letter-spacing:.01em;color:var(--crema)}
 .contacto-titulo span{display:block}
 .contacto-texto{margin:16px 0 0;max-width:46ch;font-size:14.5px;line-height:1.6;color:rgba(243,234,218,.85)}
 .contacto-sobre .boton{margin-top:18px}
