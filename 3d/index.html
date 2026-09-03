@@ -282,14 +282,14 @@ const UNIDADES = [
   { id:'5A', piso:5, torre:'Norte', tip:'Evolución', sup:42, estado:'libre' },
   { id:'4A', piso:4, torre:'Norte', tip:'Esencia',   sup:55, estado:'libre' },
   { id:'3A', piso:3, torre:'Norte', tip:'Esencia',   sup:55, estado:'libre' },
-  { id:'2A', piso:2, torre:'Norte', tip:'Esencia',   sup:55, estado:'reservada' },
-  { id:'1A', piso:1, torre:'Norte', tip:'Esencia',   sup:55, estado:'libre' },
+  { id:'2A', piso:2, torre:'Norte', tip:'Esencia',   sup:55, estado:'libre' },
+  { id:'1A', piso:1, torre:'Norte', tip:'Esencia',   sup:55, estado:'reservada' },
   { id:'6B', piso:6, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'libre' },
   { id:'5B', piso:5, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'libre' },
   { id:'4B', piso:4, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'libre' },
-  { id:'3B', piso:3, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'reservada' },
+  { id:'3B', piso:3, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'libre' },
   { id:'2B', piso:2, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'libre' },
-  { id:'1B', piso:1, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'libre' },
+  { id:'1B', piso:1, torre:'Sur',   tip:'Cúspide',   sup:55, estado:'reservada' },
 ];
 const COLOR_ESTADO = { libre:0x2F6B4E, reservada:0x8A6420, vendida:0x757068 };
 const NOMBRE_ESTADO = { libre:'Libre', reservada:'Reservada', vendida:'Vendida' };
@@ -837,6 +837,25 @@ function pintarEstados() {
   });
 }
 pintarEstados();
+
+/* el estado real sale del CRM, igual que en la portada; la lista de arriba es
+   sólo el respaldo por si no contesta. Así una reserva se ve acá sin tocar código. */
+fetch('https://crm.franciscomolins.com/api/publico/propiedades?cartera=torre', { headers: { Accept: 'application/json' } })
+  .then((r) => r.ok ? r.json() : null)
+  .then((j) => {
+    if (!j) return;
+    const ps = Array.isArray(j) ? j : j.propiedades || [];
+    let cambio = false;
+    ps.forEach((p) => {
+      const armado = p.piso != null && p.unidad ? String(p.piso) + String(p.unidad) : '';
+      const id = (armado || String(p.codigo || '')).toUpperCase().match(/[0-9][AB]/)?.[0];
+      const u = id && UNIDADES.find((x) => x.id === id);
+      if (!u) return;
+      const estado = p.estado === 'VENDIDA' ? 'vendida' : p.estado === 'RESERVADA' ? 'reservada' : 'libre';
+      if (u.estado !== estado) { u.estado = estado; cambio = true; }
+    });
+    if (cambio) pintarEstados();
+  }).catch(() => {});
 
 /* ══════════════════════════════════════════════════════════════════════════
    7 · SELECCIÓN
