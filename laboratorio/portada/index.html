@@ -286,6 +286,34 @@
 
 <a class="wa-flotante" id="wa-flotante" target="_blank" rel="noreferrer" href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 0 1 8.413 3.488 11.824 11.824 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 0 0 1.51 5.26l-.999 3.648 3.978-1.052z"/></svg></a>
 
+<div class="ficha-fondo" id="ficha-fondo" hidden></div>
+<aside class="ficha" id="ficha" role="dialog" aria-modal="true" aria-labelledby="ficha-titulo" hidden>
+  <button type="button" class="ficha-cerrar" id="ficha-cerrar" aria-label="Cerrar">✕</button>
+  <div class="ficha-media">
+    <img id="ficha-img" alt="">
+    <div class="ficha-vistas" role="tablist">
+      <button type="button" data-vista="render" aria-selected="true" data-t="ficha.render"></button>
+      <button type="button" data-vista="lamina" aria-selected="false" data-t="ficha.lamina"></button>
+    </div>
+  </div>
+  <div class="ficha-cuerpo">
+    <p class="rotulo" id="ficha-torre"></p>
+    <h3 class="ficha-titulo" id="ficha-titulo"></h3>
+    <span class="ficha-estado" id="ficha-estado"></span>
+    <dl class="ficha-datos">
+      <div><dt data-t="ficha.tipologia"></dt><dd id="ficha-tip"></dd></div>
+      <div><dt data-t="ficha.superficie"></dt><dd id="ficha-sup"></dd></div>
+      <div><dt data-t="ficha.ambientes"></dt><dd id="ficha-amb"></dd></div>
+      <div><dt data-t="ficha.piso"></dt><dd id="ficha-piso"></dd></div>
+    </dl>
+    <p class="ficha-nota" id="ficha-nota"></p>
+    <div class="ficha-ctas">
+      <a class="boton boton-wa" target="_blank" rel="noreferrer" id="ficha-wa" href="#"><span data-t="cta.whatsapp"></span></a>
+      <button type="button" class="boton boton-lleno" id="ficha-consultar" data-t="ficha.consultar"></button>
+    </div>
+  </div>
+</aside>
+
 <div class="cookies" id="cookies" role="region" aria-label="Aviso de cookies" hidden>
   <p data-t-html="cookies.texto"></p>
   <button type="button" id="cookies-ok" data-t="cookies.boton"></button>

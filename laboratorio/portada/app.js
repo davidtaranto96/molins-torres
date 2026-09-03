@@ -53,6 +53,16 @@
   /* ── 2 · el diccionario ────────────────────────────────────────────────── */
   const DICC = {
     es: {
+      "ficha.render": "Render",
+      "ficha.lamina": "Lámina",
+      "ficha.tipologia": "Tipología",
+      "ficha.superficie": "Superficie",
+      "ficha.ambientes": "Ambientes",
+      "ficha.piso": "Planta",
+      "ficha.consultar": "Consultar por esta unidad",
+      "ficha.libre": "Está disponible. Los valores y el plan de pago se conversan con Francisco.",
+      "ficha.reservada": "Está reservada. Podés dejar tus datos por si se libera, o mirar otra unidad de la misma tipología.",
+      "ficha.vendida": "Ya se vendió. Hay otras unidades de la misma tipología.",
       "diseno.cta": "Explorar en 3D",
       "tipologias.palabra": "Residencias",
       "tipologias.disponibles": "unidades disponibles",
@@ -129,6 +139,16 @@
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
     },
     en: {
+      "ficha.render": "Render",
+      "ficha.lamina": "Floor plan",
+      "ficha.tipologia": "Layout",
+      "ficha.superficie": "Area",
+      "ficha.ambientes": "Rooms",
+      "ficha.piso": "Floor",
+      "ficha.consultar": "Ask about this unit",
+      "ficha.libre": "Available. Prices and the payment plan are discussed with Francisco.",
+      "ficha.reservada": "Reserved. You can leave your details in case it frees up, or look at another unit of the same layout.",
+      "ficha.vendida": "Sold. Other units of the same layout are available.",
       "diseno.cta": "Explore in 3D",
       "tipologias.palabra": "Residences",
       "tipologias.disponibles": "units available",
@@ -263,6 +283,16 @@
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
     },
     pt: {
+      "ficha.render": "Render",
+      "ficha.lamina": "Planta",
+      "ficha.tipologia": "Tipologia",
+      "ficha.superficie": "Área",
+      "ficha.ambientes": "Ambientes",
+      "ficha.piso": "Andar",
+      "ficha.consultar": "Consultar por este apartamento",
+      "ficha.libre": "Está disponível. Os valores e o plano de pagamento são conversados com o Francisco.",
+      "ficha.reservada": "Está reservado. Você pode deixar seus dados caso ele seja liberado, ou ver outra unidade da mesma tipologia.",
+      "ficha.vendida": "Já foi vendido. Há outras unidades da mesma tipologia.",
       "diseno.cta": "Explorar em 3D",
       "tipologias.palabra": "Residências",
       "tipologias.disponibles": "unidades disponíveis",
@@ -1037,7 +1067,7 @@
         const b = document.createElement("button");
         b.type = "button"; b.className = "unidad " + u.estado;
         b.innerHTML = `<b>${u.piso}.º ${u.id.slice(-1)}</b><small>${u.tip} · ${t("tipo." + slugDe(u.tip) + ".desc").split(" · ")[0]}</small><span class="m2">${u.sup} m²</span><i class="${u.estado}" title="${t("estado." + u.estado)}"></i>`;
-        b.addEventListener("click", () => { $("#form-unidad").value = u.id; irA("#contacto"); });
+        b.addEventListener("click", () => abrirFicha(u));
         cont.appendChild(b);
       });
     });
@@ -1045,6 +1075,49 @@
     sel.innerHTML = `<option value="">${t("contacto.sinUnidad")}</option>` + UNIDADES.map((u) => `<option value="${u.id}">${u.piso}.º ${u.id.slice(-1)} · ${u.tip} · ${u.sup} m²</option>`).join("");
     if (actual) sel.value = actual;
   }
+
+  /* la ficha de la unidad */
+  let fichaU = null, fichaVista = "render";
+  const fichaTexto = (u) => `${u.piso}.º ${u.id.slice(-1)} · ${t(u.torre === "Norte" ? "torre.norte" : "torre.sur")}`;
+  function pintarFicha() {
+    if (!fichaU) return;
+    const u = fichaU, tp = TIPOS.find((x) => x.clave === slugDe(u.tip)) || TIPOS[0];
+    const img = $("#ficha-img");
+    img.src = fichaVista === "lamina" ? tp.lamina : tp.render;
+    img.alt = u.tip + " — " + t(fichaVista === "lamina" ? "tipo.laminaPie" : "tipo.renderPie");
+    img.classList.toggle("lamina", fichaVista === "lamina");
+    $$(".ficha-vistas button").forEach((b) => b.setAttribute("aria-selected", b.dataset.vista === fichaVista ? "true" : "false"));
+    $("#ficha-torre").textContent = t(u.torre === "Norte" ? "torre.norte" : "torre.sur");
+    $("#ficha-titulo").textContent = `${u.piso}.º ${u.id.slice(-1)}`;
+    const est = $("#ficha-estado"); est.textContent = t("estado." + u.estado); est.className = "ficha-estado " + u.estado;
+    $("#ficha-tip").textContent = u.tip + " · " + t("tipo." + tp.clave + ".desc").split(" · ")[0];
+    $("#ficha-sup").textContent = u.sup + " m²";
+    $("#ficha-amb").textContent = t("tipo." + tp.clave + ".amb");
+    $("#ficha-piso").textContent = String(u.piso);
+    $("#ficha-nota").textContent = t("ficha." + u.estado);
+    $("#ficha-wa").href = wa(t("wa.unidad").replace("{u}", fichaTexto(u)));
+  }
+  function abrirFicha(u) {
+    fichaU = u; fichaVista = "render"; pintarFicha();
+    $("#ficha").hidden = false; $("#ficha-fondo").hidden = false;
+    void $("#ficha").offsetWidth; // fuerza el reflow para que la transición arranque desde afuera
+    $("#ficha").classList.add("visible"); $("#ficha-fondo").classList.add("visible");
+    document.body.classList.add("con-ficha"); if (lenis) lenis.stop();
+    $("#ficha-cerrar").focus();
+  }
+  function cerrarFicha() {
+    $("#ficha").classList.remove("visible"); $("#ficha-fondo").classList.remove("visible");
+    document.body.classList.remove("con-ficha"); if (lenis) lenis.start();
+    setTimeout(() => { $("#ficha").hidden = true; $("#ficha-fondo").hidden = true; }, 450);
+  }
+  $("#ficha-cerrar").addEventListener("click", cerrarFicha);
+  $("#ficha-fondo").addEventListener("click", cerrarFicha);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#ficha").hidden) cerrarFicha(); });
+  $$(".ficha-vistas button").forEach((b) => b.addEventListener("click", () => { fichaVista = b.dataset.vista; pintarFicha(); }));
+  $("#ficha-consultar").addEventListener("click", () => { if (fichaU) $("#form-unidad").value = fichaU.id; cerrarFicha(); setTimeout(() => irA("#contacto"), 80); });
+  $("#ficha-wa").addEventListener("click", () => clic("whatsapp", "ficha-" + (fichaU ? fichaU.id : "")));
+  document.addEventListener("idioma-pintado", pintarFicha);
+
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -72 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
 
