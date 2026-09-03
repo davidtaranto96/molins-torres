@@ -7,6 +7,9 @@
 # `git add` las ignora sin decir nada y el sitio queda con dos imágenes rotas
 # en producción: pasó el 2/9.
 !img/logo-*.png
+# y los iconos del sitio, que también son PNG chicos
+!favicon-32.png
+!apple-touch-icon.png
 
 # La salida intermedia del transpilador. Se regenera con:
 #   node scripts/transpilar.mjs
