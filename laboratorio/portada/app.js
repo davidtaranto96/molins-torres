@@ -600,6 +600,11 @@
       if (m < a || m < b) continue;
       tinta[i] = clamp01((m - UMBRAL) / 70);
     }
+    // el borde del cuadro no es un trazo: el detector veía el límite de la
+    // imagen como una línea y la dibujaba de punta a punta (se notó al bajar
+    // el encuadre: quedaba una raya oscura en la costura con el papel)
+    const MARGEN = 6;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (y < MARGEN || y >= H - MARGEN || x < MARGEN || x >= W - MARGEN) tinta[y * W + x] = 0;
     // donde el trazo es una maraña (follaje) se aclara
     const dens = new Float32Array(N), R2 = 6;
     for (let y = R2; y < H - R2; y += 2) for (let x = R2; x < W - R2; x += 2) {
@@ -756,25 +761,27 @@
     const grad = gc.createLinearGradient(0, H * 0.2, 0, H * 0.5); grad.addColorStop(0, "rgba(0,0,0,1)"); grad.addColorStop(1, "rgba(0,0,0,0)");
     gc.fillStyle = grad; gc.fillRect(0, 0, W, H);
     // el edificio NO deja pasar el cielo: en la etapa de arcilla la torre es
-    // blanca y el cielo aparece sólo alrededor (visto en captura: el ladrillo
-    // y los listones asomaban en color antes de tiempo)
-    // Se recorta la SILUETA de la torre, no una caja: el frente va entero de
-    // arriba abajo y el volumen lateral arranca más abajo. Con la caja entera
-    // quedaba una franja pálida en el cielo, a los costados (visto en captura).
-    gc.globalCompositeOperation = "destination-out";
-    const pluma = W * 0.018;
-    const recorte = (fx0, fx1, fy0) => {
-      const x0 = W * fx0, x1 = W * fx1, y0 = H * fy0;
-      const gh = gc.createLinearGradient(x0 - pluma, 0, x1 + pluma, 0);
-      const f = pluma / (x1 - x0 + 2 * pluma);
-      gh.addColorStop(0, "rgba(0,0,0,0)"); gh.addColorStop(f, "rgba(0,0,0,1)"); gh.addColorStop(1 - f, "rgba(0,0,0,1)"); gh.addColorStop(1, "rgba(0,0,0,0)");
-      gc.fillStyle = gh; gc.fillRect(x0 - pluma, y0, x1 - x0 + 2 * pluma, H - y0);
-      const gv = gc.createLinearGradient(0, y0 - pluma, 0, y0 + pluma);
-      gv.addColorStop(0, "rgba(0,0,0,0)"); gv.addColorStop(1, "rgba(0,0,0,1)");
-      gc.fillStyle = gv; gc.fillRect(x0, y0 - pluma, x1 - x0, 2 * pluma);
-    };
-    recorte(0.33, 0.52, 0.0);        // el frente y el núcleo que sobresale, hasta arriba
-    recorte(0.51, 0.60, 0.10);       // el volumen lateral, más bajo
+    // blanca y el cielo aparece sólo alrededor. La silueta sale de los propios
+    // trazos, no de cajas: por columna, desde la primera franja densa de dibujo
+    // hasta el piso. Así sigue la azotea escalonada y los bordes reales, y el
+    // recorte deja de verse cuadrado (visto en captura del 3/9).
+    const SW = 240, SH = Math.round(SW * H / W), cxS = W / SW, cyS = H / SH;
+    const densS = new Float32Array(SW * SH);
+    for (let i = 0; i < N; i++) if (tinta[i] > 0.15) { const x = i % W, y = (i / W) | 0; if (enEdificio(x, y)) densS[((y / cyS) | 0) * SW + ((x / cxS) | 0)] += 1; }
+    const porCelda = cxS * cyS; for (let i = 0; i < densS.length; i++) densS[i] /= porCelda;
+    const blurS = (arr, r) => { const out = new Float32Array(arr.length); for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) { let sum = 0, n = 0; for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) { const X = x + xx, Y = y + yy; if (X < 0 || X >= SW || Y < 0 || Y >= SH) continue; sum += arr[Y * SW + X]; n++; } out[y * SW + x] = sum / n; } return out; };
+    const dd = blurS(blurS(densS, 1), 1);
+    const UMB = 0.035, sil = new Float32Array(SW * SH);
+    const columnaDensaDesde = (x, y0) => { for (let y = y0; y < SH; y++) { if (dd[y * SW + x] <= UMB) continue; let k = 0; for (let z = y; z < Math.min(SH, y + 8); z++) if (dd[z * SW + x] > UMB * 0.6) k++; if (k >= 5) return y; } return -1; };
+    for (let x = 0; x < SW; x++) { const top = columnaDensaDesde(x, 0); if (top < 0) continue; for (let y = top; y < SH; y++) sil[y * SW + x] = 1; }
+    // una pasada horizontal cierra los huecos de una columna suelta sin trazos (un vidrio oscuro)
+    for (let y = 0; y < SH; y++) for (let x = 1; x < SW - 1; x++) if (!sil[y * SW + x] && sil[y * SW + x - 1] && sil[y * SW + x + 1]) sil[y * SW + x] = 1;
+    const silSuave = blurS(blurS(sil, 2), 2);                 // la pluma del recorte, unos 35 px
+    const silC = lienzo(SW, SH), gs = silC.getContext("2d"), ds = gs.createImageData(SW, SH);
+    for (let i = 0; i < silSuave.length; i++) ds.data[i * 4 + 3] = Math.round(255 * silSuave[i]);
+    gs.putImageData(ds, 0, 0);
+    gc.globalCompositeOperation = "destination-out"; gc.imageSmoothingEnabled = true; gc.imageSmoothingQuality = "high";
+    gc.drawImage(silC, 0, 0, W, H);
     gc.globalCompositeOperation = "source-over";
     const papel = lienzo(W, H); const gp = papel.getContext("2d");
     gp.fillStyle = "#F3EADA"; gp.fillRect(0, 0, W, H);
@@ -886,6 +893,7 @@
 
     // 3 · la arcilla con el cielo detrás
     const pA = fase(t, "arcilla");
+    e.fundido = pA;                                   // el fundido al papel de arriba sólo cuando hay cielo (ver presentar)
     if (pA > 0) { o.globalAlpha = pA * 0.94; o.drawImage(e.arcilla, 0, 0); o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0); o.globalAlpha = 1; }
     // 4 · los materiales
     const pM = fase(t, "materiales");
@@ -905,8 +913,23 @@
     const dpr = Math.min(2, devicePixelRatio || 1);          // a la densidad real de la pantalla
     const pw = Math.round(vw * dpr), ph = Math.round(vh * dpr);
     if (boceto.width !== pw || boceto.height !== ph) { boceto.width = pw; boceto.height = ph; }
-    const esc = Math.max(pw / e.W, ph / e.H), dw = e.W * esc, dh = e.H * esc, dx = (pw - dw) / 2, dy = (ph - dh) * 0.30;
-    const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph); g.drawImage(e.out, dx, dy, dw, dh);
+    // el cuadro baja una franja (16 % del alto): la azotea y su cota quedan a la
+    // vista debajo de la cabecera, y arriba el cielo sigue con las primeras
+    // filas del propio cuadro estiradas (pedido del 3/9: «bajar un poco el hero»)
+    const franja = Math.round(ph * 0.16);
+    const esc = Math.max(pw / e.W, (ph - franja) / e.H), dw = e.W * esc, dh = e.H * esc, dx = (pw - dw) / 2, dy = franja;
+    const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph);
+    // la franja de arriba es papel, y el cuadro se funde al papel en un borde
+    // corto: el render queda montado en la hoja, como el boceto. (Estirar o
+    // reflejar las primeras filas del cuadro arrastraba la antena y el techo.)
+    g.drawImage(e.papel, dx, dy - dh, dw, dh);                // el mismo papel con grano: sin costura en el boceto
+    g.drawImage(e.out, dx, dy, dw, dh);
+    if (e.fundido > 0) {
+      const fundido = Math.round(ph * 0.05);
+      const gr = g.createLinearGradient(0, franja - 1, 0, franja + fundido);
+      gr.addColorStop(0, "rgba(243,234,218,1)"); gr.addColorStop(1, "rgba(243,234,218,0)");
+      g.globalAlpha = e.fundido; g.fillStyle = gr; g.fillRect(0, franja - 1, pw, fundido + 1); g.globalAlpha = 1;
+    }
   }
 
   /* el título aparece cuando el render está casi entero: «LA», y después «TORRE» */

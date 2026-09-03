@@ -64,7 +64,7 @@ button,input,select,textarea{font:inherit}
    tinta cuando se vuelve sólida al dejar el hero. En la primera captura era
    crema sobre crema: invisible. */
 .cab{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--lado);color:var(--tinta);transition:background .3s ease,color .3s ease,box-shadow .3s ease}
-body.hero-claro .cab:not(.solida){color:var(--crema)}
+/* la cabecera pisa la franja de papel del hero: se queda en tinta siempre */
 .cab.solida{background:rgba(251,249,246,.9);backdrop-filter:blur(10px);color:var(--tinta);box-shadow:0 1px 0 rgba(41,33,26,.08)}
 .cab-marca{font-family:var(--serif);letter-spacing:.34em;font-size:16px;text-decoration:none;color:inherit}
 .cab-nav{display:none;gap:22px}
