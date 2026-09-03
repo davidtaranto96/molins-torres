@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilos.css?v=202609031433">
+<link rel="stylesheet" href="estilos.css?v=202609031447">
 </head>
 <body data-idioma="es">
 
@@ -90,13 +90,17 @@
       <canvas class="hero-boceto" aria-hidden="true"></canvas>
       <div class="hero-velo"></div>
       <div class="hero-texto">
-        <p class="rotulo rotulo-claro hero-rotulo" data-t="hero.rotulo"></p>
-        <h1 class="hero-titulo" aria-label="La Torre"><span class="letra">L</span><span class="letra">A</span><span class="letra esp">&nbsp;</span><span class="letra">T</span><span class="letra">O</span><span class="letra">R</span><span class="letra">R</span><span class="letra">E</span></h1>
-        <p class="hero-bajada" data-t="hero.bajada"></p>
-        <div class="hero-ctas">
+        <div class="hero-arriba">
+          <div class="hero-col">
+            <p class="rotulo rotulo-claro hero-rotulo" data-t="hero.rotulo"></p>
+            <p class="hero-bajada" data-t="hero.bajada"></p>
+          </div>
+          <div class="hero-ctas">
           <a href="#unidades" class="boton boton-lleno" data-t="cta.elegir"></a>
           <a href="#vida" class="boton boton-linea" data-t="cta.visita"></a>
         </div>
+        </div>
+        <h1 class="hero-titulo" aria-label="La Torre"><span class="letra">L</span><span class="letra">A</span><span class="letra esp">&nbsp;</span><span class="letra">T</span><span class="letra">O</span><span class="letra">R</span><span class="letra">R</span><span class="letra">E</span></h1>
       </div>
       <div class="hero-pista" data-t="hero.pista"></div>
     </div>
@@ -299,28 +303,40 @@
     <p class="nota" data-t="avance.sinFotos"></p>
   </section>
 
-  <!-- ══ CONTACTO ══ -->
-  <section id="contacto" class="bloque contacto" data-screen-label="Contacto">
-    <div class="contacto-texto">
-      <p class="rotulo" data-t="contacto.rotulo"></p>
-      <h2 class="titulo partir" data-t="contacto.titulo"></h2>
-      <p class="parrafo" data-t="contacto.texto"></p>
-      <div class="firma">
-        <img src="img/logo-molins.png" alt="" width="56" height="56" loading="lazy">
-        <div><b>Francisco Molins</b><span data-t="pie.comercializa"></span><span>CUCIS 251 · 387 415 3669</span></div>
+  <!-- ══ CONTACTO: media pantalla foto con el título, media pantalla el formulario ══ -->
+  <section id="contacto" class="contacto" data-screen-label="Contacto">
+    <div class="contacto-foto">
+      <img src="img/render-interior.jpg" alt="" loading="lazy">
+      <div class="contacto-sobre">
+        <h2 class="contacto-titulo"><span class="partir" data-t="contacto.t1"></span><span class="partir" data-t="contacto.t2"></span></h2>
+        <p class="contacto-texto" data-t="contacto.texto"></p>
+        <a class="boton boton-linea boton-claro" target="_blank" rel="noreferrer" id="wa-contacto" href="#"><span data-t="cta.whatsapp"></span></a>
       </div>
-      <a class="boton boton-wa" target="_blank" rel="noreferrer" id="wa-contacto" href="#"><span data-t="cta.whatsapp"></span></a>
     </div>
-    <form class="form" id="form" novalidate>
-      <label><span data-t="contacto.nombre"></span><input name="nombre" required minlength="2" autocomplete="name"></label>
-      <label><span data-t="contacto.telefono"></span><input name="telefono" type="tel" required minlength="6" autocomplete="tel"></label>
-      <label><span data-t="contacto.unidad"></span><select name="unidad" id="form-unidad"></select></label>
-      <label><span data-t="contacto.mensaje"></span><textarea name="mensaje" rows="3"></textarea></label>
-      <input name="empresa" tabindex="-1" autocomplete="off" class="trampa" aria-hidden="true">
-      <button type="submit" class="boton boton-lleno" id="form-enviar" data-t="contacto.enviar"></button>
-      <p class="form-aviso" id="form-aviso" hidden></p>
-      <p class="form-pie" data-t="contacto.pie"></p>
-    </form>
+    <div class="contacto-panel">
+      <form class="form" id="form" novalidate>
+        <div class="form-modos" role="tablist" aria-label="Tipo de contacto">
+          <button type="button" role="tab" data-modo="consulta" aria-selected="true" data-t="contacto.modo.consulta"></button>
+          <button type="button" role="tab" data-modo="llamada" aria-selected="false" data-t="contacto.modo.llamada"></button>
+          <button type="button" role="tab" data-modo="visita" aria-selected="false" data-t="contacto.modo.visita"></button>
+        </div>
+        <div class="form-fila">
+          <label><span data-t="contacto.nombre"></span><input name="nombre" required minlength="2" autocomplete="name"></label>
+          <label><span data-t="contacto.telefono"></span><input name="telefono" type="tel" required minlength="6" autocomplete="tel"></label>
+        </div>
+        <label><span data-t="contacto.unidad"></span><select name="unidad" id="form-unidad"></select></label>
+        <label><span data-t="contacto.mensaje"></span><textarea name="mensaje" rows="2"></textarea></label>
+        <label class="form-check"><input type="checkbox" name="novedades"><span data-t="contacto.novedades"></span></label>
+        <input name="empresa" tabindex="-1" autocomplete="off" class="trampa" aria-hidden="true">
+        <button type="submit" class="boton-pildora" id="form-enviar"><span data-t="contacto.enviar"></span><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 5h20M16 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+        <p class="form-aviso" id="form-aviso" hidden></p>
+        <p class="form-pie" data-t="contacto.pie"></p>
+        <div class="firma">
+          <img src="img/logo-molins.png" alt="" width="48" height="48" loading="lazy">
+          <div><b>Francisco Molins</b><span data-t="pie.comercializa"></span><span>CUCIS 251 · 387 415 3669</span></div>
+        </div>
+      </form>
+    </div>
   </section>
 
 </main>
@@ -380,6 +396,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
-<script src="app.js?v=202609031433"></script>
+<script src="app.js?v=202609031447"></script>
 </body>
 </html>

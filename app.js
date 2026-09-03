@@ -53,6 +53,12 @@
   /* ── 2 · el diccionario ────────────────────────────────────────────────── */
   const DICC = {
     es: {
+      "contacto.t1": "Dejá",
+      "contacto.t2": "tu consulta",
+      "contacto.modo.consulta": "Consulta",
+      "contacto.modo.llamada": "Que me llamen",
+      "contacto.modo.visita": "Visitar la obra",
+      "contacto.novedades": "Quiero recibir novedades del edificio por WhatsApp",
       "nav.inicio": "Inicio",
       "nav.espacios": "Espacios",
       "nav.plan": "Plan de pago",
@@ -163,6 +169,12 @@
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
     },
     en: {
+      "contacto.t1": "Send",
+      "contacto.t2": "an inquiry",
+      "contacto.modo.consulta": "Inquiry",
+      "contacto.modo.llamada": "Call me back",
+      "contacto.modo.visita": "Visit the site",
+      "contacto.novedades": "I want to receive updates about the building on WhatsApp",
       "nav.inicio": "Home",
       "nav.espacios": "Spaces",
       "nav.plan": "Payment plan",
@@ -331,6 +343,12 @@
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
     },
     pt: {
+      "contacto.t1": "Deixe",
+      "contacto.t2": "sua consulta",
+      "contacto.modo.consulta": "Consulta",
+      "contacto.modo.llamada": "Me liguem",
+      "contacto.modo.visita": "Visitar a obra",
+      "contacto.novedades": "Quero receber novidades do edifício pelo WhatsApp",
       "nav.inicio": "Início",
       "nav.espacios": "Espaços",
       "nav.plan": "Plano de pagamento",
@@ -1303,6 +1321,8 @@
   $$("#wa-contacto, #wa-pie, #wa-flotante").forEach((a) => a.addEventListener("click", () => clic("whatsapp", a.id)));
 
   const form = $("#form"), aviso = $("#form-aviso"), btn = $("#form-enviar");
+  let modo = "consulta";
+  $$(".form-modos button").forEach((b) => b.addEventListener("click", () => { modo = b.dataset.modo; $$(".form-modos button").forEach((x) => x.setAttribute("aria-selected", x === b ? "true" : "false")); }));
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form);
@@ -1311,7 +1331,7 @@
     if (nombre.length < 2 || tel.length < 6) { form.reportValidity(); return; }
     btn.disabled = true; btn.textContent = t("contacto.enviando");
     const unidad = String(f.get("unidad") || "");
-    const cuerpo = { nombre, telefono: tel, interes: unidad ? "Edificio La Torre — unidad " + unidad : "Edificio La Torre", mensaje: String(f.get("mensaje") || "") || null, canal: "PORTAL", utm_campaign: ctx.campania || null, utm_source: ctx.origen || null, paginaConsulta: location.href, dispositivo: innerWidth < 768 ? "celular" : "escritorio", idioma };
+    const cuerpo = { nombre, telefono: tel, interes: unidad ? "Edificio La Torre — unidad " + unidad : "Edificio La Torre", mensaje: [modo !== "consulta" ? t("contacto.modo." + modo) : "", String(f.get("mensaje") || ""), f.get("novedades") ? t("contacto.novedades") : ""].filter(Boolean).join(" · ") || null, canal: "PORTAL", utm_campaign: ctx.campania || null, utm_source: ctx.origen || null, paginaConsulta: location.href, dispositivo: innerWidth < 768 ? "celular" : "escritorio", idioma };
     try {
       const r = await fetch(CFG.crm + "/api/publico/consultas", { method: "POST", headers: cabeceras(), body: JSON.stringify(cuerpo) });
       if (!r.ok) throw new Error("crm");
