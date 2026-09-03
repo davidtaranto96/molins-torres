@@ -450,3 +450,31 @@ La moraleja, para la próxima: **antes de buscar la herramienta, leer el materia
 relevamiento de las cinco familias de técnica costó 66 agentes y cinco millones de tokens, y la
 decisión la definió mirar con atención dos imágenes que ya estaban en el repo.
 
+---
+
+## Referencia leída el 3/9: Belgrade Arbor (belgradearbor.rs)
+
+David la trajo como el nivel al que quiere llegar. Se abrió y se leyeron los bundles.
+
+**La página del 3D (`/en/3d`)** es exactamente nuestra arquitectura: three.js con React
+Three Fiber sobre Next.js, el mismo `Sky.js` con `sunPosition`, un slider «Time of day»,
+unidades seleccionables, GLTFLoader con Draco, KTX2 y Meshopt, entorno HDR y EffectComposer.
+La diferencia es el asset: **descarga 35 MB**, de los cuales `zgrada.glb` (el edificio) son
+**15,1 MB** y `nature.glb` (el entorno) **16 MB** — un modelo hecho por un artista 3D a partir
+del modelo del arquitecto. Nuestro volumen generado por código pesa el runtime y nada más.
+
+**La portada (`/en`)** pesa **3,4 MB en total**. Next.js, Tailwind, **GSAP** (ScrollTrigger,
+ScrollSmoother, SplitText) y **Lenis** para el scroll suave. El hero «que se arma de un
+borrador» es un **video** (`hero-m.webm`, 1,8 MB en celular) con el boceto convirtiéndose en
+render, reproducido al ritmo del scroll (`requestVideoFrameCallback` + canvas). Las demás
+secciones usan videos en loop dentro de máscaras SVG, solapas por tipología, un «view from
+above» con dos vistas, y un plan de cuotas. Tipografía **PP Editorial Old**, que es comercial
+y no se puede copiar.
+
+**Lo que se puede imitar hoy con lo que hay**: la mecánica entera —scroll suave, títulos que
+entran partidos por letra, secciones con parallax, videos enmascarados, solapas de tipología,
+el 3D con hora del día— porque es código. **Lo que necesita material**: el video del boceto al
+render (hay que fabricarlo: un dibujo lineal del hero se puede generar por detección de
+bordes o con un modelo de imagen, y el fundido se anima en código), y los videos de ambiente
+de cada sección (o se reemplazan por los renders con movimiento 2.5D).
+
