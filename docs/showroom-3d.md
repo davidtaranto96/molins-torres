@@ -17,7 +17,10 @@ Probarlo *"en vez de pagar Higgsfield"* es comparar dos cosas distintas: **Fable
 Higgsfield, reemplaza al programador.** La regla para mañana, y sirve para todo:
 
 > Todo lo que sea **código y geometría de movimiento** se lo pedís al modelo.
-> Todo lo que sea **pixel nuevo** sale del arquitecto, de Photoshop, o de un motor de video.
+> Todo lo que sea **pixel nuevo** hay que fabricarlo: no hay arquitecto a quien pedírselo.
+>
+> Y ahí está la vuelta de tuerca: **si el volumen se modela, casi no hace falta pixel nuevo.**
+> En un 3D de verdad el sol es una luz, no una imagen.
 
 Y sobre Higgsfield puntualmente: **su precio no se pudo verificar**. La página de precios la arma
 JavaScript y no se puede leer; los blogs que la indexan se contradicen entre sí (USD 9, USD 19,
@@ -29,42 +32,79 @@ USD 47, USD 59). No va a ningún presupuesto hasta que alguien entre y saque cap
 
 Conviene separarlas, porque tienen dependencias muy distintas y una sola de ellas es la cara:
 
-| # | Qué | Depende de |
+| # | Qué | Se resuelve con |
 |---|---|---|
-| 1 | La cámara se planta de frente y el edificio gira | Cuadros de una órbita, o el modelo 3D |
-| 2 | Día → noche con el sol que se va y las ventanas que se prenden | **Un render nocturno** del mismo encuadre |
-| 3 | Nubes que se mueven | Nada: el material ya está |
-| 4 | Ver piso por piso y elegir la unidad | Nada nuevo, pero hay un bloqueante (abajo) |
-| 5 | Recorrer la unidad por dentro | **Panorámicas 360** renderizadas del modelo |
+| 1 | La cámara se planta de frente y el edificio gira | El volumen modelado en código |
+| 2 | Día → noche con el sol que se va y las ventanas que se prenden | El volumen modelado — el sol es una luz |
+| 3 | Nubes que se mueven | El material ya está |
+| 4 | Ver piso por piso y elegir la unidad | Los planos que ya están |
+| 5 | Recorrer la unidad por dentro | Panorámicas 360, y es la única que queda afuera |
 
-**Sólo la 3 y la 4 se pueden hacer con lo que hay hoy.** Las otras tres necesitan material que
-todavía no existe, y ninguna cantidad de código lo fabrica.
+**Cuatro de las cinco se pueden hacer con lo que hay hoy.** La quinta queda para después.
+
+Y las cuatro primeras convergen en una sola pieza: **el volumen del edificio modelado como
+geometría en código.** Esa pieza no es una imagen que haya que conseguir, es un archivo que se
+escribe — y se escribe a partir del corte y la planta que ya están en el material.
 
 ---
 
 ## La bifurcación que decide todo
 
-### No hay modelo 3D, y 26 renders no son un modelo
+> **Actualizado el 2/9, y cambia la recomendación entera.** David confirmó que el arquitecto
+> **no tiene modelo 3D ni vista de arriba**: no hay a quién pedirle nada. Y al revisar el
+> material apareció que eso importa mucho menos de lo que parecía, porque **los planos sí
+> están**. Lo que sigue reemplaza la versión anterior de esta sección, que mandaba a pedirle
+> cinco archivos a alguien que no los tiene.
 
-Los renders son salidas de un modelo, no el modelo. Ningún motor —three.js, model-viewer,
-Babylon, el que sea— puede mostrar un edificio sin geometría. Y una imagen plana de 2200×1237
-**no se convierte** en una panorámica equirectangular: son cosas distintas, hay que volver a
-renderizar.
+### No hay modelo 3D, pero sí hay plano y corte — que es con lo que se modela
 
-**Lo que hay que pedirle al arquitecto**, en este orden de valor:
+Los 26 renders son salidas de un modelo, no el modelo. Pero **reconstruir el 3D a partir de los
+renders es el camino equivocado**, y conviene saber por qué antes de perder un día:
 
-1. **El render nocturno de la fachada, con el encuadre exacto de `hero-cover.jpg`.** Es el que
-   más resultado da por lo que cuesta. Ojo: `img/render-nocturno.jpg` está mal nombrado — es el
-   pasillo de acceso a plena luz del día. Hoy no existe la mitad nocturna.
-2. **El archivo del modelo** (SketchUp, Revit, 3ds Max) para exportarlo a glTF/GLB. SketchUp 2026
-   exporta glTF de fábrica; Revit necesita un plugin; 3ds Max exporta directo.
-3. **De 60 a 120 cuadros de una órbita** alrededor de la torre. Es lo que da el giro sin modelo.
-4. **Panorámicas equirectangulares** de una tipología: cámara esférica, FOV 360×180, relación
-   2:1, y **el viñeteo apagado** (si no, queda una costura vertical visible). Alcanzan 3 a 5 por
-   unidad: estar, cocina, dormitorio, baño y balcón. En Enscape sale en segundos; en V-Ray o
-   Corona tarda mucho más.
-5. **El hero sin el logotipo quemado adentro.** Hoy «LA TORRE» está pintado en el JPG: si separás
-   el render en capas, el texto se mueve con ellas.
+- **Fotogrametría y Gaussian Splatting quedan afuera por definición**: necesitan muchas vistas
+  solapadas de la misma geometría, tomadas alrededor del objeto. Del exterior hay **una sola
+  vista**. No hay nada que triangular.
+- **Los modelos de imagen a 3D alucinan las caras que no ven** y erran las proporciones. En un
+  producto que se está vendiendo eso no es un detalle estético: Francisco o un comprador lo
+  notan, y una malla alucinada no se corrige, se tira.
+
+Lo que sí hay, y es exactamente el material con el que un estudio arma un modelo:
+
+| Documento | Dónde está | Qué da |
+|---|---|---|
+| **El corte del conjunto** | Panel derecho de `esquema-torres.jpg` | Torre Norte, Torre Sur, el núcleo de escalera al medio, seis niveles y el acceso por Aniceto Latorre |
+| **La planta completa del nivel** | Inserto «Ubicación en planta» de las cuatro láminas de tipología | La huella entera: una unidad por torre y la circulación al medio |
+| **La unidad a escala** | Las mismas láminas, panel derecho | La planta del departamento con artefactos |
+| **La escala real** | «37 m2» escrito en la lámina | Calibra todo lo demás |
+| **El norte** | La rosa de los vientos de la lámina | Sin esto el recorrido del sol es decorativo, no correcto |
+| **Materiales y proporción** | `hero-cover.jpg` | Ladrillo visto en las esquinas, parasoles, balcones, dos caras a la vista |
+
+**Y el edificio es simple**: dos volúmenes rectangulares con un núcleo de circulación al medio,
+seis niveles, dos unidades por nivel. No es una geometría difícil, son cajas apiladas.
+
+### El bloqueante de las plantas: RESUELTO, y no hacía falta preguntar
+
+Se había marcado una contradicción entre las «6 plantas por torre» del sitio y los 8 niveles de
+`fachada-balcarce.jpg`. Leyendo el corte y la planta se cierra sola:
+
+- El corte del conjunto muestra **seis niveles** y nombra las dos torres.
+- La planta muestra **una unidad por torre y por nivel**.
+- **6 niveles × 2 unidades = 12 unidades.** Es exactamente lo que dice el sitio, y cierra también
+  con las «6 unidades» de cada torre.
+
+O sea que el sitio **siempre estuvo bien**, y la lámina de la fachada —8 niveles, balcones de
+vidrio, núcleo vidriado— es de otro edificio, que es lo que Francisco había avisado. Confirmado
+por dos caminos independientes.
+
+### Lo único que sigue sin haber, y no lo fabrica nadie
+
+Las **panorámicas equirectangulares** para el recorrido adentro de la unidad. Sin modelo no hay
+de dónde renderizarlas, y las que generan por IA topean en 6144×3072 con la proyección
+distorsionada. El recorrido 360 queda para cuando exista un modelo — el propio, si se llega a
+modelar el interior, o el del arquitecto si algún día aparece.
+
+Y opcionalmente, **el hero sin el logotipo quemado adentro del JPG**, si se quiere el parallax
+2.5D. Eso sí lo arregla un modelo de imagen por centavos.
 
 ---
 
@@ -142,7 +182,8 @@ Tres detalles que hacen la diferencia entre que se vea bien o berreta:
 - **Las ventanas van entre 2700 K y 3000 K, con brillo desparejo y algunas apagadas.** Todas
   iguales y encendidas se leen falsas al instante.
 
-Si el arquitecto no da el render nocturno, se puede fabricar en Photoshop sobre el hero: son 3 a 5
+Si se va por el camino del compuesto y no por el del volumen, el nocturno se fabrica en Photoshop
+sobre el hero: son 3 a 5
 horas y hay receta canónica (sacar las capas cálidas, borrar con clone stamp las sombras duras de
 sol porque delatan el día, capa azul en Multiply con máscara, cielo nocturno, y la luz pintada a
 mano).
@@ -166,9 +207,46 @@ atmosférico cae de 5 ms a 2 ms por cuadro. La opción aburrida y correcta son d
 desplazándose con `translateX` — y si ya recortaste el cielo para el parallax, **el material es el
 mismo**: sale gratis.
 
-### Etapa 4 · El edificio que gira — con video, no con 3D
+### Etapa 4 · El volumen modelado en código — la pieza que resuelve cuatro pedidos de una
 
-Acá está el dato que decide el presupuesto. Un giro de **72 cuadros a 1440×810**:
+Es la etapa que cambió cuando se confirmó que no hay modelo 3D. **No hay que reconstruir el
+edificio de los renders: hay que construirlo de los planos**, y no hace falta aprender a modelar.
+
+Dos volúmenes rectangulares, un núcleo al medio, seis niveles, dos unidades por nivel. Eso es un
+bucle con cajas: **geometría paramétrica, o sea código**, que es justo lo que un modelo de código
+escribe bien. Se le pasan las proporciones leídas del corte y de la planta, calibradas con los
+37 m² que dice la lámina, y emite la escena de three.js.
+
+**Y no tiene que ser fotorrealista. Tiene que ser navegable y correcto.** El patrón que funciona
+es un volumen limpio y abstracto —hormigón, vidrio, el ladrillo de las esquinas— que se orbita y
+se clickea, y **cuando el usuario elige una unidad se le muestra el render de verdad**. El 3D es
+la navegación; los renders son el contenido. Así se ve caro sin fingir una foto, que además es
+justo la forma de no caer en la estética de imagen generada.
+
+Lo que habilita, todo junto y sin material nuevo:
+
+- **El giro y la cámara de frente**: `OrbitControls`, o las cámaras predefinidas de `model-viewer`.
+- **La vista de arriba**: es otro ángulo de cámara, no un render que haya que conseguir.
+- **Piso por piso**: los niveles son objetos de la escena, se resaltan y se clickean.
+- **Las secciones que quiere mostrar** (la cochera, las dos torres, los caminos): cámaras
+  guardadas, una por sección, cada una con su render al costado.
+- **Y el día/noche de verdad.** Éste es el que más se subestima: `Sky.js` de three.js son
+  **3,8 KB**, animan `sunPosition`, y con el sol bajando el cielo hace naranja → azul → negro
+  solo. Las sombras se mueven porque hay una luz de verdad. Las ventanas se prenden con un
+  material emisivo, escalonadas. **No hace falta ningún render nocturno, ni resolver el registro
+  de dos imágenes, ni pagar nada.** Y es interactivo, que era la mitad del pedido.
+
+El norte de la lámina no es un detalle: con la orientación puesta, el recorrido del sol es el real
+de Salta y no una animación decorativa.
+
+**Lo que cuesta**: es la etapa más larga en horas, y la única con riesgo de que quede pobre si el
+volumen se modela apurado. **Y hay que rotularlo como esquema volumétrico**, no venderlo como
+plano exacto — igual que el sitio ya rotula «render ilustrativo».
+
+### Etapa 4b · La alternativa barata, si la 4 se complica
+
+Si el volumen no cierra o hay que mostrar algo antes, el giro se puede fingir con video. Un giro
+de **72 cuadros a 1440×810**:
 
 | Cómo se sirve | Peso medido |
 |---|---|
@@ -178,27 +256,28 @@ Acá está el dato que decide el presupuesto. Un giro de **72 cuadros a 1440×81
 | El mejor GLB que se pudo generar de un interior arquitectónico real | 3,54 MB |
 
 El video gana 8 a 1 porque comprime entre cuadros, y **se puede arrastrar con el dedo** fijando
-`video.currentTime`: el usuario gira el edificio igual. Es exactamente lo que hace Winbuild, con
-la diferencia de que ellos mandan 97 MB.
+`video.currentTime`. Es exactamente lo que hace Winbuild, con la diferencia de que ellos mandan
+97 MB. **La contra es la de siempre: un video no es interactivo.** Y sin modelo, los cuadros hay
+que sacarlos del volumen modelado igual — o sea que esta etapa depende de la 4, no la reemplaza.
 
-Como referencia de lo caro que es la alternativa de secuencia de imágenes: la página de AirPods
-Pro de Apple son 148 imágenes y unos 55,8 MB — y Apple sirve **una sola imagen fija** en conexiones
-móviles lentas.
+Como referencia de lo caro que es servir cuadros sueltos: la página de AirPods Pro de Apple son
+148 imágenes y unos 55,8 MB — y Apple sirve **una sola imagen fija** en conexiones móviles lentas.
 
-### Etapa 5 · El 3D de verdad, cuando exista el GLB
-
-Si algún día llega el modelo, el camino está medido:
+### Etapa 5 · Con qué motor se sirve el volumen
 
 - **`model-viewer` 4.3.1**: una sola etiqueta, 285 KB, y trae Draco y KTX2 sin configurar nada.
   Tiene los atributos `camera-orbit` y `camera-target`, que es literalmente «que la cámara se pare
-  de frente al edificio».
-- **three.js** da más control: 328 KB con OrbitControls, GLTFLoader y Draco (230 KB sin Draco).
-  Aviso: **ya no tiene build UMD** (`three.min.js` da 404), así que va sí o sí con `importmap`.
-- **El día/noche en 3D no necesita HDRIs**: `Sky.js` de three.js son **3,8 KB** y anima
-  `sunPosition` — bajás el sol bajo el horizonte y el cielo hace naranja → azul → negro solo. Dos
-  HDRI de 1k pesarían 1,33 y 1,67 MB.
+  de frente al edificio». Es el camino corto si el volumen se exporta como GLB.
+- **three.js**: 328 KB con OrbitControls, GLTFLoader y Draco (230 KB sin Draco). **Es el que
+  corresponde acá**, porque si la geometría se genera por código no hace falta ni cargar un GLB:
+  se construye en el navegador y pesa lo que pesa el código. Aviso: **ya no tiene build UMD**
+  (`three.min.js` da 404), así que va sí o sí con `importmap`.
 - **Babylon queda afuera** por peso (1,78 MB gzip) y **Spline** por peso y marca de agua (978 KB y
   el plan gratis marca las exportaciones).
+
+**Un volumen generado por código pesa cero en descarga.** No hay texturas de 40 MB ni modelo que
+bajar: son unos cientos de líneas más el runtime. Es la ventaja escondida de modelar en código en
+vez de importar un GLB de un estudio.
 
 **Y la regla que cambia el presupuesto de un modelo 3D**: en un edificio **las texturas son el
 82 % del peso**. Comprimiendo un interior arquitectónico real: sólo Draco baja un 15 %; pasar las
@@ -252,29 +331,57 @@ para el preview. El ahorro es de latencia, no de almacenamiento.
 
 ## Mañana con Fable: qué pedirle y qué no
 
-**Lo que escribe entero, sin ninguna herramienta paga:**
+> **Ojo con una trampa que tenía la versión anterior de esta sección**: el prompt del explorador
+> apuntaba a `fachada-balcarce.jpg`, que es **el edificio equivocado**. Esa lámina no es La Torre
+> y ya se sacó del sitio. El explorador va sobre el hero o sobre el volumen modelado, y ahí los
+> polígonos **no salen por fórmula**: el hero es una perspectiva, no una elevación ortográfica.
+
+**Por dónde empezar, en orden:**
+
+**1 · El volumen del edificio.** Es la pieza que resuelve cuatro de los cinco pedidos, y es puro
+código. El prompt tiene que llevar las medidas, no adjetivos:
+
+> «Armá en three.js el volumen de un edificio de dos torres. Huella alargada de proporción
+> aproximada 3:1, con un núcleo de circulación al centro que separa Torre Norte de Torre Sur.
+> Seis niveles de departamentos sobre una planta baja de acceso y cocheras. Una unidad por torre
+> y por nivel. Balcones en voladizo sobre la cara al frente. El núcleo sobresale por encima del
+> último nivel con la sala de máquinas. Materiales planos y sobrios: hormigón, vidrio, y ladrillo
+> visto en las esquinas verticales. Calibrá la escala para que la unidad chica dé 37 m². Cada
+> nivel y cada unidad tienen que ser objetos separados y seleccionables. Sumá `Sky.js` con
+> `sunPosition` animable y las ventanas con material emisivo que se prenda escalonado.»
+
+Después se ajusta contra el corte de `esquema-torres.jpg` y la planta de las láminas, que son las
+dos fuentes de verdad. **La escala se calibra con los 37 m².**
+
+**2 · El explorador de pisos.** Con el volumen andando, sale de arriba: los niveles ya son objetos
+y se clickean. Sin el volumen, va con polígonos SVG sobre el hero, dibujados a mano con el Shape
+Generator de MDN (sube la imagen, tildás Polygon, clickeás los vértices y te devuelve el
+`<polygon>` listo). Y en los dos casos: `viewBox` igual a las dimensiones intrínsecas de la
+imagen, `preserveAspectRatio="none"`, `tabindex="0"` + `role="button"` + `keydown` en cada
+polígono, y todo el hover envuelto en `@media (hover: hover) and (pointer: fine)`.
+
+**3 · La elección de la unidad adentro del piso.** El inserto «Ubicación en planta» de las láminas
+ya muestra la huella con las dos unidades. Se redibuja como SVG y queda el segundo nivel de
+navegación: torre → piso → unidad.
+
+**Lo demás que escribe entero, sin ninguna herramienta paga:**
 
 | Efecto | Qué pedirle |
 |---|---|
-| Explorador de pisos | «Generá el overlay SVG sobre `fachada-balcarce.jpg` (1847×2600), con `viewBox` igual a esas dimensiones y `preserveAspectRatio="none"`. Un polígono por unidad, con la grilla calculada por fórmula a partir de un paso de piso de 222 px desde y=380. Estados libre/reservada/vendida por color, `tabindex="0"` + `role="button"` + `keydown` en cada uno, y todo el hover envuelto en `@media (hover: hover) and (pointer: fine)`.» |
-| Día → noche | «Tres capas apiladas: render diurno, render nocturno con `opacity` animada, y un PNG con alfa de las ventanas encendidas en modo `screen`, escalonadas una por una. Sin `mask-mode: luminance`. Atado al scroll con JavaScript, no con `animation-timeline`.» |
 | Parallax 2.5D | «Cuatro capas con `translate3d`, atadas al scroll y al giroscopio, sin librerías. Con `prefers-reduced-motion` respetado.» |
 | Nubes | Las dos versiones: el shader fbm de 3-4 octavas (con caída a 2 en celular) y la barata de dos PNG con `translateX`. Compará y quedate con la que se banque el celular. |
-| Giro del edificio | «Un `<canvas>` o un `<video>` arrastrable fijando `currentTime`, con precarga por `IntersectionObserver` y una imagen fija de fallback en conexiones lentas.» |
+| Día/noche sin 3D | Si el volumen no llega: «Base diurna, cielo nocturno enmascarado encima, el edificio oscurecido con `mix-blend-mode: multiply` **sobre los mismos píxeles**, y las ventanas en `screen` escalonadas.» Nunca dos renders fundidos: fantasmean. |
 | Los recortes | El **script de Python** que corre SAM2 o Depth Anything V2 y exporta las capas. El juicio visual del recorte es tuyo. |
 
 **Lo que no te va a poder dar, por más que se lo pidas:**
 
-- El render nocturno de la fachada.
-- El hero sin el logotipo quemado.
-- El PNG de las ventanas encendidas.
-- Los 60 a 120 cuadros de la órbita.
+- Las panorámicas equirectangulares del recorrido interior.
+- El hero sin el logotipo quemado adentro del JPG (eso es un modelo de imagen, y son centavos).
 - Cualquier clip de video.
-- Las panorámicas equirectangulares.
 
-**Todo lo que falta es pixel, no código.** Si mañana querés avanzar sin depender de nadie, el
-mejor uso del día es la **Etapa 1**: el explorador de pisos no necesita material nuevo, y es lo
-que Winbuild cobra USD 3.000 por hacer.
+**Y la que más importa: no te va a poder decir si el volumen quedó bien.** Eso se mira contra el
+corte y el hero, y el ojo es tuyo. Un volumen mal proporcionado se nota, y es lo único de todo
+esto que se ve peor que no hacer nada.
 
 ---
 
@@ -282,12 +389,12 @@ que Winbuild cobra USD 3.000 por hacer.
 
 | Etapa | Peso que suma | Trabajo | Bloqueada por |
 |---|---|---|---|
-| 1 · Explorador de pisos | **+36 KB** (la fachada en WebP a 750 px pesa menos que hoy) | — | Confirmar 6 u 8 plantas |
-| 2 · Día/noche | +0,7 MB (el render nocturno) | ~30 líneas + 3-5 h si hay que pintarlo | El render nocturno |
+| 1 · Explorador de pisos | **+36 KB** en WebP a 750 px | Polígonos a mano sobre el hero, o gratis si ya está la etapa 4 | Nada |
+| 2 · Día/noche | **+0 KB** si sale del volumen · +0,7 MB si va compuesto | ~30 líneas | Nada, si va por el volumen |
 | 3 · Nubes y parallax | +1,5 a 2,5 MB (los PNG con alfa pesan más que el JPG) | 2-3 h de recorte + ~50 líneas | Nada |
-| 4 · Giro con video | **+0,76 MB** | — | 60-120 cuadros del arquitecto |
-| 5 · 3D real | +3,54 MB el GLB, +285 KB el visor | — | El modelo 3D |
-| 6 · Recorrido 360 | +1,02 MB la primera vista, con teselas | — | Las panorámicas |
+| 4 · El volumen en código | **+230 a 328 KB** (el runtime; la geometría no se descarga) | La más larga: días, no horas | Nada |
+| 4b · Giro con video | +0,76 MB | — | Depende de la 4 |
+| 5 · Recorrido 360 | +1,02 MB la primera vista, con teselas | — | Las panorámicas, que no existen |
 
 **Contra el presupuesto**: los USD 300 aprobados cubren el sitio que ya está publicado. Todo esto
 es alcance nuevo y se cotiza aparte. La referencia de mercado es Winbuild: **USD 3.000 a 5.000 de
@@ -298,9 +405,10 @@ pesa 97 MB y **no tiene día/noche**.
 
 ## Dos cosas sueltas que aparecieron y conviene anotar
 
-- **La lámina de Tipología 1 dice «Kichenette»**, con la falta de ortografía quemada adentro del
-  JPG del brochure. En el código está bien escrito. Se corrige pidiéndole la lámina de nuevo a
-  quien la armó.
+- **La lámina de Tipología 1 dice «Kichenette»** en el listado de ambientes del panel izquierdo,
+  con la falta quemada adentro del JPG. El plano de al lado, en la misma lámina, dice
+  «KITCHENETTE» bien. En nuestro código también está bien escrito. Se corrige pidiéndole la
+  lámina de nuevo a quien la armó, o tapando esa línea.
 - **Las láminas de tipología traen un inserto chiquito** que dice «Ubicación en planta: Torre
   Norte / Planta 6» y muestra la planta completa del nivel con las dos torres. Ese inserto es
   justo el activo que hace falta para el explorador de planta, y ya lo tenemos.
@@ -320,3 +428,25 @@ mitad** por el límite semanal de la cuenta. Los hallazgos de arriba llevan su f
 números; los que dicen «no verificado» son los que no se pudieron confirmar de primera mano, y son
 exactamente dos: el precio de Higgsfield y el de Kuula, los dos porque publican los montos por
 JavaScript.
+
+---
+
+## Post scriptum del 2/9: por qué este documento cambió de rumbo a mitad de camino
+
+La primera versión daba por sentado que el arquitecto tenía el modelo y mandaba a pedirle cinco
+archivos. Cuando David confirmó que **no hay modelo ni vista de arriba**, se revisó el material de
+nuevo y aparecieron tres cosas que estaban a la vista y nadie había mirado:
+
+1. **El corte del conjunto**, en el panel derecho de `esquema-torres.jpg`, con las dos torres
+   nombradas, el núcleo de escalera y los seis niveles.
+2. **La planta completa del nivel**, en el inserto de las cuatro láminas de tipología.
+3. **Los 37 m² y la rosa de los vientos**, que son la escala y la orientación.
+
+Con plano, corte, escala y norte no hace falta reconstruir nada de los renders: **se modela**. Y
+modelar en código lo que es una pila de cajas resuelve de un saque el giro, la cámara, la vista de
+arriba, el piso por piso y el día/noche — que eran cinco pedidos separados y resultaron ser uno.
+
+La moraleja, para la próxima: **antes de buscar la herramienta, leer el material.** El
+relevamiento de las cinco familias de técnica costó 66 agentes y cinco millones de tokens, y la
+decisión la definió mirar con atención dos imágenes que ya estaban en el repo.
+
