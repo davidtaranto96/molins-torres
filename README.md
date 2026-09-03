@@ -48,12 +48,20 @@ Lo que quedó, y lo que hay que saber para no repetirlo:
 
 ## Qué hay acá
 
-`index.html` es la **v1 que ya está andando**, con seis secciones: unidades,
-tipologías, calculadora, avance de obra, ubicación y contacto. No es un
-borrador: funciona y se puede visitar. Sirve como punto de partida del rediseño
-y como prueba de que la estructura cierra.
+Desde el **3/9** el sitio es la portada nueva, la que replica la mecánica de
+belgradearbor.rs con la identidad de La Torre. La v1 (unidades, tipologías,
+calculadora, avance, ubicación, contacto) quedó en el historial: último commit
+con ella, `e950698`.
 
-`img/` tiene los 16 renders en JPG que el sitio usa.
+| Archivo | Qué es |
+|---|---|
+| `index.html` | La portada. Todo el texto visible sale del diccionario de `app.js` (ES/EN/PT), nunca del HTML. |
+| `estilos.css` | Tokens en `:root`, mobile first. |
+| `app.js` | Diccionario, el hero (boceto → arcilla → render, calculado en la página a partir de `img/hero-cover.jpg`), Lenis y GSAP, tipologías, unidades y la ficha, las partidas, el marco de ambientes, el 3D, el CRM y las cookies. |
+| `3d/index.html` | El volumen del edificio en three.js, con el recorrido del sol en Salta y la transición día/noche. Se carga sólo cuando se pide. |
+| `sellar.sh` | Versiona el CSS y el JS en el HTML. **Correrlo antes de cada commit que los toque**, o el navegador sirve el CSS viejo con el HTML nuevo. |
+| `laboratorio/` | Sólo redirecciones: las URL donde vivió el prototipo mandan a `/` y a `/3d/`. |
+| `img/` | Los renders en JPG que el sitio usa. |
 
 **Los PNG originales (97 MB) están fuera del repo a propósito** — ver
 `.gitignore`. El HTML no referencia ninguno, y meterlos multiplicaría por cinco
@@ -100,7 +108,7 @@ código de campaña. Es el mismo mecanismo del portal de Molins y de la web de
 Aires: la consulta entra ya sabiendo de qué anuncio salió y qué unidad miraba.
 
 **Cada sitio necesita su propia clave**, que se crea en el CRM desde
-Carteras → Claves de sitio. La de Torre ya existe y está puesta en `src/app.js`.
+Carteras → Claves de sitio. La de Torre ya existe y está puesta en `app.js`.
 
 **Trampa verificada el 2/9**: los esquemas de esas rutas son objetos de Zod, y
 Zod tira en silencio lo que no declara. `clic()` mandaba `tipo:"visita"` —que no

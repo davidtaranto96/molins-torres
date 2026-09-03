@@ -22,7 +22,7 @@
     cartera: "torre",
     whatsapp: "5493874153669",
     campaniaPorDefecto: "organico",
-    tresd: "../volumen.html",
+    tresd: "3d/",
   }, window.TORRE_CONFIG || {});
 
   const RESPALDO = [
@@ -40,10 +40,10 @@
     { id:"1B", piso:1, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
   ];
   const TIPOS = [
-    { clave:"horizonte", nombre:"Horizonte", lamina:"../../img/plano-tipologia-1-horizonte.jpg", render:"../../img/render-tipologia-1.jpg", foto:"../../img/area-dormitorio.jpg" },
-    { clave:"evolucion", nombre:"Evolución", lamina:"../../img/plano-tipologia-2-evolucion.jpg", render:"../../img/render-tipologia-2.jpg", foto:"../../img/area-terraza.jpg" },
-    { clave:"esencia",   nombre:"Esencia",   lamina:"../../img/plano-tipologia-3-esencia.jpg",   render:"../../img/render-tipologia-3.jpg", foto:"../../img/area-suite.jpg" },
-    { clave:"cuspide",   nombre:"Cúspide",   lamina:"../../img/plano-tipologia-4-cuspide.jpg",   render:"../../img/render-tipologia-4.jpg", foto:"../../img/area-estar.jpg" },
+    { clave:"horizonte", nombre:"Horizonte", lamina:"img/plano-tipologia-1-horizonte.jpg", render:"img/render-tipologia-1.jpg", foto:"img/area-dormitorio.jpg" },
+    { clave:"evolucion", nombre:"Evolución", lamina:"img/plano-tipologia-2-evolucion.jpg", render:"img/render-tipologia-2.jpg", foto:"img/area-terraza.jpg" },
+    { clave:"esencia",   nombre:"Esencia",   lamina:"img/plano-tipologia-3-esencia.jpg",   render:"img/render-tipologia-3.jpg", foto:"img/area-suite.jpg" },
+    { clave:"cuspide",   nombre:"Cúspide",   lamina:"img/plano-tipologia-4-cuspide.jpg",   render:"img/render-tipologia-4.jpg", foto:"img/area-estar.jpg" },
   ];
   let UNIDADES = RESPALDO.slice();
   const $ = (s, r = document) => r.querySelector(s);
