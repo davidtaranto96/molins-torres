@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilos.css?v=202609031429">
+<link rel="stylesheet" href="estilos.css?v=202609031433">
 </head>
 <body data-idioma="es">
 
@@ -46,24 +46,38 @@
   <div class="intro-marca">LA TORRE</div>
 </div>
 
-<header class="cab">
-  <a href="#inicio" class="cab-marca" data-t="marca">LA TORRE</a>
-  <nav class="cab-nav" aria-label="Secciones">
-    <a href="#diseno" data-t="nav.diseno"></a>
-    <a href="#tipologias" data-t="nav.tipologias"></a>
-    <a href="#unidades" data-t="nav.unidades"></a>
-    <a href="#tresd" data-t="nav.tresd"></a>
-    <a href="#ubicacion" data-t="nav.ubicacion"></a>
-    <a href="#contacto" data-t="nav.contacto"></a>
-  </nav>
-  <div class="cab-der">
-    <div class="idiomas" role="group" aria-label="Idioma">
-      <button type="button" data-idioma-btn="es" aria-pressed="true">ES</button>
-      <button type="button" data-idioma-btn="en" aria-pressed="false" hidden>EN</button>
-      <button type="button" data-idioma-btn="pt" aria-pressed="false" hidden>PT</button>
+<div class="cab-fondo" id="cab-fondo"></div>
+<header class="cab" id="cab">
+  <div class="cab-caja">
+    <div class="cab-barra">
+      <button type="button" class="cab-menu" id="cab-menu" aria-expanded="false" aria-controls="cab-panel">
+        <span class="cab-lineas" aria-hidden="true"><i></i><i></i></span>
+        <span class="cab-menu-t" id="cab-menu-t"></span>
+      </button>
+      <a href="#inicio" class="cab-marca" data-t="marca">LA TORRE</a>
+      <a href="#contacto" class="cab-cta"><span data-t="cta.consultarCorto"></span><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 5h20M16 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></a>
     </div>
-    <a href="#unidades" class="boton boton-lleno cab-cta" data-t="cta.elegir"></a>
-    <button class="hamb" type="button" aria-expanded="false" aria-label="Abrir el menú"><span></span><span></span></button>
+    <div class="cab-panel" id="cab-panel">
+      <div class="cab-panel-int">
+        <p class="cab-nombre">Edificio<br>La Torre</p>
+        <nav class="cab-lista" aria-label="Secciones">
+          <a href="#inicio" data-t="nav.inicio"></a>
+          <a href="#diseno" data-t="nav.diseno"></a>
+          <a href="#tipologias" data-t="nav.tipologias"></a>
+          <a href="#unidades" data-t="nav.unidades"></a>
+          <a href="#vida" data-t="nav.espacios"></a>
+          <a href="#tresd" data-t="nav.tresd"></a>
+          <a href="#ubicacion" data-t="nav.ubicacion"></a>
+          <a href="#plan" data-t="nav.plan"></a>
+          <a href="#contacto" data-t="nav.contacto"></a>
+        </nav>
+        <div class="idiomas" role="group" aria-label="Idioma">
+          <button type="button" data-idioma-btn="es" aria-pressed="true">ES</button>
+          <button type="button" data-idioma-btn="en" aria-pressed="false" hidden>EN</button>
+          <button type="button" data-idioma-btn="pt" aria-pressed="false" hidden>PT</button>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -366,6 +380,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
-<script src="app.js?v=202609031429"></script>
+<script src="app.js?v=202609031433"></script>
 </body>
 </html>

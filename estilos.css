@@ -58,29 +58,42 @@ button,input,select,textarea{font:inherit}
 .intro-num{font-family:var(--serif);font-weight:300;font-size:clamp(52px,10vw,120px);line-height:1;font-variant-numeric:tabular-nums}
 .intro-marca{position:absolute;bottom:32px;left:0;right:0;text-align:center;font-family:var(--serif);letter-spacing:.34em;font-size:14px;color:rgba(243,234,218,.6)}
 
-/* ── cabecera ── */
-/* La barra arranca en tinta porque el hero arranca claro (el boceto sobre
-   crema); pasa a crema cuando el render oscuro está a la vista, y vuelve a
-   tinta cuando se vuelve sólida al dejar el hero. En la primera captura era
-   crema sobre crema: invisible. */
-.cab{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--lado);color:var(--tinta);transition:background .3s ease,color .3s ease,box-shadow .3s ease}
-/* la cabecera pisa la franja de papel del hero: se queda en tinta siempre */
-.cab.solida{background:rgba(251,249,246,.9);backdrop-filter:blur(10px);color:var(--tinta);box-shadow:0 1px 0 rgba(41,33,26,.08)}
-.cab-marca{font-family:var(--serif);letter-spacing:.34em;font-size:16px;text-decoration:none;color:inherit}
-.cab-nav{display:none;gap:22px}
-.cab-nav a{color:inherit;text-decoration:none;font-size:13.5px;letter-spacing:.03em;opacity:.85;transition:opacity .18s;display:inline-flex;align-items:center;min-height:44px}
-.cab-nav a:hover{opacity:1}
-.cab-der{display:flex;align-items:center;gap:12px}
-.cab-cta{display:none;min-height:40px;padding:0 16px;font-size:13.5px}
-.idiomas{display:flex;gap:2px}
-.idiomas button{background:none;border:1px solid transparent;color:inherit;opacity:.65;font-size:12px;letter-spacing:.06em;padding:0 9px;border-radius:3px;cursor:pointer;min-height:44px;min-width:44px}
-.idiomas button[aria-pressed=true]{opacity:1;border-color:currentColor}
-.hamb{width:44px;height:44px;background:none;border:1px solid currentColor;border-radius:4px;color:inherit;cursor:pointer;display:grid;place-items:center;gap:5px;padding:0}
-.hamb span{display:block;width:18px;height:1.5px;background:currentColor;transition:transform .25s}
-@media (min-width:900px){.cab-nav{display:flex}.cab-cta{display:inline-flex}.hamb{display:none}}
-body.menu-abierto .cab-nav{display:flex;position:fixed;inset:64px 0 0;background:var(--tinta-oscura);flex-direction:column;padding:32px var(--lado);gap:8px}
-body.menu-abierto .cab-nav a{font-family:var(--serif);font-size:30px;color:var(--crema);padding:10px 0}
-body.menu-abierto .cab{color:var(--crema);background:var(--tinta-oscura)}
+[id]{scroll-margin-top:92px}   /* la barra flotante tapa 76 px; sin Lenis los anclajes paran debajo */
+/* ── cabecera: la barra flotante que se abre en la tarjeta del menú ──
+   Una píldora oscura despegada de los bordes, con MENÚ y dos líneas a la
+   izquierda, la marca al centro y CONSULTAR a la derecha. Al abrir, la misma
+   píldora crece hacia abajo (grid-template-rows 0fr → 1fr, sin medir alturas)
+   y deja ver el nombre en serif, la lista de secciones y los idiomas. */
+.cab{position:fixed;top:12px;left:12px;right:12px;z-index:60;display:flex;justify-content:center;pointer-events:none}
+.cab-caja{pointer-events:auto;width:min(100%,1180px);max-height:calc(100svh - 24px);display:flex;flex-direction:column;overflow:hidden;background:var(--tinta-oscura);color:var(--crema);border-radius:40px;box-shadow:0 10px 40px rgba(18,12,9,.16);transition:border-radius .5s var(--curva)}
+.cab.abierta .cab-caja{border-radius:26px}
+.cab-barra{flex:0 0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:64px;padding:0 10px 0 6px}
+.cab-menu{justify-self:start;display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;background:none;border:0;color:inherit;cursor:pointer;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase}
+.cab-lineas{position:relative;width:36px;height:12px;display:block}
+.cab-lineas i{position:absolute;left:0;right:0;height:1px;background:var(--terracota-claro);transition:transform .4s var(--curva),top .4s var(--curva)}
+.cab-lineas i:first-child{top:2px}.cab-lineas i:last-child{top:9px}
+.cab.abierta .cab-lineas i{top:5.5px}.cab.abierta .cab-lineas i:first-child{transform:rotate(16deg)}.cab.abierta .cab-lineas i:last-child{transform:rotate(-16deg)}
+.cab-marca{font-family:var(--serif);letter-spacing:.34em;font-size:15px;text-decoration:none;color:inherit;padding:0 8px}
+.cab-cta{justify-self:end;display:inline-flex;align-items:center;gap:14px;min-height:44px;padding:0 18px;border:1px solid rgba(243,234,218,.38);border-radius:999px;color:inherit;text-decoration:none;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;transition:border-color .2s,background .2s}
+.cab-cta:hover{border-color:var(--crema);background:rgba(243,234,218,.08)}
+.cab-cta svg{transition:transform .3s var(--curva)}.cab-cta:hover svg{transform:translateX(4px)}
+.cab-panel{display:grid;grid-template-rows:0fr;min-height:0;transition:grid-template-rows .65s var(--curva)}
+.cab.abierta .cab-panel{grid-template-rows:1fr}
+.cab-panel-int{min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 var(--lado)}
+.cab-panel-int>*{opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .5s var(--curva)}
+.cab.abierta .cab-panel-int>*{opacity:1;transform:none}
+.cab.abierta .cab-nombre{transition-delay:.18s}.cab.abierta .cab-lista{transition-delay:.28s}.cab.abierta .idiomas{transition-delay:.42s}
+.cab-nombre{margin:22px 0 22px;font-family:var(--serif);font-weight:500;font-size:clamp(34px,5vw,54px);line-height:1;color:var(--terracota-claro)}
+.cab-lista{display:flex;flex-direction:column}
+.cab-lista a{font-family:var(--serif);font-weight:300;font-size:clamp(26px,3.6vw,42px);line-height:1.5;white-space:nowrap;color:rgba(243,234,218,.86);text-decoration:none;transition:color .2s}
+.cab-lista a:hover{color:var(--crema)}
+.idiomas{display:flex;gap:4px;margin:24px 0 20px}
+.idiomas button{background:none;border:0;color:inherit;opacity:.5;font-size:12.5px;letter-spacing:.16em;padding:0 10px;cursor:pointer;min-height:44px;min-width:44px}
+.idiomas button[aria-pressed=true]{opacity:1}
+.cab-fondo{position:fixed;inset:0;z-index:59;background:rgba(18,12,9,.28);opacity:0;pointer-events:none;transition:opacity .4s ease}
+body.menu-abierto .cab-fondo{opacity:1;pointer-events:auto}
+@media (max-width:640px){.cab{top:8px;left:8px;right:8px}.cab-menu-t{display:none}.cab-cta svg{display:none}.cab-cta{padding:0 14px;font-size:11.5px}.cab-marca{font-size:13px;letter-spacing:.26em}}
+@media (prefers-reduced-motion:reduce){.cab-caja,.cab-panel,.cab-panel-int>*,.cab-lineas i{transition:none}}
 
 /* ── hero: del boceto al render, en cinco etapas, sin scroll ── */
 .hero{height:100svh;position:relative;background:var(--crema);overflow:hidden}

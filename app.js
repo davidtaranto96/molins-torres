@@ -53,6 +53,12 @@
   /* ── 2 · el diccionario ────────────────────────────────────────────────── */
   const DICC = {
     es: {
+      "nav.inicio": "Inicio",
+      "nav.espacios": "Espacios",
+      "nav.plan": "Plan de pago",
+      "nav.menu": "Menú",
+      "nav.cerrar": "Cerrar",
+      "cta.consultarCorto": "Consultar",
       "espacios.rotulo": "Los espacios",
       "espacios.titulo": "Lo que se comparte, y lo que es sólo tuyo",
       "espacios.i1": "Acceso por Aniceto Latorre, iluminado y con verde",
@@ -157,6 +163,12 @@
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
     },
     en: {
+      "nav.inicio": "Home",
+      "nav.espacios": "Spaces",
+      "nav.plan": "Payment plan",
+      "nav.menu": "Menu",
+      "nav.cerrar": "Close",
+      "cta.consultarCorto": "Inquire",
       "espacios.rotulo": "The spaces",
       "espacios.titulo": "What is shared, and what is only yours",
       "espacios.i1": "Entrance on Aniceto Latorre, lit and planted",
@@ -319,6 +331,12 @@
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
     },
     pt: {
+      "nav.inicio": "Início",
+      "nav.espacios": "Espaços",
+      "nav.plan": "Plano de pagamento",
+      "nav.menu": "Menu",
+      "nav.cerrar": "Fechar",
+      "cta.consultarCorto": "Consultar",
       "espacios.rotulo": "Os espaços",
       "espacios.titulo": "O que se compartilha, e o que é só seu",
       "espacios.i1": "Acesso pela Aniceto Latorre, iluminado e com verde",
@@ -495,6 +513,7 @@
     document.documentElement.lang = idioma;
     document.body.dataset.idioma = idioma;
     $$("[data-idioma-btn]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.idiomaBtn === idioma ? "true" : "false"));
+    if ($("#cab-menu-t")) $("#cab-menu-t").textContent = t(document.body.classList.contains("menu-abierto") ? "nav.cerrar" : "nav.menu");
     pintarTipologia(tipoActiva);
     pintarUnidades();
     pintarAB(abActivo);
@@ -525,13 +544,19 @@
   if (heroImg.complete && heroImg.naturalWidth) terminarIntro(); else heroImg.addEventListener("load", terminarIntro);
   setTimeout(terminarIntro, 4000);   // pase lo que pase, no se queda clavada
 
-  const cab = $(".cab"), hamb = $(".hamb");
-  hamb.addEventListener("click", () => {
-    const abierto = document.body.classList.toggle("menu-abierto");
-    hamb.setAttribute("aria-expanded", abierto ? "true" : "false");
-  });
-  $$(".cab-nav a").forEach((a) => a.addEventListener("click", () => { document.body.classList.remove("menu-abierto"); hamb.setAttribute("aria-expanded", "false"); }));
-  addEventListener("keydown", (e) => { if (e.key === "Escape") { document.body.classList.remove("menu-abierto"); hamb.setAttribute("aria-expanded", "false"); } });
+  const cab = $(".cab"), menuBtn = $("#cab-menu");
+  const menuAbierto = () => cab.classList.contains("abierta");
+  function abrirMenu(si) {
+    cab.classList.toggle("abierta", si); document.body.classList.toggle("menu-abierto", si);
+    menuBtn.setAttribute("aria-expanded", si ? "true" : "false");
+    $("#cab-menu-t").textContent = t(si ? "nav.cerrar" : "nav.menu");
+    if (lenis) { if (si) lenis.stop(); else lenis.start(); }
+  }
+  menuBtn.addEventListener("click", () => abrirMenu(!menuAbierto()));
+  $("#cab-fondo").addEventListener("click", () => abrirMenu(false));
+  $$(".cab-lista a, .cab-marca, .cab-cta").forEach((a) => a.addEventListener("click", () => { if (menuAbierto()) abrirMenu(false); }));
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && menuAbierto()) abrirMenu(false); });
+  document.addEventListener("idioma-pintado", () => { $("#cab-menu-t").textContent = t(menuAbierto() ? "nav.cerrar" : "nav.menu"); });
 
   /* ── 5 · el hero: las líneas se trazan hasta formar la torre ───────────── */
   /* Leído cuadro por cuadro del video de la referencia y de la grabación de
@@ -1043,7 +1068,7 @@
       // los anclas del menú pasan por Lenis, si no saltan sin animar
       $$('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
         const el = $(a.getAttribute("href")); if (!el) return;
-        e.preventDefault(); lenis.scrollTo(el, { offset: -72 });
+        e.preventDefault(); lenis.scrollTo(el, { offset: -92 });
       }));
     }
 
@@ -1079,9 +1104,6 @@
       gsap.fromTo(img, { yPercent: -6 }, { yPercent: 6, ease: "none", scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true } });
     });
 
-    // la cabecera se vuelve sólida al dejar el hero
-    ScrollTrigger.create({ start: "top -60", onUpdate: (st) => cab.classList.toggle("solida", st.scroll() > 60) });
-    ScrollTrigger.create({ trigger: "#inicio", start: "bottom 70%", onEnter: () => cab.classList.add("solida"), onLeaveBack: () => cab.classList.remove("solida") });
 
     // la burbuja de WhatsApp se esconde donde ya hay un botón grande
     ScrollTrigger.create({ trigger: "#contacto", start: "top 65%", end: "bottom top", onToggle: (st) => document.body.classList.toggle("en-contacto", st.isActive) });
@@ -1216,7 +1238,7 @@
   }
 
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -72 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
+  function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -92 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
 
   // el estado real, del CRM; si no contesta, queda el respaldo
   fetch(CFG.crm + "/api/publico/propiedades?cartera=" + encodeURIComponent(CFG.cartera), { headers: { Accept: "application/json" } })
