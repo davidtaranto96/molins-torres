@@ -205,6 +205,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 /* ══════════════════════════════════════════════════════════════════════════
    1 · LAS MEDIDAS
@@ -314,6 +319,20 @@ uCielo.rayleigh.value = 2.4;
 uCielo.mieCoefficient.value = 0.006;
 uCielo.mieDirectionalG.value = 0.82;
 
+// El entorno para los reflejos se calcula del propio cielo, así cambia con la
+// hora. Es lo que en la referencia hacen con un HDR de 1 a 2 MB por momento
+// del día; acá no se descarga nada.
+const pmrem = new THREE.PMREMGenerator(render);
+const escenaCielo = new THREE.Scene();
+let entornoRT = null;
+function actualizarEntorno() {
+  escenaCielo.add(cielo);
+  if (entornoRT) entornoRT.dispose();
+  entornoRT = pmrem.fromScene(escenaCielo, 0.04);
+  escena.add(cielo);
+  escena.environment = entornoRT.texture;
+}
+
 const sol = new THREE.DirectionalLight(0xffffff, 3);
 sol.castShadow = true;
 sol.shadow.camera.near = 1;
@@ -323,6 +342,7 @@ Object.assign(sol.shadow.camera, { left:-d, right:d, top:d, bottom:-d });
 sol.shadow.bias = -0.0002;
 sol.shadow.normalBias = 0.14;   // sin esto las caras verticales al sol salen punteadas
 sol.shadow.mapSize.set(4096, 4096);
+sol.shadow.radius = 3;
 escena.add(sol);
 
 const AMB_DIA = new THREE.Color(0xbfd4e8), AMB_NOCHE = new THREE.Color(0x2f4468);
@@ -340,7 +360,7 @@ escena.add(ciudad);
 // lo que hace todo estudio de archviz para que la cara en contraluz no quede
 // como una silueta. No es trampa: es lo que hace el rebote del pavimento y de
 // las medianeras de enfrente, que no estamos calculando.
-const relleno = new THREE.DirectionalLight(0xdfe7ef, 0.85);
+const relleno = new THREE.DirectionalLight(0xdfe7ef, 0.45);
 escena.add(relleno);
 
 const luna = new THREE.Mesh(
@@ -375,6 +395,7 @@ function posicionDelSol(minutos) {
 }
 
 let ventanasEncendidas = 0;   // 0 de día, 1 de noche
+let entornoPendiente = true;  // el PMREM se recalcula una vez por cambio de hora, no por cuadro
 
 function aplicarHora(minutos) {
   const v = posicionDelSol(minutos);
@@ -409,6 +430,10 @@ function aplicarHora(minutos) {
 
   ventanasEncendidas = 1 - dia;
   prenderVentanas();
+  // Medido: con 0,25 + 0,75·día el revoque se lavaba a blanco puro. El cielo
+  // de Sky.js sale en valores altos, así que el entorno va muy bajo.
+  escena.environmentIntensity = 0.05 + 0.16 * dia;
+  entornoPendiente = true;
   // Medido: con exposición 0,72 el hormigón claro (0xbdb4a8) salía gris
   // oscuro. ACES come medio tono, así que el rango útil arranca cerca de 1.
   render.toneMappingExposure = 0.92 + 0.34 * dia;
@@ -437,24 +462,120 @@ function prenderVentanas() {
    peor que uno que se asume esquema: se lee como render berreta. Los colores
    salen de los tokens del sitio.
    ══════════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   4b · LAS TEXTURAS, DIBUJADAS ACÁ MISMO
+
+   Nada se descarga. El ladrillo, el hormigón, el revoque y la madera se
+   dibujan en un canvas al arrancar y se usan como textura. Es lo que hace que
+   un pilar deje de ser una caja naranja y pase a ser ladrillo visto — y cuesta
+   cero bytes de red. La referencia de Belgrado baja 32 MB de GLB para esto.
+   ══════════════════════════════════════════════════════════════════════════ */
+function lienzo(px, dibujar) {
+  const c = document.createElement('canvas'); c.width = c.height = px;
+  dibujar(c.getContext('2d'), px);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+const azar = (n) => { let x = Math.sin(n * 9301 + 49297) * 233280; return x - Math.floor(x); }; // repetible
+
+const texLadrillo = lienzo(512, (g, px) => {
+  g.fillStyle = '#b9aea2'; g.fillRect(0, 0, px, px);            // la junta
+  const alto = 32, largo = 108, junta = 5;
+  for (let f = 0, y = 0; y < px; y += alto, f++) {
+    const corr = (f % 2) * largo / 2;
+    for (let x = -largo; x < px + largo; x += largo) {
+      const k = azar(f * 31 + x);
+      const r = 150 + k * 40, gg = 76 + k * 22, b = 54 + k * 16;
+      g.fillStyle = `rgb(${r|0},${gg|0},${b|0})`;
+      g.fillRect(x + corr + junta / 2, y + junta / 2, largo - junta, alto - junta);
+      // el grano del ladrillo
+      g.fillStyle = 'rgba(0,0,0,0.07)';
+      for (let i = 0; i < 6; i++) g.fillRect(x + corr + junta + azar(k * 97 + i) * (largo - 12), y + junta + azar(k * 13 + i) * (alto - 10), 6, 2);
+    }
+  }
+});
+const texLadrilloBump = lienzo(512, (g, px) => {
+  g.fillStyle = '#404040'; g.fillRect(0, 0, px, px);
+  const alto = 32, largo = 108, junta = 5;
+  for (let f = 0, y = 0; y < px; y += alto, f++) {
+    const corr = (f % 2) * largo / 2;
+    for (let x = -largo; x < px + largo; x += largo) {
+      g.fillStyle = '#c8c8c8';
+      g.fillRect(x + corr + junta / 2, y + junta / 2, largo - junta, alto - junta);
+    }
+  }
+});
+texLadrilloBump.colorSpace = THREE.NoColorSpace;
+
+const texHormigon = lienzo(512, (g, px) => {
+  g.fillStyle = '#a7a29a'; g.fillRect(0, 0, px, px);
+  for (let i = 0; i < 9000; i++) {
+    const v = 140 + azar(i) * 60;
+    g.fillStyle = `rgba(${v},${v - 4},${v - 9},${0.18 + azar(i * 3) * 0.2})`;
+    g.fillRect(azar(i * 7) * px, azar(i * 11) * px, 1 + azar(i * 5) * 3, 1 + azar(i * 5) * 3);
+  }
+  // las marcas del encofrado
+  g.strokeStyle = 'rgba(70,65,60,0.35)'; g.lineWidth = 2;
+  for (let y = 0; y < px; y += 128) { g.beginPath(); g.moveTo(0, y); g.lineTo(px, y); g.stroke(); }
+  g.fillStyle = 'rgba(60,55,50,0.5)';
+  for (let y = 24; y < px; y += 128) for (let x = 40; x < px; x += 128) { g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); }
+});
+
+const texRevoque = lienzo(256, (g, px) => {
+  g.fillStyle = '#cbc4b6'; g.fillRect(0, 0, px, px);
+  for (let i = 0; i < 4000; i++) {
+    const v = 190 + azar(i * 2) * 30;
+    g.fillStyle = `rgba(${v},${v - 5},${v - 14},0.35)`;
+    g.fillRect(azar(i * 7) * px, azar(i * 11) * px, 1, 1);
+  }
+});
+
+const texMadera = lienzo(256, (g, px) => {
+  g.fillStyle = '#4a3b2d'; g.fillRect(0, 0, px, px);
+  for (let x = 0; x < px; x += 2) {
+    const v = 55 + Math.sin(x * 0.35) * 12 + azar(x) * 14;
+    g.fillStyle = `rgb(${v + 20},${v + 4},${v - 10})`;
+    g.fillRect(x, 0, 2, px);
+  }
+});
+
+const texAsfalto = lienzo(256, (g, px) => {
+  g.fillStyle = '#5c5a56'; g.fillRect(0, 0, px, px);
+  for (let i = 0; i < 6000; i++) {
+    const v = 70 + azar(i * 4) * 40;
+    g.fillStyle = `rgba(${v},${v},${v - 3},0.5)`;
+    g.fillRect(azar(i * 7) * px, azar(i * 11) * px, 1, 1);
+  }
+});
+
+/* la repetición depende del tamaño de cada caja: un ladrillo mide lo que mide */
+function conRepeticion(tex, ancho, alto) {
+  const t = tex.clone(); t.needsUpdate = true;
+  t.repeat.set(Math.max(1, ancho / 1.1), Math.max(1, alto / 1.1));
+  return t;
+}
+
 const mat = {
   // Leídos del render de portada: hormigón visto gris, ladrillo terracota
   // apagado, metal negro, listones oscuros, revoque crema en la cara larga.
-  hormigon: new THREE.MeshStandardMaterial({ color:0xa9a49c, roughness:0.9 }),
-  losa:     new THREE.MeshStandardMaterial({ color:0x9a958e, roughness:0.88 }),
-  ladrillo: new THREE.MeshStandardMaterial({ color:0xa5563c, roughness:0.95 }),
-  revoque:  new THREE.MeshStandardMaterial({ color:0xcbc4b6, roughness:0.92 }),
-  nucleo:   new THREE.MeshStandardMaterial({ color:0x9d9891, roughness:0.85 }),
+  hormigon: new THREE.MeshStandardMaterial({ map:conRepeticion(texHormigon, 3, 3), roughness:0.9 }),
+  losa:     new THREE.MeshStandardMaterial({ map:conRepeticion(texHormigon, 4, 1), color:0xd9d4cc, roughness:0.88 }),
+  ladrillo: new THREE.MeshStandardMaterial({ map:conRepeticion(texLadrillo, 1, 22), bumpMap:conRepeticion(texLadrilloBump, 1, 22), bumpScale:0.6, roughness:0.95 }),
+  revoque:  new THREE.MeshStandardMaterial({ map:conRepeticion(texRevoque, 2, 1), roughness:0.92 }),
+  nucleo:   new THREE.MeshStandardMaterial({ map:conRepeticion(texHormigon, 2, 8), color:0xbdb8b0, roughness:0.85 }),
   metal:    new THREE.MeshStandardMaterial({ color:0x2b2926, roughness:0.5, metalness:0.35 }),
-  liston:   new THREE.MeshStandardMaterial({ color:0x3a332c, roughness:0.62 }),
-  madera:   new THREE.MeshStandardMaterial({ color:0x8a5a34, roughness:0.7 }),
+  liston:   new THREE.MeshStandardMaterial({ map:conRepeticion(texMadera, 1, 6), roughness:0.62 }),
+  madera:   new THREE.MeshStandardMaterial({ map:conRepeticion(texMadera, 1, 1), color:0xd9a06a, roughness:0.7 }),
   planta:   new THREE.MeshStandardMaterial({ color:0x4f7a3a, roughness:1 }),
   sombraPB: new THREE.MeshStandardMaterial({ color:0x1c1815, roughness:1 }),
-  vidrio:   new THREE.MeshStandardMaterial({ color:0x8aa3b2, roughness:0.07, metalness:0.25,
-              transparent:true, opacity:0.9 }),
+  vidrio:   new THREE.MeshStandardMaterial({ color:0x8aa3b2, roughness:0.05, metalness:0.6,
+              transparent:true, opacity:0.9, envMapIntensity:1.4 }),
   carpinteria: new THREE.MeshStandardMaterial({ color:0x2b2926, roughness:0.55 }),
   medianera:new THREE.MeshStandardMaterial({ color:0xcfc9c0, roughness:0.95 }),
-  suelo:    new THREE.MeshStandardMaterial({ color:0x8a857c, roughness:0.98 }),
+  suelo:    new THREE.MeshStandardMaterial({ map:conRepeticion(texAsfalto, 60, 60), roughness:0.98 }),
   vereda:   new THREE.MeshStandardMaterial({ color:0xa8a29a, roughness:0.95 }),
 };
 
@@ -466,7 +587,7 @@ function materialVentana() {
   // leían como agujeros negros en la fachada, no como ventanas. Un vidrio real
   // devuelve el cielo, así que va gris azulado y poco rugoso.
   return new THREE.MeshStandardMaterial({
-    color:0x8aa3b2, roughness:0.07, metalness:0.25,
+    color:0x8aa3b2, roughness:0.05, metalness:0.6, envMapIntensity:1.4,
     emissive:new THREE.Color(0xffb457), emissiveIntensity:0,
   });
 }
@@ -533,6 +654,39 @@ edificio.add(caja(30, 0.14, 7, mat.vereda, 0, 0.001, -(LARGO_TOTAL / 2 + 3.5), f
 });
 edificio.add(caja(M.frente + 4, 3.1, 6, mat.medianera, 0, 0, LARGO_TOTAL / 2 + 3));
 
+/* ── la calle: cordón, asfalto y los árboles de vereda que están en el hero ── */
+{
+  const zCalle = -(LARGO_TOTAL / 2 + 3.5);
+  edificio.add(caja(30, 0.16, 0.3, mat.losa, 0, 0, zCalle - 3.4, false));   // el cordón
+  const arbol = (x, z, alto) => {
+    const g = new THREE.Group();
+    const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.16, alto, 7), mat.liston);
+    tronco.position.y = alto / 2; tronco.castShadow = true; g.add(tronco);
+    [[0, alto, 1.35], [0.6, alto - 0.4, 0.95], [-0.55, alto - 0.3, 0.9], [0.1, alto + 0.7, 0.85]].forEach(([dx, dy, r]) => {
+      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 1), new THREE.MeshStandardMaterial({ color:0x4b7a35, roughness:1, flatShading:true }));
+      c.position.set(dx, dy, dx * 0.4); c.castShadow = true; g.add(c);
+    });
+    g.position.set(x, 0, z);
+    return g;
+  };
+  edificio.add(arbol(-5.6, zCalle - 1.2, 3.4));
+  edificio.add(arbol(6.2, zCalle - 1.0, 3.8));
+  edificio.add(arbol(13.5, zCalle - 1.3, 3.2));
+  // una farola
+  const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 5.2, 6), mat.metal);
+  poste.position.set(-2.4, 2.6, zCalle - 2.6); poste.castShadow = true; edificio.add(poste);
+  const lampara = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.14, 0.24), new THREE.MeshStandardMaterial({ color:0x333, emissive:0xffd08a, emissiveIntensity:0 }));
+  lampara.position.set(-2.2, 5.2, zCalle - 2.6); edificio.add(lampara);
+  ventanas.push({ mat:lampara.material, orden:-2, brillo:2.2 });
+  // los autos de la cochera se ven desde la calle: dos siluetas
+  [[-1.6, 2.2], [1.7, 2.2]].forEach(([x, z]) => {
+    const auto = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.55, 4.1), new THREE.MeshStandardMaterial({ color:0x2a2c30, roughness:0.35, metalness:0.5 }));
+    auto.position.set(x, 0.42, -(LARGO_TOTAL / 2) + z + 2.2); auto.castShadow = true; edificio.add(auto);
+    const techo = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.2), new THREE.MeshStandardMaterial({ color:0x1e2024, roughness:0.2, metalness:0.6 }));
+    techo.position.set(x, 0.95, -(LARGO_TOTAL / 2) + z + 2.0); edificio.add(techo);
+  });
+}
+
 /* ── planta baja: el acceso en sombra, con la puerta de madera y las plantas ── */
 edificio.add(caja(M.frente, M.altoPB, LARGO_TOTAL, mat.hormigon, 0, 0, 0));
 {
@@ -540,6 +694,8 @@ edificio.add(caja(M.frente, M.altoPB, LARGO_TOTAL, mat.hormigon, 0, 0, 0));
   // hueco en sombra con la puerta pivotante de madera y verde a los costados
   const zF = -(LARGO_TOTAL / 2);
   edificio.add(caja(M.frente - 0.4, M.altoPB - 0.3, 0.06, mat.sombraPB, 0, 0, zF - 0.02, false));
+  // el dintel de hormigón visto sobre el acceso, como en la lámina del lobby
+  edificio.add(caja(M.frente, 0.42, 1.6, mat.hormigon, 0, M.altoPB - 0.42, zF - 0.7));
   edificio.add(caja(1.05, 2.3, 0.1, mat.madera, 0.9, 0.02, zF - 0.06, false));
   edificio.add(caja(1.6, 2.3, 0.1, mat.vidrio, -0.8, 0.02, zF - 0.06, false));
   [-2.3, 2.3].forEach((x) => {
@@ -806,6 +962,29 @@ ponerHora(minutos);
 /* ══════════════════════════════════════════════════════════════════════════
    10 · EL BUCLE
    ══════════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   9b · POSTPROCESO
+
+   Es lo que hace que las esquinas tengan sombra de contacto (oclusión
+   ambiental) y que las ventanas de noche irradien (bloom). La referencia usa
+   EffectComposer exactamente para esto. En celular se apaga la oclusión, que
+   es la cara: el bloom queda porque es barato.
+   ══════════════════════════════════════════════════════════════════════════ */
+const esCelular = innerWidth < 900 || /Mobi|Android/i.test(navigator.userAgent);
+const composer = new EffectComposer(render);
+composer.addPass(new RenderPass(escena, camara));
+let gtao = null;
+if (!esCelular) {
+  gtao = new GTAOPass(escena, camara, innerWidth, innerHeight);
+  gtao.output = GTAOPass.OUTPUT.Default;
+  gtao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1, thickness: 1, scale: 1.1, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
+  gtao.blendIntensity = 0.85;
+  composer.addPass(gtao);
+}
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.0, 0.5, 0.93);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
 const reduceMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reloj = new THREE.Clock();
 
@@ -827,7 +1006,11 @@ function bucle() {
   relleno.position.y += 9;
 
   controles.update();
-  render.render(escena, camara);
+  if (entornoPendiente) { actualizarEntorno(); entornoPendiente = false; }
+  // Sólo de noche cerrada: al atardecer el revoque todavía es claro y el
+  // bloom lo hacía brillar como si el edificio fuera una lámpara.
+  bloom.strength = 0.6 * THREE.MathUtils.smoothstep(ventanasEncendidas, 0.6, 0.92);
+  composer.render();
   requestAnimationFrame(bucle);
 }
 
@@ -835,6 +1018,8 @@ addEventListener('resize', () => {
   camara.aspect = innerWidth / innerHeight;
   camara.updateProjectionMatrix();
   render.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  if (gtao) gtao.setSize(innerWidth, innerHeight);
 });
 
 bucle();
@@ -842,7 +1027,7 @@ requestAnimationFrame(() => $('cargando').classList.add('listo'));
 setTimeout(() => { $('pista').style.opacity = 0; }, 7000);
 
 // Para poder trastear las medidas desde la consola sin recompilar nada.
-window.TORRE = { M, UNIDADES, irA, ponerHora, camara, escena, relleno };
+window.TORRE = { M, UNIDADES, irA, ponerHora, camara, escena, relleno, render, composer, cielo, actualizarEntorno };
 </script>
 </body>
 </html>
