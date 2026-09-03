@@ -605,8 +605,8 @@
   // el dibujo termina a los 4,8 s y se SOSTIENE hasta los 5,7: en el video el
   // boceto completo se ve entero un momento antes de volverse arcilla
   // 10 s en total (3/9: se dobló, y después dos veces «un 30 % más rápido»)
-  const DUR = { lineas: 4.7, cotas: 1.5, arcilla: 1.2, materiales: 2.7, cierre: 0.6 };
-  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.6, materiales: 6.65, cierre: 9.4 };
+  const DUR = { lineas: 4.7, cotas: 1.5, arcilla: 1.2, materiales: 3.8, cierre: 0.7 };
+  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.6, materiales: 6.5, cierre: 10.4 };
   const TOTAL = INICIO.cierre + DUR.cierre;
   const esCelular = Math.min(screen.width, screen.height) < 700;
   let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
@@ -896,40 +896,14 @@
     }
     let mn = 1, mx = 0; ruido.forEach((v) => { if (v < mn) mn = v; if (v > mx) mx = v; });
     ruido = ruido.map((v) => (v - mn) / (mx - mn || 1));
+    let ruido2 = new Float32Array(NW * NH);
+    for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) ruido2[y * NW + x] = hash2(x + 7, y + 99);
+    { const r2 = new Float32Array(NW * NH);
+      for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) { let sum = 0, n = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const yy = y + dy, xx = x + dx; if (yy < 0 || yy >= NH || xx < 0 || xx >= NW) continue; sum += ruido2[yy * NW + xx]; n++; } r2[y * NW + x] = sum / n; }
+      ruido2 = r2; }
+    { let mn2 = 1, mx2 = 0; ruido2.forEach((v) => { if (v < mn2) mn2 = v; if (v > mx2) mx2 = v; }); ruido2 = ruido2.map((v) => (v - mn2) / (mx2 - mn2 || 1)); }
 
-    // ── las capas de profundidad (3/9: «cargar capas, como la demo»). El render
-    // se parte en cielo, vecinos, la torre en tres tramos y los árboles del
-    // frente. En la etapa de materiales entran una por una, cada una con su
-    // propio desplazamiento, hasta que se ve la torre entera.
-    const verdeS = new Float32Array(SW * SH);
-    for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) {
-      const k = (y * W + x) * 4, r = dsl.data[k], gg = dsl.data[k + 1], b = dsl.data[k + 2];
-      if (gg > r + 12 && gg > b + 8 && gg > 40) verdeS[((y / cyS) | 0) * SW + ((x / cxS) | 0)] += 1;
-    }
-    for (let i = 0; i < verdeS.length; i++) verdeS[i] = verdeS[i] / (cxS * cyS / 4) > 0.35 ? 1 : 0;
-    let verde = blurS(verdeS, 1); for (let i = 0; i < verde.length; i++) verde[i] = verde[i] > 0.3 ? 1 : 0;
-    verde = blurS(verde, 1);
-    let torreTop = SH, torreBot = 0;
-    for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) if (sil[y * SW + x]) { if (y < torreTop) torreTop = y; if (y > torreBot) torreBot = y; }
-    const HZ = Math.round(SH * 0.52);
-    const capasM = {}; ["cielo", "suelo", "arboles", "t0", "t1", "t2"].forEach((k) => { capasM[k] = new Float32Array(SW * SH); });
-    for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) {
-      const i = y * SW + x, sT = sil[i], v = verde[i] * (1 - sT);
-      if (sT) { const f = (y - torreTop) / Math.max(1, torreBot - torreTop); (f < 0.34 ? capasM.t0 : f < 0.67 ? capasM.t1 : capasM.t2)[i] = 1; }
-      else { capasM.arboles[i] = v; const resto = 1 - v; const c = clamp01((HZ + SH * 0.09 - y) / (SH * 0.18)); capasM.cielo[i] = resto * c; capasM.suelo[i] = resto * (1 - c); }
-    }
-    const capas = {};
-    Object.entries(capasM).forEach(([k, m]) => {
-      const suave = blurS(m, 1);
-      const mc = lienzo(SW, SH), gm = mc.getContext("2d"), dm = gm.createImageData(SW, SH);
-      for (let i = 0; i < suave.length; i++) dm.data[i * 4 + 3] = Math.round(255 * Math.min(1, suave[i]));
-      gm.putImageData(dm, 0, 0);
-      const c = lienzo(W, H), gc2 = c.getContext("2d");
-      gc2.drawImage(sinLetras, 0, 0); gc2.globalCompositeOperation = "destination-in"; gc2.imageSmoothingEnabled = true; gc2.drawImage(mc, 0, 0, W, H);
-      capas[k] = c;
-    });
-
-    escena = { W, H, base: sinLetras, trazos, porFin, guias, esc, arcilla, cielo, papel, capas, ruido, NW, NH, prepMs: Math.round(performance.now() - tPrep),
+    escena = { W, H, base: sinLetras, trazos, porFin, guias, esc, arcilla, cielo, papel, ruido, ruido2, NW, NH, prepMs: Math.round(performance.now() - tPrep),
       hecho: lienzo(W, H), hechoHasta: 0, ultimoT: -1,
       mascara: lienzo(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
     heroListo = true;
@@ -952,9 +926,10 @@
     ctx.stroke();
   }
 
-  function cotas(o, W, H, p, idiomaActual) {
+  function cotas(o, W, H, p, idiomaActual, sobreRender) {
     if (p <= 0) return;
-    o.save(); o.globalAlpha = p * 0.42; o.strokeStyle = "#5a4a3c"; o.fillStyle = "#5a4a3c"; o.lineWidth = W / 1400;
+    o.save(); o.globalAlpha = p * (sobreRender > 0 ? 0.55 + 0.4 * sobreRender : 0.42); o.strokeStyle = "#3a2d22"; o.fillStyle = "#3a2d22"; o.lineWidth = W / 1400;
+    if (sobreRender > 0) { o.shadowColor = "rgba(243,234,218,0.95)"; o.shadowBlur = (W / 400) * sobreRender; }   // halo claro para leerse sobre el color
     o.font = `${Math.round(W * 0.0105)}px Archivo, sans-serif`;
     const tick = (x, y, v) => { o.beginPath(); if (v) { o.moveTo(x - 5, y); o.lineTo(x + 5, y); } else { o.moveTo(x, y - 5); o.lineTo(x, y + 5); } o.stroke(); };
     const xA = W * 0.62, y0 = H * 0.07, y1 = H * 0.9;
@@ -964,18 +939,22 @@
     const xs0 = W * 0.31, xs1 = W * 0.56, ys = H * 0.035;
     o.beginPath(); o.moveTo(xs0, ys); o.lineTo(xs0 + (xs1 - xs0) * p, ys); o.stroke(); tick(xs0, ys, false); if (p > 0.95) tick(xs1, ys, false);
     o.textAlign = "center"; o.fillText("37 – 55 m²", (xs0 + xs1) / 2, ys - 6);
-    o.textAlign = "left"; o.fillText("Aniceto Latorre", W * 0.08, H * 0.965);
-    o.beginPath(); o.moveTo(W * 0.08, H * 0.975); o.lineTo(W * 0.08 + W * 0.22 * p, H * 0.975); o.stroke();
+    o.font = `${Math.round(W * 0.015)}px Archivo, sans-serif`;
+    o.textAlign = "left"; o.fillText("Aniceto Latorre", W * 0.08, H * 0.955);
+    o.beginPath(); o.moveTo(W * 0.08, H * 0.968); o.lineTo(W * 0.08 + W * 0.3 * p, H * 0.968); o.stroke();
     o.restore();
   }
 
   function mascaraMateriales(p) {
     const { NW, NH, ruido, mascara, W, H } = escena;
     const img = mascara.getContext("2d").createImageData(NW, NH);
-    const cx = EJE.x, cy = 0.55, R = p * 1.35, pluma = 0.28;
+    const { ruido2 } = escena;
+    const pe = Math.pow(p, 0.9);                       // casi lineal: la maqueta blanca se ve un buen rato en los bordes
+    const cx = EJE.x, cy = 0.5, R = pe * 1.3, pluma = 0.32;
     for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) {
       const fx = x / NW, fy = y / NH, d = Math.hypot((fx - cx) * (W / H), fy - cy) / 1.1;
-      const a = clamp01((R - d) / pluma + (ruido[y * NW + x] - 0.5) * 0.7), k = (y * NW + x) * 4;
+      const n = 0.62 * ruido[y * NW + x] + 0.38 * ruido2[y * NW + x];
+      const a = clamp01((R - d) / pluma + (n - 0.5) * 1.15), k = (y * NW + x) * 4;
       img.data[k] = img.data[k + 1] = img.data[k + 2] = 0; img.data[k + 3] = a * 255;
     }
     mascara.getContext("2d").putImageData(img, 0, 0);
@@ -1004,10 +983,27 @@
       trazar(o, tr, Math.min(1, f)); enCurso++;
       if (enCurso > 1200) break;                 // tope de seguridad por cuadro
     }
-    // las guías se extienden cuando su losa termina, y se van con la arcilla
-    const vivas = 1 - fase(t, "arcilla");
-    if (vivas > 0) {
-      o.save(); o.strokeStyle = "rgba(41,33,26,0.22)"; o.lineWidth = e.esc * 0.9; o.setLineDash([5 * e.esc, 7 * e.esc]); o.lineCap = "butt";
+    // 3 · la arcilla con el cielo detrás
+    const pA = fase(t, "arcilla");
+    e.fundido = pA;                                   // el fundido al papel de arriba sólo cuando hay cielo (ver presentar)
+    if (pA > 0) { o.globalAlpha = pA * 0.94; o.drawImage(e.arcilla, 0, 0); o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0); o.globalAlpha = 1; }
+    // 4 · los materiales
+    // 4 · los materiales: una mancha orgánica que crece desde la torre (como
+    //     la referencia), con dos octavas de ruido para que el borde sea nube
+    const pM = fase(t, "materiales");
+    if (pM >= 1) o.drawImage(e.base, 0, 0);
+    else if (pM > 0) {
+      const m = mascaraMateriales(pM), t2 = e.tmp.getContext("2d");
+      t2.clearRect(0, 0, W, H); t2.globalCompositeOperation = "source-over"; t2.drawImage(e.base, 0, 0);
+      t2.globalCompositeOperation = "destination-in"; t2.imageSmoothingEnabled = true; t2.drawImage(m, 0, 0, W, H);
+      o.drawImage(e.tmp, 0, 0);
+    }
+    // 5 · las cotas y las guías se quedan sobre la torre a color, hasta el cierre (3/9)
+    const pCierre = fase(t, "cierre");
+    const vivas = 1 - pCierre;
+    if (vivas > 0 && t > INICIO.cotas) {
+      o.save(); o.strokeStyle = pA > 0 ? "rgba(41,33,26,0.5)" : "rgba(41,33,26,0.22)"; o.lineWidth = e.esc * 0.9; o.setLineDash([5 * e.esc, 7 * e.esc]); o.lineCap = "butt";
+      if (pA > 0) { o.shadowColor = "rgba(243,234,218,0.9)"; o.shadowBlur = 4 * e.esc; }
       e.guias.forEach((g) => {
         const p = clamp01((t - g.fin) / 0.9); if (p <= 0) return;
         o.globalAlpha = vivas * p;
@@ -1018,31 +1014,7 @@
       });
       o.restore(); o.globalAlpha = 1;
     }
-    const pC = fase(t, "cotas") * (1 - fase(t, "arcilla"));
-    cotas(o, W, H, pC, idioma);
-
-    // 3 · la arcilla con el cielo detrás
-    const pA = fase(t, "arcilla");
-    e.fundido = pA;                                   // el fundido al papel de arriba sólo cuando hay cielo (ver presentar)
-    if (pA > 0) { o.globalAlpha = pA * 0.94; o.drawImage(e.arcilla, 0, 0); o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0); o.globalAlpha = 1; }
-    // 4 · los materiales
-    // 4 · los materiales, por capas: el cielo, los vecinos, la torre de abajo
-    //     hacia arriba en tres tramos, y al final los árboles del frente, que
-    //     entran un poco más grandes y se asientan (la capa más cercana)
-    const pM = fase(t, "materiales");
-    if (pM >= 1) o.drawImage(e.base, 0, 0);
-    else if (pM > 0) {
-      const suave = (a, b) => { const v = clamp01((pM - a) / (b - a)); return v * v * (3 - 2 * v); };
-      const ORDEN = [["cielo", 0, .4, -.025], ["suelo", .08, .5, .03], ["t2", .26, .6, .035], ["t1", .4, .74, .035], ["t0", .54, .88, .035], ["arboles", .66, 1, .05]];
-      ORDEN.forEach(([k, a, b, oy]) => {
-        const p = suave(a, b); if (p <= 0) return;
-        o.globalAlpha = p;
-        const dy = oy * H * (1 - p);
-        if (k === "arboles") { const sc = 1 + 0.04 * (1 - p); o.save(); o.translate(W / 2, H); o.scale(sc, sc); o.translate(-W / 2, -H); o.drawImage(e.capas[k], 0, dy); o.restore(); }
-        else o.drawImage(e.capas[k], 0, dy);
-      });
-      o.globalAlpha = 1;
-    }
+    cotas(o, W, H, fase(t, "cotas") * vivas, idioma, pA);
   }
 
   function presentar() {
