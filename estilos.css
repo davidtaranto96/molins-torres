@@ -172,7 +172,7 @@ body.menu-abierto .cab-fondo{opacity:1;pointer-events:auto}
 .res-ficha{border-top:1px solid rgba(41,33,26,.16);padding-top:18px;max-width:46ch}
 .res-desc{margin:0;font-size:16px;color:var(--tinta)}
 .res-amb,.res-ubic{margin:8px 0 0;font-size:14px;color:var(--gris-calido)}
-.res-pie{margin-top:auto;display:flex;flex-wrap:wrap;gap:18px 26px;align-items:flex-end;justify-content:space-between;border-top:1px solid rgba(41,33,26,.16);padding-top:22px}
+.res-pie{display:none;margin-top:auto;display:flex;flex-wrap:wrap;gap:18px 26px;align-items:flex-end;justify-content:space-between;border-top:1px solid rgba(41,33,26,.16);padding-top:22px}
 .res-contador b{display:block;font-family:var(--serif);font-weight:300;font-size:40px;line-height:1;color:var(--tinta);font-variant-numeric:tabular-nums}
 .res-contador span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-calido)}
 .res-acciones{display:flex;flex-wrap:wrap;gap:10px}
@@ -278,7 +278,7 @@ body.con-ficha{overflow:hidden}
 .partida-ancha .partida-foto img{position:absolute;inset:0;width:100%;height:100%;top:0;object-fit:cover;object-position:50% 50%}
 .partida-ancha .partida-panel{padding-bottom:clamp(120px,16vh,170px)}
 .partida-ancha .partida-lista{max-width:56ch}
-@media (max-width:640px){.partida-ancha .partida-foto{aspect-ratio:5/3}}
+@media (max-width:640px){.partida-ancha .partida-foto{aspect-ratio:2200/536}}
 
 /* ── adentro: el marco enmascarado con los ambientes ── */
 .adentro{background:var(--tinta-oscura);color:var(--crema);padding:clamp(72px,11vh,130px) 0 clamp(64px,10vh,110px)}
@@ -306,7 +306,7 @@ body.con-ficha{overflow:hidden}
 .tresd-marco.activo .tresd-pantalla{display:grid}
 .tresd-marco:fullscreen{border-radius:0;max-height:none;aspect-ratio:auto}
 @media (max-width:640px){.tresd-marco{width:100vw;max-width:none;margin-left:calc(-1 * var(--lado));aspect-ratio:auto;height:84svh;max-height:none;border-radius:0}}
-.tresd-arrancar{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:6px;background:linear-gradient(180deg,rgba(33,23,17,.35),rgba(33,23,17,.85)),url(img/hero-cover.jpg) 50% 8%/190% auto no-repeat;color:var(--crema);border:0;cursor:pointer;font-family:var(--serif);font-size:clamp(22px,3vw,34px);font-weight:300}
+.tresd-arrancar{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:6px;background:linear-gradient(180deg,rgba(33,23,17,.35),rgba(33,23,17,.85)),url(img/hero-cover.jpg) 43% 50%/cover no-repeat;color:var(--crema);border:0;cursor:pointer;font-family:var(--serif);font-size:clamp(22px,3vw,34px);font-weight:300}
 .tresd-arrancar small{font-family:var(--sans);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,234,218,.6)}
 
 /* ── A/B desde arriba ── */
@@ -322,8 +322,6 @@ body.con-ficha{overflow:hidden}
 .mapa-zoom{position:absolute;inset:0;transform-origin:var(--ox,50%) var(--oy,50%);transition:transform 1.4s var(--curva);will-change:transform;pointer-events:auto}
 .mapa-escena.cerca-de .mapa-zoom{transform:scale(1.32)}
 .mapa-zoom::after{content:"";position:absolute;inset:0;background:rgba(18,12,9,0);transition:background .8s ease;pointer-events:none}
-/* el render trae quemado un texto de marketing a la derecha: se tapa dentro de la propia imagen */
-.mapa-zoom::before{content:"";position:absolute;top:0;bottom:0;left:64%;right:0;background:linear-gradient(90deg,rgba(18,12,9,0),rgba(18,12,9,.9) 34%,rgba(18,12,9,.96));pointer-events:none;z-index:1}
 .mapa-escena.cerca-de .mapa-zoom::after{background:rgba(18,12,9,.22)}
 .punto{z-index:2}
 .cerca li::after{content:"";margin-left:auto;width:8px;height:8px;border-radius:50%;background:rgba(243,234,218,.35);align-self:center;transition:background .3s,transform .3s}
@@ -343,7 +341,7 @@ body.con-ficha{overflow:hidden}
 .cerca b{font-family:var(--serif);font-weight:400;font-size:22px;min-width:74px;font-variant-numeric:tabular-nums;flex:0 0 auto}
 .cerca span{font-size:14px;color:rgba(243,234,218,.85);white-space:nowrap}
 .ubicacion-texto .boton{align-self:flex-start}
-@media (max-width:899px){.ubicacion{display:block;min-height:0}.mapa-escena{position:relative;top:auto;left:auto;transform:none;width:100%;height:auto;aspect-ratio:2200/1237;overflow:hidden}.mapa-zoom{width:100%;height:100%;left:0;transform:none}.mapa-escena.cerca-de .mapa-zoom{transform:scale(2.1)}.mapa-img{object-fit:cover}.punto{width:40px;height:40px;margin:-20px 0 0 -20px}.punto i{inset:14px}.ubicacion-texto{max-width:none;margin:0;background:none;padding:30px var(--lado) 52px}.ubicacion .titulo{font-size:clamp(30px,8vw,40px)}}
+@media (max-width:899px){.ubicacion{display:block;min-height:0}.mapa-escena{position:relative;top:auto;left:auto;transform:none;width:100%;height:auto;aspect-ratio:2200/1237;overflow:hidden}.mapa-zoom{width:100%;height:100%;left:0;transform:none}.mapa-escena.cerca-de .mapa-zoom{transform:none}.mapa-escena.cerca-de .mapa-zoom::after{background:rgba(18,12,9,0)}.mapa-img{object-fit:cover}.punto{width:40px;height:40px;margin:-20px 0 0 -20px}.punto i{inset:14px}.ubicacion-texto{max-width:none;margin:0;background:none;padding:30px var(--lado) 52px}.ubicacion .titulo{font-size:clamp(30px,8vw,40px)}}
 @media (prefers-reduced-motion:reduce){.punto i{animation:none}.mapa-zoom{transition:none}}
 
 /* ── plan ── */
