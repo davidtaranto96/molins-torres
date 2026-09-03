@@ -223,6 +223,9 @@ body.menu-abierto .header-torre{backdrop-filter:none !important;-webkit-backdrop
    Aparece recién cuando se deja el hero. En la portada no existe. */
 .wa-flotante{opacity:0;visibility:hidden;transform:translateY(14px) scale(0.9);transition:opacity 300ms ease,transform 300ms cubic-bezier(0.22,1,0.36,1),visibility 300ms}
 body.paso-el-hero .wa-flotante{opacity:1;visibility:visible;transform:none}
+/* Y se va de nuevo cuando el contacto entra en pantalla: ahí abajo ya está el
+   botón grande con el número, y la burbuja le quedaba encima. */
+body.en-contacto .wa-flotante{opacity:0 !important;visibility:hidden !important;transform:translateY(14px) scale(0.9)}
 
 /* ── 10 · LAS UNIDADES, EN GRILLA Y SIN REPETIR PALABRAS ─────────────────
    El estado se lee por color (con su leyenda), no repitiendo "Libre" doce
@@ -279,6 +282,27 @@ body.paso-el-hero .wa-flotante{opacity:1;visibility:visible;transform:none}
 .foot-ck{background:none;border:0;padding:8px 0;color:rgba(243,234,218,0.72);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
 .foot-ck:hover{color:var(--crema)}
 
+/* El WhatsApp del pie DEJA DE SER UN BOTÓN VERDE. Había tres verdes en la misma
+   pantalla —el de contacto, éste y el flotante— y tres botones iguales no son
+   tres oportunidades: son ruido, y ninguno se lee como el principal. El de
+   contacto se queda con el verde porque es el que cierra la venta; acá alcanza
+   con un enlace que se note. */
+.foot-wa{display:inline-flex;align-items:center;gap:9px;margin-top:16px;min-height:44px;color:var(--crema);font-size:13.5px;font-weight:500;text-decoration:none;border:1px solid rgba(243,234,218,0.28);border-radius:4px;padding:0 16px;transition:border-color 180ms ease,background 180ms ease}
+.foot-wa i{color:var(--whatsapp);font-size:17px}
+.foot-wa:hover{border-color:rgba(243,234,218,0.5);background:rgba(243,234,218,0.06)}
+
+/* La firma de Molins: el escudo hace de ancla visual de la columna. */
+.foot-firma{display:flex !important;align-items:center;gap:11px;padding:8px 0 !important}
+.foot-firma img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none}
+.foot-firma > span{display:flex;flex-direction:column;line-height:1.35;color:var(--crema)}
+.foot-firma > span > span{font-size:12px;color:rgba(243,234,218,0.55)}
+
+/* La marca de la comercializadora ya trae «CUCIS 251» adentro, así que el texto
+   que lo repetía se fue. Viene en verde sobre transparente: se pasa a crema con
+   el filtro, que es como la usa el portal. */
+.foot-lpz{display:block;padding-top:14px;font-size:12px;color:rgba(243,234,218,0.55);line-height:1.6}
+.foot-lpz img{display:block;height:52px;width:auto;margin-top:8px;opacity:0.8;filter:brightness(0) invert(1)}
+
 /* ── 15 · EL AVISO DE COOKIES ───────────────────────────────────────────
    Uno solo, consentimiento por navegación y un solo botón. Barra al pie en el
    celular, tarjeta abajo a la izquierda en escritorio, 44px de área táctil.
@@ -307,7 +331,8 @@ body.paso-el-hero .wa-flotante{opacity:1;visibility:visible;transform:none}
 @media (prefers-reduced-motion: reduce){
   .hero-img,.nav-menu,body.menu-abierto .nav-menu > *,.nav-burger i,
   .panel-historia,.tipo-card,.wa-flotante{animation:none !important;transition:none !important;transform:none !important;clip-path:none !important}
-  .wa-flotante{opacity:1;visibility:visible}
+  body.paso-el-hero .wa-flotante{opacity:1;visibility:visible}
+  body.en-contacto .wa-flotante{opacity:0 !important;visibility:hidden !important}
 }
 
 /* ── 1 · EL HERO EN EL CELULAR ─────────────────────────────────────────────

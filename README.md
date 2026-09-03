@@ -74,8 +74,11 @@ Del presupuesto, textual. Nada de esto lo podemos hacer nosotros:
 nombre de Francisco. Es la opción A de `docs/dominio.md`, que es la que decía el
 presupuesto. Sirve desde GitHub Pages, con certificado y HTTPS forzado.
 
-Sigue abierto qué pasa con `franciscomolins.com/torres/`, que hoy muestra el
-mismo sitio en otra dirección: lo sano es dejarlo como redirección.
+`franciscomolins.com/torres/` quedó como **redirección** al dominio nuevo, y se
+borró la copia del sitio que vivía adentro del portal (46 archivos, 110 MB de
+imágenes viejas sin comprimir). Con eso se fue también
+`scripts/publicar-en-portal.sh`: existía sólo para sincronizar esa copia y hoy
+lo único que podría hacer es resucitarla. **Este repo es la única fuente.**
 
 ## Conexión con el CRM
 

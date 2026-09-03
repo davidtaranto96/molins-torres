@@ -103,7 +103,7 @@
 <section data-screen-label="Concepto" style="background:var(--hueso)">
   <div style="max-width:920px;margin:0 auto;padding:clamp(90px,14vh,150px) 24px;text-align:center">
     <p data-reveal="1" class="titulo-editorial t-manifiesto">La Torre nace como una manifestación arquitectónica de la verticalidad del tiempo <span class="acento">y la transformación personal.</span></p>
-    <p data-reveal="1" style="margin:26px auto 0;color:var(--gris-calido);font-size:16px;max-width:58ch;line-height:1.7">Se vende en pozo, con anticipo al boleto, cuotas de obra y un único cuadro de precios vigente, administrado desde el sistema de Molins.</p>
+    <p data-reveal="1" style="margin:26px auto 0;color:var(--gris-calido);font-size:16px;max-width:58ch;line-height:1.7">Se vende en pozo: anticipo al firmar el boleto y cuotas durante la obra. Un solo cuadro de precios, el mismo para todos.</p>
   </div>
   <div style="max-width:920px;margin:0 auto;padding:0 24px clamp(70px,10vh,110px);text-align:center">
     <p data-reveal="1" class="eyebrow" style="font-size:10.5px;line-height:2.2">12 unidades · 6 plantas por torre · 37 a 55 m² · cocheras en planta baja</p>
@@ -480,9 +480,9 @@
     <div data-reveal="1">
       <span class="eyebrow">Hablemos</span>
       <h2 class="titulo-editorial t-seccion" style="margin-top:14px">Consultar por una unidad</h2>
-      <p style="margin:18px 0 0;color:var(--gris-calido);font-size:16px;max-width:56ch;line-height:1.7">La consulta entra al sistema de Molins con la unidad que te interesa y el aviso del que saliste, y la sigue una persona. Acá no se reserva ni se seña online.</p>
+      <p style="margin:18px 0 0;color:var(--gris-calido);font-size:16px;max-width:56ch;line-height:1.7">Decinos qué unidad mirás y te contesta Francisco, no un formulario automático. Acá no se reserva ni se seña online: la unidad se aparta hablando.</p>
       <div style="margin-top:26px;background:#fff;border:1px solid rgba(41,33,26,0.14);border-radius:6px;padding:20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-        <div style="width:56px;height:56px;background:var(--terracota);color:var(--crema);font-family:var(--serif);font-size:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;flex:none">FM</div>
+        <img src="img/logo-molins.png" alt="Escudo de Molins Negocios Inmobiliarios" width="56" height="56" loading="lazy" style="width:56px;height:56px;border-radius:9px;object-fit:cover;display:block;flex:none">
         <div style="flex:1;min-width:210px">
           <div style="font-weight:600;font-size:16px">Francisco Molins</div>
           <div style="font-size:13px;color:var(--gris-calido)">Comercialización exclusiva Grupo&nbsp;LPZ-Molins</div>
@@ -521,7 +521,7 @@
       <div data-si="form.fallo" hidden>
         <div style="background:rgba(160,118,44,0.1);border:1px solid rgba(160,118,44,0.35);color:var(--ambar-texto);border-radius:4px;padding:12px 14px;font-size:14px">No pudimos registrar la consulta online recién. <a data-href="form.waHref" target="_blank" rel="noreferrer" style="color:var(--ambar-texto);font-weight:600">Mandala por WhatsApp</a> y llega igual.</div>
       </div>
-      <div style="font-size:12px;color:var(--gris-claro)">La consulta se envía al CRM de Molins junto con el código de campaña del aviso que te trajo.</div>
+      <div style="font-size:12px;color:var(--gris-claro)">Te contestamos por WhatsApp o por teléfono, con el plano de la unidad y las formas de pago.</div>
     </form>
   </div>
 </section>
@@ -532,8 +532,8 @@
       <div class="foot-marca">
         <div style="font-family:var(--serif);letter-spacing:0.34em;color:var(--crema);font-size:20px">LA TORRE</div>
         <p style="margin:12px 0 0;font-size:13.5px;line-height:1.7;max-width:38ch">Doce unidades en pozo entre Torre Norte y Torre Sur, sobre Balcarce y Aniceto Latorre, Salta Capital.</p>
-        <a data-href="waGeneral" target="_blank" rel="noreferrer" data-click="clicWaPie" class="fx-tap-g" style="display:inline-flex;align-items:center;gap:9px;margin-top:16px;background:var(--whatsapp);color:#fff;border-radius:4px;padding:11px 18px;font-size:13.5px;font-weight:600;text-decoration:none" data-fx="fx-11">
-          <i class="fa-brands fa-whatsapp" style="font-size:17px"></i>Escribir por WhatsApp
+        <a data-href="waGeneral" target="_blank" rel="noreferrer" data-click="clicWaPie" class="foot-wa fx-tap-g">
+          <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>Escribir por WhatsApp
         </a>
       </div>
       <nav class="foot-col" aria-labelledby="foot-c1">
@@ -551,13 +551,19 @@
       <nav class="foot-col" aria-labelledby="foot-c3">
         <h3 id="foot-c3">Quién vende</h3>
         <a href="#contacto">Dejar una consulta</a>
-        <a data-href="waGeneral" target="_blank" rel="noreferrer">Francisco Molins</a>
-        <span style="display:block;font-size:12px;color:rgba(243,234,218,0.55);line-height:1.6;padding-top:6px">Comercialización exclusiva<br>Grupo&nbsp;LPZ-Molins · CUCIS&nbsp;251</span>
+        <a data-href="waGeneral" target="_blank" rel="noreferrer" class="foot-firma">
+          <img src="img/logo-molins.png" alt="" width="40" height="40" loading="lazy">
+          <span>Francisco Molins<span>Molins Negocios Inmobiliarios</span></span>
+        </a>
+        <span class="foot-lpz">
+          <span>Comercialización exclusiva</span>
+          <img src="img/logo-lpz.png" alt="Grupo LPZ-Molins · CUCIS 251" width="86" height="106" loading="lazy">
+        </span>
       </nav>
     </div>
     <div class="foot-bottom">
       <span>© 2026 Edificio La Torre · Salta Capital</span>
-      <span><span data-si="verPrecios" hidden>Precios en USD · vigencia <span data-txt="vigencia"></span> · </span>Cuadro de precios único, administrado desde el sistema de Molins</span>
+      <span><span data-si="verPrecios" hidden>Precios en USD · vigencia <span data-txt="vigencia"></span> · </span>Las imágenes son renders del proyecto. Medidas y terminaciones sujetas a ajustes de obra.</span>
     </div>
   </div>
 </footer>
@@ -603,6 +609,16 @@
     };
     window.addEventListener("scroll", marcar, { passive: true });
     marcar();
+
+    // La burbuja de WhatsApp se esconde cuando el contacto está en pantalla.
+    // Ahí abajo ya hay un botón verde con el número entero, y la burbuja le
+    // quedaba flotando arriba: dos veces lo mismo, y una tapando a la otra.
+    var contacto = document.getElementById("contacto");
+    if (contacto && "IntersectionObserver" in window) {
+      new IntersectionObserver(function (entradas) {
+        document.body.classList.toggle("en-contacto", entradas[0].isIntersecting);
+      }, { rootMargin: "0px 0px -35% 0px" }).observe(contacto);
+    }
 
     // El menú del celular: la hamburguesa abre el panel, cualquier enlace lo
     // cierra, y Escape también.
