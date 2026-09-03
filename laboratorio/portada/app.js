@@ -477,7 +477,9 @@
 
   function prepararHero() {
     if (preparando || heroListo) return; preparando = true;
-    const W = Math.min(esCelular ? 900 : 1400, heroImg.naturalWidth), H = Math.round(W * heroImg.naturalHeight / heroImg.naturalWidth);
+    // Sin límite de peso, por pedido de David: en escritorio se trabaja a la
+    // resolución nativa del render y el canvas va a la densidad de la pantalla.
+    const W = Math.min(esCelular ? 1200 : 2400, heroImg.naturalWidth), H = Math.round(W * heroImg.naturalHeight / heroImg.naturalWidth);
     const base = lienzo(W, H), g = base.getContext("2d");
     g.drawImage(heroImg, 0, 0, W, H);
     const src = g.getImageData(0, 0, W, H).data;
@@ -516,16 +518,32 @@
     const grisSin = new Float32Array(N);
     for (let j = 0; j < N; j++) { const k = j * 4; grisSin[j] = dsl.data[k] * 0.299 + dsl.data[k + 1] * 0.587 + dsl.data[k + 2] * 0.114; }
 
+    // ── suavizado gaussiano antes de buscar bordes: mata el borde de cada
+    //    ladrillo, cada hoja y cada listón, y deja los bordes de la arquitectura ──
+    const gsuave = new Float32Array(N), tmpB = new Float32Array(N);
+    const KER = [0.0625, 0.25, 0.375, 0.25, 0.0625];
+    for (let y = 0; y < H; y++) for (let x = 2; x < W - 2; x++) { let v = 0; for (let k = -2; k <= 2; k++) v += grisSin[y * W + x + k] * KER[k + 2]; tmpB[y * W + x] = v; }
+    for (let y = 2; y < H - 2; y++) for (let x = 0; x < W; x++) { let v = 0; for (let k = -2; k <= 2; k++) v += tmpB[(y + k) * W + x] * KER[k + 2]; gsuave[y * W + x] = v; }
+    // segunda pasada: el render tiene mucho detalle fino
+    for (let y = 0; y < H; y++) for (let x = 2; x < W - 2; x++) { let v = 0; for (let k = -2; k <= 2; k++) v += gsuave[y * W + x + k] * KER[k + 2]; tmpB[y * W + x] = v; }
+    for (let y = 2; y < H - 2; y++) for (let x = 0; x < W; x++) { let v = 0; for (let k = -2; k <= 2; k++) v += tmpB[(y + k) * W + x] * KER[k + 2]; gsuave[y * W + x] = v; }
+
+    // ── la máscara del edificio: el dibujo se concentra acá. Fuera de esto sólo
+    //    entran líneas largas y rectas (las medianeras, la vereda), muy suaves.
+    //    Los árboles no se dibujan: en el video el entorno apenas se sugiere. ──
+    const EDIF = { x0: 0.285, x1: 0.615, y0: 0.0, y1: 1.0 };
+    const enEdificio = (x, y) => { const fx = x / W, fy = y / H; return fx > EDIF.x0 && fx < EDIF.x1 && fy > EDIF.y0 && fy < EDIF.y1; };
+
     // ── la cresta de cada borde ──
     const mag = new Float32Array(N), dirq = new Uint8Array(N);
     for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
       const i = y * W + x;
-      const gx = -grisSin[i - W - 1] + grisSin[i - W + 1] - 2 * grisSin[i - 1] + 2 * grisSin[i + 1] - grisSin[i + W - 1] + grisSin[i + W + 1];
-      const gy = -grisSin[i - W - 1] - 2 * grisSin[i - W] - grisSin[i - W + 1] + grisSin[i + W - 1] + 2 * grisSin[i + W] + grisSin[i + W + 1];
+      const gx = -gsuave[i - W - 1] + gsuave[i - W + 1] - 2 * gsuave[i - 1] + 2 * gsuave[i + 1] - gsuave[i + W - 1] + gsuave[i + W + 1];
+      const gy = -gsuave[i - W - 1] - 2 * gsuave[i - W] - gsuave[i - W + 1] + gsuave[i + W - 1] + 2 * gsuave[i + W] + gsuave[i + W + 1];
       mag[i] = Math.sqrt(gx * gx + gy * gy) / 4;
       dirq[i] = Math.round(Math.atan2(gy, gx) / (Math.PI / 4)) & 3;
     }
-    const tinta = new Float32Array(N), UMBRAL = 11;
+    const tinta = new Float32Array(N), UMBRAL = 9;
     for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
       const i = y * W + x, m = mag[i]; if (m < UMBRAL) continue;
       let a, b;
@@ -540,7 +558,14 @@
       for (let dy = -R2; dy <= R2; dy += 2) for (let dx = -R2; dx <= R2; dx += 2) if (tinta[(y + dy) * W + x + dx]) n++;
       const v = n / 49; dens[y * W + x] = v; dens[y * W + x + 1] = v; dens[(y + 1) * W + x] = v; dens[(y + 1) * W + x + 1] = v;
     }
-    for (let i = 0; i < N; i++) if (tinta[i] && dens[i] > 0.2) tinta[i] *= Math.max(0.12, 1 - (dens[i] - 0.2) * 2.2);
+    for (let i = 0; i < N; i++) {
+      if (!tinta[i]) continue;
+      const x = i % W, y = (i / W) | 0;
+      // adentro, donde hay muchas líneas paralelas juntas (los listones del
+      // parasol) se deja una sugerencia, no la trama entera
+      if (enEdificio(x, y)) { if (dens[i] > 0.22) tinta[i] *= Math.max(0.15, 1 - (dens[i] - 0.22) * 2.6); }
+      else if (dens[i] > 0.09) tinta[i] = 0;                  // afuera, lo denso es follaje: no se dibuja
+    }
 
     // ── de crestas a TRAZOS: se siguen las cadenas de píxeles ──
     const visto = new Uint8Array(N);
@@ -579,42 +604,81 @@
       }
       return { pts, fuerza: pts.length ? fuerza / (pts.length / 2) : 0 };
     };
-    const MIN = esCelular ? 8 : 10;
-    // primero desde los extremos (grado 1): trazos naturales; después lo que queda (lazos)
+    // Douglas–Peucker: la escalera de píxeles se vuelve regla. Es lo que separa
+    // un trazo tembloroso de una línea de arquitecto.
+    const simplificar = (pts, eps) => {
+      const n = pts.length / 2; if (n < 3) return pts.slice();
+      const keep = new Uint8Array(n); keep[0] = keep[n - 1] = 1;
+      const pila = [[0, n - 1]];
+      while (pila.length) {
+        const [a, b] = pila.pop();
+        const ax = pts[a * 2], ay = pts[a * 2 + 1], bx = pts[b * 2], by = pts[b * 2 + 1];
+        const L = Math.hypot(bx - ax, by - ay) || 1e-6;
+        let dmax = 0, idx = -1;
+        for (let k = a + 1; k < b; k++) {
+          const px = pts[k * 2], py = pts[k * 2 + 1];
+          const d = Math.abs((bx - ax) * (ay - py) - (ax - px) * (by - ay)) / L;
+          if (d > dmax) { dmax = d; idx = k; }
+        }
+        if (dmax > eps && idx > 0) { keep[idx] = 1; pila.push([a, idx], [idx, b]); }
+      }
+      const out = []; for (let k = 0; k < n; k++) if (keep[k]) out.push(pts[k * 2], pts[k * 2 + 1]);
+      return out;
+    };
+    const esc = W / 1400;                    // los umbrales en píxeles se escalan con la resolución
     for (let pasada = 0; pasada < 2; pasada++) {
       for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
         const i = y * W + x; if (visto[i] || tinta[i] <= 0.03) continue;
         if (pasada === 0 && grado(i) !== 1) continue;
         const t = seguir(i);
-        if (t.pts.length / 2 >= MIN) trazos.push(t); 
+        const n = t.pts.length / 2; if (n < 6) continue;
+        let cx = 0, cy = 0; for (let k = 0; k < t.pts.length; k += 2) { cx += t.pts[k]; cy += t.pts[k + 1]; } cx /= n; cy /= n;
+        t.dentro = enEdificio(cx, cy);
+        // adentro: trazos de 14 px o más; afuera: sólo líneas largas (medianeras, vereda)
+        if (t.dentro ? n < 14 * esc : n < 90 * esc) continue;
+        const simp = simplificar(t.pts, t.dentro ? 1.1 * esc : 2.2 * esc);
+        // afuera además tienen que ser casi rectas: nada de garabatos
+        if (!t.dentro && simp.length / 2 > 6) continue;
+        t.pts = simp; t.cx = cx; t.cy = cy;
+        trazos.push(t);
       }
     }
 
     // ── el orden y el tiempo de cada trazo ──
     const ancla = { x: EJE.x * W, y: EJE.y * H };
     const dMax = Math.hypot(Math.max(ancla.x, W - ancla.x), Math.max(ancla.y, H - ancla.y));
-    const VEL = W * 0.85;                          // px por segundo: un trazo largo tarda ~1 s
+    const VEL = W * 0.9;                           // px por segundo, antes de escalar al tiempo total
+    // el largo real del trazo simplificado, en píxeles de recorrido
     trazos.forEach((t, idx) => {
-      let cx = 0, cy = 0; const n = t.pts.length / 2;
-      for (let k = 0; k < t.pts.length; k += 2) { cx += t.pts[k]; cy += t.pts[k + 1]; }
-      cx /= n; cy /= n;
-      const d = Math.hypot((cx - ancla.x) * 0.75, (cy - ancla.y) * 0.55) / dMax;
-      t.largo = n;
-      t.orden = 0.6 * d + 0.22 * (1 - t.fuerza) + 0.12 * hash2(idx, 7) - 0.14 * Math.min(1, n / 260);
+      let L = 0; for (let k = 2; k < t.pts.length; k += 2) L += Math.hypot(t.pts[k] - t.pts[k - 2], t.pts[k + 1] - t.pts[k - 1]);
+      t.largo = L;
+      const d = Math.hypot((t.cx - ancla.x) * 0.75, (t.cy - ancla.y) * 0.55) / dMax;
+      // adentro: el contorno y las losas primero (largo manda), arriba antes que
+      // abajo, apenas de azar. Afuera: todo después del edificio.
+      t.orden = t.dentro
+        ? 0.18 * (t.cy / H) + 0.2 * (1 - t.fuerza) - 0.62 * Math.min(1, L / (420 * esc)) + 0.06 * hash2(idx, 7)
+        : 1.2 + 0.5 * d + 0.1 * hash2(idx, 11);
+      t.p = new Float32Array(t.pts); t.pts = null;
     });
     trazos.sort((a, b) => a.orden - b.orden);
     const M = trazos.length;
     const TD = DUR.lineas;
+    // POCAS PLUMAS A LA VEZ. En el video se dibujan de a unas pocas líneas,
+    // no cientos: acá arrancan 6 plumas y terminan 18. Cada trazo espera a que
+    // su pluma se libere; después se escala todo para que entre en TD.
+    const plumasMax = (r) => 6 + Math.floor(12 * r / Math.max(1, M - 1));
+    const libres = [];
     trazos.forEach((t, r) => {
-      const rr = Math.pow(r / Math.max(1, M - 1), 0.7);          // arranque escaso, final cargado
-      t.dur = Math.min(1.25, Math.max(0.18, t.largo / VEL));
-      t.ini = rr * (TD - t.dur) * 0.97;
-      t.fin = t.ini + t.dur;
-      // cada dos puntos alcanza para el trazo; se guarda liviano
-      const fino = []; for (let k = 0; k < t.pts.length; k += 4) fino.push(t.pts[k], t.pts[k + 1]);
-      if ((t.pts.length - 2) % 4 !== 0) fino.push(t.pts[t.pts.length - 2], t.pts[t.pts.length - 1]);
-      t.p = new Float32Array(fino); t.pts = null;
+      const K = plumasMax(r);
+      while (libres.length < K) libres.push(0);
+      let k = 0; for (let j = 1; j < K; j++) if (libres[j] < libres[k]) k = j;
+      t.dur = Math.max(0.12, t.largo / VEL);
+      t.ini = libres[k]; t.fin = t.ini + t.dur;
+      libres[k] = t.ini + t.dur * 0.82;              // apenas se solapan
     });
+    const finTotal = trazos.reduce((m, t) => Math.max(m, t.fin), 0) || 1;
+    const escalaT = (TD * 0.98) / finTotal;
+    trazos.forEach((t) => { t.ini *= escalaT; t.dur *= escalaT; t.fin = t.ini + t.dur; });
     const porFin = trazos.slice().sort((a, b) => a.fin - b.fin);
 
     // ── la arcilla, el cielo, el papel, el ruido ──
@@ -652,8 +716,10 @@
   function trazar(ctx, t, f) {
     const p = t.p, n = p.length / 2;
     if (n < 2) return;
-    ctx.strokeStyle = `rgba(41,33,26,${0.45 + 0.55 * t.fuerza})`;
-    ctx.lineWidth = 1.05 + 0.95 * t.fuerza;
+    const e = escena, k = e.W / 1400;
+    // fino y parejo, como una 0.3: el grosor no varía, el tono sí
+    ctx.strokeStyle = t.dentro ? `rgba(41,33,26,${0.55 + 0.4 * t.fuerza})` : "rgba(41,33,26,0.28)";
+    ctx.lineWidth = (t.dentro ? 1.1 : 0.9) * k;
     ctx.beginPath(); ctx.moveTo(p[0], p[1]);
     const hasta = f >= 1 ? n - 1 : (n - 1) * f;
     const ent = Math.floor(hasta);
@@ -664,8 +730,8 @@
 
   function cotas(o, W, H, p, idiomaActual) {
     if (p <= 0) return;
-    o.save(); o.globalAlpha = p * 0.55; o.strokeStyle = "#5a4a3c"; o.fillStyle = "#5a4a3c"; o.lineWidth = 1;
-    o.font = `${Math.round(W * 0.011)}px Archivo, sans-serif`;
+    o.save(); o.globalAlpha = p * 0.42; o.strokeStyle = "#5a4a3c"; o.fillStyle = "#5a4a3c"; o.lineWidth = W / 1400;
+    o.font = `${Math.round(W * 0.0105)}px Archivo, sans-serif`;
     const tick = (x, y, v) => { o.beginPath(); if (v) { o.moveTo(x - 5, y); o.lineTo(x + 5, y); } else { o.moveTo(x, y - 5); o.lineTo(x, y + 5); } o.stroke(); };
     const xA = W * 0.62, y0 = H * 0.07, y1 = H * 0.9;
     o.beginPath(); o.moveTo(xA, y0); o.lineTo(xA, y0 + (y1 - y0) * p); o.stroke(); tick(xA, y0, true); if (p > 0.95) tick(xA, y1, true);
@@ -735,9 +801,11 @@
     // con la pestaña oculta el canvas puede medir 0×0: no se toca, y cuando
     // vuelva a verse se repinta (resize / visibilitychange)
     if (!vw || !vh) return;
-    if (boceto.width !== vw || boceto.height !== vh) { boceto.width = vw; boceto.height = vh; }
-    const esc = Math.max(vw / e.W, vh / e.H), dw = e.W * esc, dh = e.H * esc, dx = (vw - dw) / 2, dy = (vh - dh) * 0.30;
-    const g = boceto.getContext("2d"); g.clearRect(0, 0, vw, vh); g.drawImage(e.out, dx, dy, dw, dh);
+    const dpr = Math.min(2, devicePixelRatio || 1);          // a la densidad real de la pantalla
+    const pw = Math.round(vw * dpr), ph = Math.round(vh * dpr);
+    if (boceto.width !== pw || boceto.height !== ph) { boceto.width = pw; boceto.height = ph; }
+    const esc = Math.max(pw / e.W, ph / e.H), dw = e.W * esc, dh = e.H * esc, dx = (pw - dw) / 2, dy = (ph - dh) * 0.30;
+    const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph); g.drawImage(e.out, dx, dy, dw, dh);
   }
 
   /* el título aparece cuando el render está casi entero: «LA», y después «TORRE» */
