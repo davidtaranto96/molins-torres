@@ -437,44 +437,43 @@
   $$(".cab-nav a").forEach((a) => a.addEventListener("click", () => { document.body.classList.remove("menu-abierto"); hamb.setAttribute("aria-expanded", "false"); }));
   addEventListener("keydown", (e) => { if (e.key === "Escape") { document.body.classList.remove("menu-abierto"); hamb.setAttribute("aria-expanded", "false"); } });
 
-  /* ── 5 · el hero: de cero al render, en cinco etapas ───────────────────── */
-  /* Leído cuadro por cuadro del video de la referencia (15,6 s, se reproduce
-     solo al cargar, sin scroll) y de la grabación de David:
-       1) el dibujo NACE DE CERO: las líneas se van uniendo en el orden en que
-          dibuja un arquitecto — el contorno principal de la torre, después
-          los pisos, después el detalle, y el entorno al final —, con cotas
-          fantasma;
-       2) el boceto completo;
-       3) un modelo de arcilla blanco con el cielo apareciendo detrás;
-       4) los materiales que entran desde el centro con una máscara suave;
-       5) el render final, y recién ahí el logotipo: primero «LA», después
-          «TORRE».
-     Todo se calcula en la página a partir de UN render. El logotipo viene
-     quemado en el JPG, así que se fabrica un render sin letras rellenando por
-     interpolación lo que hay detrás, y las letras reales se dibujan al final.
+  /* ── 5 · el hero: las líneas se trazan hasta formar la torre ───────────── */
+  /* Leído cuadro por cuadro del video de la referencia y de la grabación de
+     David. No es tinta que aparece: son TRAZOS que se dibujan a lo largo de su
+     recorrido, muchos a la vez, en el orden en que dibuja un arquitecto —el
+     contorno de la torre primero, después los pisos y el detalle, el entorno
+     al final—. Después el boceto se vuelve un modelo de arcilla con el cielo
+     detrás, los materiales entran desde el centro y queda el render; recién
+     ahí aparece el título, tipográfico, «LA» y después «TORRE».
 
-     CÓMO SE ORDENA EL DIBUJO. A cada píxel de tinta se le asigna un momento
-     de aparición: pesa la distancia al eje de la torre (lo cercano primero),
-     la fuerza del trazo (lo fuerte primero) y un poco de azar para que no
-     parezca un barrido. Ese momento se reparte en bandas, cada banda es una
-     capa, y en cada cuadro se dibujan las bandas que ya llegaron. Así el
-     costo por cuadro son N drawImage y no un millón de píxeles. */
+     Cómo se consigue el trazo con UN render y cero archivos:
+       1. Sobel + supresión de no-máximos → la cresta de cada borde (1 px).
+       2. Se siguen esas crestas píxel a píxel hasta armar polilíneas
+          (cadenas de puntos): eso son los trazos.
+       3. A cada trazo se le asigna un momento de inicio (distancia al eje de
+          la torre, fuerza, largo, azar) y una duración a velocidad de pluma
+          constante.
+       4. En cada cuadro: los trazos terminados ya están rasterizados en un
+          canvas persistente; sólo se dibujan parcialmente los que están en
+          curso. Así el costo por cuadro no depende del tamaño del dibujo.
+     El logotipo que viene quemado en el render se elimina rellenando por
+     interpolación lo que hay detrás: el título ahora es texto de verdad. */
   const boceto = $(".hero-boceto");
   const heroSec = $(".hero");
   const heroTexto = $(".hero-texto");
   const LOGO = { la: { x0: 0.42, x1: 0.545, y0: 0.325, y1: 0.45 }, torre: { x0: 0.405, x1: 0.595, y0: 0.44, y1: 0.675 } };
-  const EJE = { x: 0.43, y: 0.5 };                 // el eje de la torre en el hero, para ordenar el dibujo
-  const DUR = { lineas: 4.6, cotas: 1.6, arcilla: 1.4, materiales: 2.9, la: 0.7, torre: 0.9, cierre: 0.7 };
-  const INICIO = { lineas: 0, cotas: 2.2, arcilla: 4.5, materiales: 5.6, la: 8.6, torre: 9.3, cierre: 10.2 };
+  const EJE = { x: 0.43, y: 0.5 };
+  const DUR = { lineas: 5.2, cotas: 1.6, arcilla: 1.3, materiales: 2.8, cierre: 0.6 };
+  const INICIO = { lineas: 0, cotas: 3.0, arcilla: 5.1, materiales: 6.2, cierre: 9.1 };
   const TOTAL = INICIO.cierre + DUR.cierre;
-  const esCelular = innerWidth < 900;
-  const BANDAS = esCelular ? 12 : 20;
-  let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false;
+  const esCelular = Math.min(screen.width, screen.height) < 700;
+  let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
 
   const lienzo = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
   const suave = (x) => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
   const fase = (t, k) => suave((t - INICIO[k]) / DUR[k]);
   const clamp01 = (x) => x < 0 ? 0 : x > 1 ? 1 : x;
+  const hash2 = (x, y) => { let h = (x * 374761393 + y * 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
   function prepararHero() {
     if (preparando || heroListo) return; preparando = true;
@@ -491,15 +490,14 @@
     const letra = new Uint8Array(N);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       const j = y * W + x; if (gris[j] < 224) continue;
-      if (enCaja(x, y, LOGO.la)) letra[j] = 1; else if (enCaja(x, y, LOGO.torre)) letra[j] = 2;
+      if (enCaja(x, y, LOGO.la) || enCaja(x, y, LOGO.torre)) letra[j] = 1;
     }
     const letraD = new Uint8Array(N);
     for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
       const j = y * W + x; if (!letra[j]) continue;
-      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const k = j + dy * W + dx; if (!letraD[k]) letraD[k] = letra[j]; }
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) letraD[j + dy * W + dx] = 1;
     }
-
-    // ── el render SIN letras: cada corrida de letra se rellena interpolando en su fila ──
+    // ── el render sin letras ──
     const sinLetras = lienzo(W, H);
     const dsl = sinLetras.getContext("2d").createImageData(W, H);
     dsl.data.set(src);
@@ -510,11 +508,7 @@
         let x2 = x; while (x2 < W && letraD[y * W + x2]) x2++;
         const izq = x > 0 ? x - 1 : (x2 < W ? x2 : x), der = x2 < W ? x2 : izq;
         const ki = (y * W + izq) * 4, kd = (y * W + der) * 4, n = x2 - x + 1;
-        for (let xx = x; xx < x2; xx++) {
-          const f = (xx - x + 1) / n, k = (y * W + xx) * 4;
-          for (let c = 0; c < 3; c++) dsl.data[k + c] = src[ki + c] * (1 - f) + src[kd + c] * f;
-          dsl.data[k + 3] = 255;
-        }
+        for (let xx = x; xx < x2; xx++) { const f = (xx - x + 1) / n, k = (y * W + xx) * 4; for (let c = 0; c < 3; c++) dsl.data[k + c] = src[ki + c] * (1 - f) + src[kd + c] * f; dsl.data[k + 3] = 255; }
         x = x2;
       }
     }
@@ -522,151 +516,164 @@
     const grisSin = new Float32Array(N);
     for (let j = 0; j < N; j++) { const k = j * 4; grisSin[j] = dsl.data[k] * 0.299 + dsl.data[k + 1] * 0.587 + dsl.data[k + 2] * 0.114; }
 
-    // ── la tinta: Sobel + supresión de no-máximos, para que el trazo sea una línea y no una mancha ──
+    // ── la cresta de cada borde ──
     const mag = new Float32Array(N), dirq = new Uint8Array(N);
     for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
       const i = y * W + x;
       const gx = -grisSin[i - W - 1] + grisSin[i - W + 1] - 2 * grisSin[i - 1] + 2 * grisSin[i + 1] - grisSin[i + W - 1] + grisSin[i + W + 1];
       const gy = -grisSin[i - W - 1] - 2 * grisSin[i - W] - grisSin[i - W + 1] + grisSin[i + W - 1] + 2 * grisSin[i + W] + grisSin[i + W + 1];
       mag[i] = Math.sqrt(gx * gx + gy * gy) / 4;
-      const ang = Math.atan2(gy, gx);                        // -π..π
-      const q = Math.round(ang / (Math.PI / 4)) & 3;           // 0: horizontal, 1: diag, 2: vertical, 3: diag
-      dirq[i] = q;
+      dirq[i] = Math.round(Math.atan2(gy, gx) / (Math.PI / 4)) & 3;
     }
-    const tinta = new Float32Array(N);                          // 0..1
-    const UMBRAL = 11;
+    const tinta = new Float32Array(N), UMBRAL = 11;
     for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
       const i = y * W + x, m = mag[i]; if (m < UMBRAL) continue;
       let a, b;
       switch (dirq[i]) { case 0: a = mag[i - 1]; b = mag[i + 1]; break; case 1: a = mag[i - W + 1]; b = mag[i + W - 1]; break; case 2: a = mag[i - W]; b = mag[i + W]; break; default: a = mag[i - W - 1]; b = mag[i + W + 1]; }
-      if (m < a || m < b) continue;                             // no es la cresta del borde
+      if (m < a || m < b) continue;
       tinta[i] = clamp01((m - UMBRAL) / 70);
     }
-
-    // ── donde hay demasiado trazo junto (las copas de los árboles) la tinta se
-    //    aclara: un dibujante no rellena una copa a rayas, la sugiere ──
-    const dens = new Float32Array(N);
-    const R2 = 6;
+    // donde el trazo es una maraña (follaje) se aclara
+    const dens = new Float32Array(N), R2 = 6;
     for (let y = R2; y < H - R2; y += 2) for (let x = R2; x < W - R2; x += 2) {
       let n = 0;
       for (let dy = -R2; dy <= R2; dy += 2) for (let dx = -R2; dx <= R2; dx += 2) if (tinta[(y + dy) * W + x + dx]) n++;
-      const v = n / 49;
-      dens[y * W + x] = v; dens[y * W + x + 1] = v; dens[(y + 1) * W + x] = v; dens[(y + 1) * W + x + 1] = v;
+      const v = n / 49; dens[y * W + x] = v; dens[y * W + x + 1] = v; dens[(y + 1) * W + x] = v; dens[(y + 1) * W + x + 1] = v;
     }
     for (let i = 0; i < N; i++) if (tinta[i] && dens[i] > 0.2) tinta[i] *= Math.max(0.12, 1 - (dens[i] - 0.2) * 2.2);
 
-    // ── el momento de aparición de cada píxel de tinta ──
-    // distancia al eje de la torre (0 en el eje, 1 en el borde más lejano),
-    // fuerza del trazo (lo fuerte primero) y azar. Después se normaliza por
-    // rango para que cada banda tenga más o menos la misma cantidad de tinta.
-    const momento = new Float32Array(N);
+    // ── de crestas a TRAZOS: se siguen las cadenas de píxeles ──
+    const visto = new Uint8Array(N);
+    const vecinos = [-W - 1, -W, -W + 1, -1, 1, W - 1, W, W + 1];
+    const dxs = [-1, 0, 1, -1, 1, -1, 0, 1], dys = [-1, -1, -1, 0, 0, 1, 1, 1];
+    const grado = (i) => { let n = 0; for (let k = 0; k < 8; k++) if (tinta[i + vecinos[k]] > 0.03) n++; return n; };
+    const trazos = [];
+    const seguir = (inicio) => {
+      const pts = []; let i = inicio, fuerza = 0, pdx = 0, pdy = 0;
+      while (i >= 0 && !visto[i]) {
+        visto[i] = 1; pts.push(i % W, (i / W) | 0); fuerza += tinta[i];
+        // el vecino que mejor continúa la dirección que traía
+        let mejor = -1, mejorPuntaje = -9;
+        for (let k = 0; k < 8; k++) {
+          const j = i + vecinos[k]; if (visto[j] || tinta[j] <= 0.03) continue;
+          const puntaje = pdx * dxs[k] + pdy * dys[k] + (k === 1 || k === 3 || k === 4 || k === 6 ? 0.15 : 0);
+          if (puntaje > mejorPuntaje) { mejorPuntaje = puntaje; mejor = k; }
+        }
+        if (mejor >= 0) { pdx = dxs[mejor]; pdy = dys[mejor]; i += vecinos[mejor]; continue; }
+        // sin vecino directo: se salta UN píxel roto en la dirección que traía.
+        // Sin esto la cresta se parte en pedacitos de diez píxeles y el dibujo
+        // se lee como guiones que aparecen, no como líneas que se trazan.
+        if (pdx === 0 && pdy === 0) break;
+        let salto = -1, saltoPuntaje = -9;
+        const x0 = i % W, y0 = (i / W) | 0;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+          if (Math.abs(dx) < 2 && Math.abs(dy) < 2) continue;
+          const xx = x0 + dx, yy = y0 + dy; if (xx < 1 || yy < 1 || xx >= W - 1 || yy >= H - 1) continue;
+          const j = yy * W + xx; if (visto[j] || tinta[j] <= 0.03) continue;
+          const l = Math.hypot(dx, dy), puntaje = (pdx * dx + pdy * dy) / l;
+          if (puntaje > 0.6 && puntaje > saltoPuntaje) { saltoPuntaje = puntaje; salto = j; }
+        }
+        if (salto < 0) break;
+        const nx = salto % W, ny = (salto / W) | 0;
+        pdx = Math.sign(nx - x0); pdy = Math.sign(ny - y0); i = salto;
+      }
+      return { pts, fuerza: pts.length ? fuerza / (pts.length / 2) : 0 };
+    };
+    const MIN = esCelular ? 8 : 10;
+    // primero desde los extremos (grado 1): trazos naturales; después lo que queda (lazos)
+    for (let pasada = 0; pasada < 2; pasada++) {
+      for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+        const i = y * W + x; if (visto[i] || tinta[i] <= 0.03) continue;
+        if (pasada === 0 && grado(i) !== 1) continue;
+        const t = seguir(i);
+        if (t.pts.length / 2 >= MIN) trazos.push(t); 
+      }
+    }
+
+    // ── el orden y el tiempo de cada trazo ──
     const ancla = { x: EJE.x * W, y: EJE.y * H };
     const dMax = Math.hypot(Math.max(ancla.x, W - ancla.x), Math.max(ancla.y, H - ancla.y));
-    const hist = new Uint32Array(1024); let total = 0;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const i = y * W + x; if (!tinta[i]) continue;
-      const d = Math.hypot((x - ancla.x) * 0.75, (y - ancla.y) * 0.55) / dMax;   // la torre es alta: la distancia vertical pesa menos
-      const fuerza = 1 - tinta[i];
-      const azar = ((x * 7919 + y * 104729) % 1000) / 1000;
-      const m = 0.58 * d + 0.27 * fuerza + 0.15 * azar;
-      momento[i] = m; hist[Math.min(1023, (m * 1023) | 0)]++; total++;
-    }
-    const acum = new Float32Array(1024); let corr = 0;
-    for (let k = 0; k < 1024; k++) { corr += hist[k]; acum[k] = corr / (total || 1); }
+    const VEL = W * 0.85;                          // px por segundo: un trazo largo tarda ~1 s
+    trazos.forEach((t, idx) => {
+      let cx = 0, cy = 0; const n = t.pts.length / 2;
+      for (let k = 0; k < t.pts.length; k += 2) { cx += t.pts[k]; cy += t.pts[k + 1]; }
+      cx /= n; cy /= n;
+      const d = Math.hypot((cx - ancla.x) * 0.75, (cy - ancla.y) * 0.55) / dMax;
+      t.largo = n;
+      t.orden = 0.6 * d + 0.22 * (1 - t.fuerza) + 0.12 * hash2(idx, 7) - 0.14 * Math.min(1, n / 260);
+    });
+    trazos.sort((a, b) => a.orden - b.orden);
+    const M = trazos.length;
+    const TD = DUR.lineas;
+    trazos.forEach((t, r) => {
+      const rr = Math.pow(r / Math.max(1, M - 1), 0.7);          // arranque escaso, final cargado
+      t.dur = Math.min(1.25, Math.max(0.18, t.largo / VEL));
+      t.ini = rr * (TD - t.dur) * 0.97;
+      t.fin = t.ini + t.dur;
+      // cada dos puntos alcanza para el trazo; se guarda liviano
+      const fino = []; for (let k = 0; k < t.pts.length; k += 4) fino.push(t.pts[k], t.pts[k + 1]);
+      if ((t.pts.length - 2) % 4 !== 0) fino.push(t.pts[t.pts.length - 2], t.pts[t.pts.length - 1]);
+      t.p = new Float32Array(fino); t.pts = null;
+    });
+    const porFin = trazos.slice().sort((a, b) => a.fin - b.fin);
 
-    // ── las bandas: una capa por banda, con la tinta que le toca ──
-    const capas = [];
-    const datos = [];
-    for (let k = 0; k < BANDAS; k++) { const c = lienzo(W, H); capas.push(c); datos.push(c.getContext("2d").createImageData(W, H)); }
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const i = y * W + x; if (!tinta[i]) continue;
-      const r = acum[Math.min(1023, (momento[i] * 1023) | 0)];  // 0..1 por rango
-      // r^0.55: la primera banda tiene menos del 1 % de la tinta —el dibujo
-      // nace de cero— y la última carga un sexto. (Con r^1.5 era al revés:
-      // la primera banda se llevaba el 19 % y el dibujo arrancaba ya armado.)
-      const k = Math.min(BANDAS - 1, (Math.pow(r, 0.55) * BANDAS) | 0);
-      const d = datos[k].data, o = i * 4;
-      d[o] = 41; d[o + 1] = 33; d[o + 2] = 26; d[o + 3] = 90 + tinta[i] * 165;   // presión de lapicera
-    }
-    capas.forEach((c, k) => c.getContext("2d").putImageData(datos[k], 0, 0));
-
-    // ── la arcilla, ya sin letras ──
+    // ── la arcilla, el cielo, el papel, el ruido ──
     const arcilla = lienzo(W, H);
     const da = arcilla.getContext("2d").createImageData(W, H);
-    const letrasLa = lienzo(W, H), letrasTorre = lienzo(W, H);
-    const dl = letrasLa.getContext("2d").createImageData(W, H), dt = letrasTorre.getContext("2d").createImageData(W, H);
-    for (let j = 0; j < N; j++) {
-      const k = j * 4;
-      const v = 238 + (grisSin[j] - 128) * 0.2;
-      da.data[k] = v + 4; da.data[k + 1] = v + 1; da.data[k + 2] = v - 6; da.data[k + 3] = 255;
-      const cap = letraD[j] === 1 ? dl : letraD[j] === 2 ? dt : null;
-      if (cap) { cap.data[k] = src[k]; cap.data[k + 1] = src[k + 1]; cap.data[k + 2] = src[k + 2]; cap.data[k + 3] = 255; }
-    }
+    for (let j = 0; j < N; j++) { const k = j * 4, v = 238 + (grisSin[j] - 128) * 0.2; da.data[k] = v + 4; da.data[k + 1] = v + 1; da.data[k + 2] = v - 6; da.data[k + 3] = 255; }
     arcilla.getContext("2d").putImageData(da, 0, 0);
-    letrasLa.getContext("2d").putImageData(dl, 0, 0);
-    letrasTorre.getContext("2d").putImageData(dt, 0, 0);
-
-    // el cielo aparece detrás de la arcilla
     const cielo = lienzo(W, H); const gc = cielo.getContext("2d");
-    gc.drawImage(sinLetras, 0, 0);
-    gc.globalCompositeOperation = "destination-in";
-    const grad = gc.createLinearGradient(0, H * 0.2, 0, H * 0.5);
-    grad.addColorStop(0, "rgba(0,0,0,1)"); grad.addColorStop(1, "rgba(0,0,0,0)");
+    gc.drawImage(sinLetras, 0, 0); gc.globalCompositeOperation = "destination-in";
+    const grad = gc.createLinearGradient(0, H * 0.2, 0, H * 0.5); grad.addColorStop(0, "rgba(0,0,0,1)"); grad.addColorStop(1, "rgba(0,0,0,0)");
     gc.fillStyle = grad; gc.fillRect(0, 0, W, H);
-
-    // ── el papel: crema con un grano apenas visible ──
     const papel = lienzo(W, H); const gp = papel.getContext("2d");
     gp.fillStyle = "#F3EADA"; gp.fillRect(0, 0, W, H);
     const dpp = gp.getImageData(0, 0, W, H);
-    // un hash que mezcla x e y: con uno lineal el grano salía como rayas diagonales
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      let h = (x * 374761393 + y * 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); h = (h ^ (h >>> 16)) >>> 0;
-      const n = (h % 9) - 4, k = (y * W + x) * 4;
-      dpp.data[k] += n; dpp.data[k + 1] += n; dpp.data[k + 2] += n;
-    }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const n = (hash2(x, y) * 9 | 0) - 4, k = (y * W + x) * 4; dpp.data[k] += n; dpp.data[k + 1] += n; dpp.data[k + 2] += n; }
     gp.putImageData(dpp, 0, 0);
-
-    // ── el ruido de la máscara de materiales ──
     const NW = 160, NH = Math.round(160 * H / W);
     let ruido = new Float32Array(NW * NH);
-    for (let i = 0; i < ruido.length; i++) ruido[i] = ((i * 2654435761) >>> 0) % 1000 / 1000;
+    for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) ruido[y * NW + x] = hash2(x + 99, y + 7);
     for (let paso = 0; paso < 3; paso++) {
       const r2 = new Float32Array(NW * NH);
-      for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) {
-        let sum = 0, n = 0;
-        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const yy = y + dy, xx = x + dx; if (yy < 0 || yy >= NH || xx < 0 || xx >= NW) continue; sum += ruido[yy * NW + xx]; n++; }
-        r2[y * NW + x] = sum / n;
-      }
+      for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) { let sum = 0, n = 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const yy = y + dy, xx = x + dx; if (yy < 0 || yy >= NH || xx < 0 || xx >= NW) continue; sum += ruido[yy * NW + xx]; n++; } r2[y * NW + x] = sum / n; }
       ruido = r2;
     }
     let mn = 1, mx = 0; ruido.forEach((v) => { if (v < mn) mn = v; if (v > mx) mx = v; });
     ruido = ruido.map((v) => (v - mn) / (mx - mn || 1));
 
-    escena = { W, H, base: sinLetras, capas, arcilla, cielo, papel, ruido, NW, NH, letrasLa, letrasTorre,
+    escena = { W, H, base: sinLetras, trazos, porFin, arcilla, cielo, papel, ruido, NW, NH,
+      hecho: lienzo(W, H), hechoHasta: 0, ultimoT: -1,
       mascara: lienzo(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
     heroListo = true;
   }
 
-  /* las cotas fantasma del dibujo: sólo datos reales del proyecto */
+  /* dibuja un trazo, entero o hasta la fracción f, con presión de lapicera */
+  function trazar(ctx, t, f) {
+    const p = t.p, n = p.length / 2;
+    if (n < 2) return;
+    ctx.strokeStyle = `rgba(41,33,26,${0.45 + 0.55 * t.fuerza})`;
+    ctx.lineWidth = 1.05 + 0.95 * t.fuerza;
+    ctx.beginPath(); ctx.moveTo(p[0], p[1]);
+    const hasta = f >= 1 ? n - 1 : (n - 1) * f;
+    const ent = Math.floor(hasta);
+    for (let k = 1; k <= ent; k++) ctx.lineTo(p[k * 2], p[k * 2 + 1]);
+    if (f < 1 && ent < n - 1) { const fr = hasta - ent; ctx.lineTo(p[ent * 2] + (p[ent * 2 + 2] - p[ent * 2]) * fr, p[ent * 2 + 1] + (p[ent * 2 + 3] - p[ent * 2 + 1]) * fr); }
+    ctx.stroke();
+  }
+
   function cotas(o, W, H, p, idiomaActual) {
     if (p <= 0) return;
-    o.save();
-    o.globalAlpha = p * 0.55;
-    o.strokeStyle = "#5a4a3c"; o.fillStyle = "#5a4a3c"; o.lineWidth = 1;
+    o.save(); o.globalAlpha = p * 0.55; o.strokeStyle = "#5a4a3c"; o.fillStyle = "#5a4a3c"; o.lineWidth = 1;
     o.font = `${Math.round(W * 0.011)}px Archivo, sans-serif`;
     const tick = (x, y, v) => { o.beginPath(); if (v) { o.moveTo(x - 5, y); o.lineTo(x + 5, y); } else { o.moveTo(x, y - 5); o.lineTo(x, y + 5); } o.stroke(); };
-    // la altura: seis plantas
     const xA = W * 0.62, y0 = H * 0.07, y1 = H * 0.9;
-    o.beginPath(); o.moveTo(xA, y0); o.lineTo(xA, y0 + (y1 - y0) * p); o.stroke();
-    tick(xA, y0, true); if (p > 0.95) tick(xA, y1, true);
+    o.beginPath(); o.moveTo(xA, y0); o.lineTo(xA, y0 + (y1 - y0) * p); o.stroke(); tick(xA, y0, true); if (p > 0.95) tick(xA, y1, true);
     o.save(); o.translate(xA + 6, (y0 + y1) / 2); o.rotate(-Math.PI / 2); o.textAlign = "center";
     o.fillText(idiomaActual === "en" ? "6 floors" : idiomaActual === "pt" ? "6 andares" : "6 plantas", 0, 0); o.restore();
-    // las superficies
     const xs0 = W * 0.31, xs1 = W * 0.56, ys = H * 0.035;
-    o.beginPath(); o.moveTo(xs0, ys); o.lineTo(xs0 + (xs1 - xs0) * p, ys); o.stroke();
-    tick(xs0, ys, false); if (p > 0.95) tick(xs1, ys, false);
+    o.beginPath(); o.moveTo(xs0, ys); o.lineTo(xs0 + (xs1 - xs0) * p, ys); o.stroke(); tick(xs0, ys, false); if (p > 0.95) tick(xs1, ys, false);
     o.textAlign = "center"; o.fillText("37 – 55 m²", (xs0 + xs1) / 2, ys - 6);
-    // la calle
     o.textAlign = "left"; o.fillText("Aniceto Latorre", W * 0.08, H * 0.965);
     o.beginPath(); o.moveTo(W * 0.08, H * 0.975); o.lineTo(W * 0.08 + W * 0.22 * p, H * 0.975); o.stroke();
     o.restore();
@@ -677,10 +684,8 @@
     const img = mascara.getContext("2d").createImageData(NW, NH);
     const cx = EJE.x, cy = 0.55, R = p * 1.35, pluma = 0.28;
     for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) {
-      const fx = x / NW, fy = y / NH;
-      const d = Math.hypot((fx - cx) * (W / H), fy - cy) / 1.1;
-      const a = clamp01((R - d) / pluma + (ruido[y * NW + x] - 0.5) * 0.7);
-      const k = (y * NW + x) * 4;
+      const fx = x / NW, fy = y / NH, d = Math.hypot((fx - cx) * (W / H), fy - cy) / 1.1;
+      const a = clamp01((R - d) / pluma + (ruido[y * NW + x] - 0.5) * 0.7), k = (y * NW + x) * 4;
       img.data[k] = img.data[k + 1] = img.data[k + 2] = 0; img.data[k + 3] = a * 255;
     }
     mascara.getContext("2d").putImageData(img, 0, 0);
@@ -693,74 +698,73 @@
     o.globalCompositeOperation = "source-over"; o.globalAlpha = 1;
     o.drawImage(e.papel, 0, 0);
 
-    // 1 · las líneas se van uniendo, banda por banda
-    const pL = fase(t, "lineas");
-    const pos = pL * BANDAS;
-    for (let k = 0; k < BANDAS; k++) {
-      const a = clamp01(pos - k);                 // cada banda entra en su ranura
-      if (a <= 0) break;
-      o.globalAlpha = a; o.drawImage(e.capas[k], 0, 0);
+    // 1 · los trazos: los terminados viven en `hecho`; los que están en curso se dibujan parciales
+    const h = e.hecho.getContext("2d");
+    if (t < e.ultimoT) { h.clearRect(0, 0, W, H); e.hechoHasta = 0; }   // se volvió atrás (capturas)
+    e.ultimoT = t;
+    h.lineCap = "round"; h.lineJoin = "round";
+    while (e.hechoHasta < e.porFin.length && e.porFin[e.hechoHasta].fin <= t) { trazar(h, e.porFin[e.hechoHasta], 1); e.hechoHasta++; }
+    o.drawImage(e.hecho, 0, 0);
+    o.lineCap = "round"; o.lineJoin = "round";
+    let enCurso = 0;
+    for (let k = e.hechoHasta; k < e.porFin.length; k++) {
+      const tr = e.porFin[k];
+      if (tr.ini > t) continue;                 // todavía no arranca (porFin no está ordenado por inicio: se recorre)
+      const f = (t - tr.ini) / tr.dur; if (f <= 0) continue;
+      trazar(o, tr, Math.min(1, f)); enCurso++;
+      if (enCurso > 1200) break;                 // tope de seguridad por cuadro
     }
-    o.globalAlpha = 1;
-    // las cotas aparecen a mitad del dibujo y se van con la arcilla
     const pC = fase(t, "cotas") * (1 - fase(t, "arcilla"));
     cotas(o, W, H, pC, idioma);
 
-    // 3 · la arcilla, con el cielo detrás
+    // 3 · la arcilla con el cielo detrás
     const pA = fase(t, "arcilla");
-    if (pA > 0) {
-      o.globalAlpha = pA * 0.94; o.drawImage(e.arcilla, 0, 0);
-      o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0);
-      o.globalAlpha = 1;
-    }
+    if (pA > 0) { o.globalAlpha = pA * 0.94; o.drawImage(e.arcilla, 0, 0); o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0); o.globalAlpha = 1; }
     // 4 · los materiales
-    const pM = fase(t, "materiales"), pLa = fase(t, "la"), pTo = fase(t, "torre");
+    const pM = fase(t, "materiales");
     if (pM > 0) {
-      const m = mascaraMateriales(pM);
-      const t2 = e.tmp.getContext("2d");
-      t2.clearRect(0, 0, W, H); t2.globalCompositeOperation = "source-over";
-      t2.drawImage(e.base, 0, 0);
-      t2.globalCompositeOperation = "destination-in"; t2.imageSmoothingEnabled = true;
-      t2.drawImage(m, 0, 0, W, H);
+      const m = mascaraMateriales(pM), t2 = e.tmp.getContext("2d");
+      t2.clearRect(0, 0, W, H); t2.globalCompositeOperation = "source-over"; t2.drawImage(e.base, 0, 0);
+      t2.globalCompositeOperation = "destination-in"; t2.imageSmoothingEnabled = true; t2.drawImage(m, 0, 0, W, H);
       o.drawImage(e.tmp, 0, 0);
     }
-    // 5 · el logotipo, al final: LA y después TORRE
-    if (pLa > 0) { o.globalAlpha = pLa; o.drawImage(e.letrasLa, 0, 0); }
-    if (pTo > 0) { o.globalAlpha = pTo; o.drawImage(e.letrasTorre, 0, 0); }
-    o.globalAlpha = 1;
   }
 
   function presentar() {
-    const e = escena;
-    const vw = boceto.clientWidth, vh = boceto.clientHeight;
+    const e = escena, vw = boceto.clientWidth, vh = boceto.clientHeight;
     if (boceto.width !== vw || boceto.height !== vh) { boceto.width = vw; boceto.height = vh; }
-    const esc = Math.max(vw / e.W, vh / e.H);
-    const dw = e.W * esc, dh = e.H * esc, dx = (vw - dw) / 2, dy = (vh - dh) * 0.30;
-    const g = boceto.getContext("2d");
-    g.clearRect(0, 0, vw, vh); g.drawImage(e.out, dx, dy, dw, dh);
+    const esc = Math.max(vw / e.W, vh / e.H), dw = e.W * esc, dh = e.H * esc, dx = (vw - dw) / 2, dy = (vh - dh) * 0.30;
+    const g = boceto.getContext("2d"); g.clearRect(0, 0, vw, vh); g.drawImage(e.out, dx, dy, dw, dh);
   }
 
-  function terminarHero() {
-    if (heroTerminado) return;
-    heroTerminado = true;
-    boceto.style.transition = "opacity .7s ease"; boceto.style.opacity = "0";
+  /* el título aparece cuando el render está casi entero: «LA», y después «TORRE» */
+  function dispararTitulo() {
+    if (tituloDisparado) return; tituloDisparado = true;
     heroSec.classList.add("claro"); document.body.classList.add("hero-claro");
     heroTexto.classList.add("visible");
-    if (window.gsap && !reduce) gsap.from(".hero-texto > *", { y: 18, opacity: 0, duration: .9, ease: "power2.out", stagger: 0.1 });
-    setTimeout(() => { boceto.style.display = "none"; }, 800);
+    if (window.gsap && !reduce) {
+      const letras = $$(".hero-titulo .letra:not(.esp)");
+      gsap.set(letras, { yPercent: 70, opacity: 0 });
+      gsap.to(letras.slice(0, 2), { yPercent: 0, opacity: 1, duration: .9, ease: "power3.out", stagger: 0.08 });
+      gsap.to(letras.slice(2), { yPercent: 0, opacity: 1, duration: .9, ease: "power3.out", stagger: 0.07, delay: 0.55 });
+      gsap.from(".hero-rotulo, .hero-bajada, .hero-ctas, .hero-pista", { y: 14, opacity: 0, duration: .8, ease: "power2.out", stagger: 0.08, delay: 1.1 });
+    }
   }
-
+  function terminarHero() {
+    if (heroTerminado) return; heroTerminado = true;
+    dispararTitulo();
+    // el canvas se queda: es el render sin el logotipo quemado. La imagen de abajo no se vuelve a ver.
+  }
   function bucleHero(ts) {
     if (!heroListo) { requestAnimationFrame(bucleHero); return; }
     if (ultimoTs == null) ultimoTs = ts;
     const dt = Math.min(0.05, (ts - ultimoTs) / 1000); ultimoTs = ts;
     tHero += dt * (apurar ? 6 : 1);
     pintarHero(tHero); presentar();
-    if (fase(tHero, "materiales") > 0.55) { heroSec.classList.add("claro"); document.body.classList.add("hero-claro"); }
+    if (fase(tHero, "materiales") > 0.8) dispararTitulo();
     if (tHero >= TOTAL) { terminarHero(); return; }
     requestAnimationFrame(bucleHero);
   }
-
   function arrancarHero() {
     if (reduce) { boceto.style.display = "none"; heroSec.classList.add("claro"); document.body.classList.add("hero-claro"); heroTexto.classList.add("visible"); heroTerminado = true; return; }
     if (!heroListo) prepararHero();
@@ -770,9 +774,8 @@
     boceto.addEventListener("click", apurarYa, { once: true });
     requestAnimationFrame(bucleHero);
   }
-  // el cálculo pesado se hace mientras corre el contador de la intro, no después
   if (!reduce) { if (heroImg.complete && heroImg.naturalWidth) setTimeout(prepararHero, 0); else heroImg.addEventListener("load", () => setTimeout(prepararHero, 0)); }
-  addEventListener("resize", () => { if (heroListo && !heroTerminado) presentar(); });
+  addEventListener("resize", () => { if (heroListo) presentar(); });
 
   /* ── 6 · scroll suave, títulos partidos, parallax ──────────────────────── */
   let lenis = null;
@@ -975,5 +978,5 @@
   pintarIdioma();
   document.dispatchEvent(new Event("idioma-pintado"));
   visita();
-  window.PORTADA = { hero: { pintar: pintarHero, presentar, listo: () => heroListo, escena: () => escena, preparar: prepararHero, TOTAL }, lenis: () => lenis, DICC, pintarIdioma, cambiarIdioma: (i) => { idioma = i; pintarIdioma(); document.dispatchEvent(new Event("idioma-pintado")); }, UNIDADES: () => UNIDADES };
+  window.PORTADA = { hero: { pintar: pintarHero, presentar, listo: () => heroListo, escena: () => escena, preparar: prepararHero, TOTAL, DUR, INICIO }, lenis: () => lenis, DICC, pintarIdioma, cambiarIdioma: (i) => { idioma = i; pintarIdioma(); document.dispatchEvent(new Event("idioma-pintado")); }, UNIDADES: () => UNIDADES };
 })();

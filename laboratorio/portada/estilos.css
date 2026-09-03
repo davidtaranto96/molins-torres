@@ -92,12 +92,14 @@ body.menu-abierto .cab{color:var(--crema);background:var(--tinta-oscura)}
 .hero.claro .hero-velo{opacity:1}
 .hero-texto{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(56px,9vh,96px);max-width:var(--ancho);margin:0 auto;opacity:0;transition:opacity .4s ease}
 .hero-texto.visible{opacity:1}
-/* EL TITULAR ES EL LOGOTIPO DEL RENDER: viene quemado en el JPG y aparece al
-   final de la secuencia, primero «LA» y después «TORRE». El h1 queda para
-   lectores de pantalla. */
-.hero-titulo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.hero-bajada{margin:10px 0 0;max-width:30ch;font-family:var(--serif);font-weight:300;font-size:clamp(24px,3vw,40px);line-height:1.15;color:var(--tinta);transition:color .5s;text-wrap:balance}
-.hero.claro .hero-bajada{color:var(--crema)}
+/* EL TÍTULO ES TIPOGRÁFICO, como en la referencia: grande, abajo, y aparece
+   cuando el render ya está — «LA» y después «TORRE». El logotipo que venía
+   quemado en el JPG se elimina en la página, así no compiten. */
+.hero-titulo{margin:4px 0 0;font-family:var(--serif);font-weight:300;font-size:clamp(58px,12vw,196px);line-height:.88;letter-spacing:.05em;color:var(--crema);white-space:nowrap;text-shadow:0 2px 24px rgba(18,12,9,.35)}
+.hero-titulo .letra{display:inline-block;will-change:transform,opacity}
+.hero-titulo .esp{width:.28em}
+@media (max-width:520px){.hero-titulo{white-space:normal;font-size:clamp(58px,20vw,120px)}}
+.hero-bajada{margin:14px 0 0;max-width:46ch;font-size:clamp(15px,1.3vw,18px);line-height:1.55;color:rgba(243,234,218,.86)}
 .hero-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
 .hero-pista{position:absolute;z-index:4;right:var(--lado);bottom:22px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-claro);opacity:0;transition:opacity .6s ease 1s}
 .hero.claro .hero-pista{color:rgba(243,234,218,.6);opacity:1}
