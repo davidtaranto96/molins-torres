@@ -59,6 +59,18 @@ y como prueba de que la estructura cierra.
 `.gitignore`. El HTML no referencia ninguno, y meterlos multiplicaría por cinco
 el peso del repo para siempre.
 
+## El showroom 3D
+
+Está relevado y no construido: `docs/showroom-3d.md`. Los tres titulares, para no volver a
+investigarlo: **ningún showroom comercial del rubro es 3D de verdad** (Winbuild y Web3D son MP4
+pre-renderizados más un polígono SVG por piso, y mandan 97 y 35 MB); **ninguno de los dos tiene
+transición día/noche**, que es lo más barato de todo y por eso es el diferenciador; y lo único
+que se puede empezar sin pedirle nada a nadie es el **explorador de pisos**, que sale por fórmula
+sobre la elevación de fachada y pesa 36 KB.
+
+Antes de dibujar un solo polígono hay que resolver el bloqueante: el sitio dice 12 unidades y 6
+plantas por torre, y la elevación tiene 8 niveles.
+
 ## Lo que falta para arrancar el rediseño
 
 Del presupuesto, textual. Nada de esto lo podemos hacer nosotros:
