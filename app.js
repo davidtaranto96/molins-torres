@@ -897,7 +897,39 @@
     let mn = 1, mx = 0; ruido.forEach((v) => { if (v < mn) mn = v; if (v > mx) mx = v; });
     ruido = ruido.map((v) => (v - mn) / (mx - mn || 1));
 
-    escena = { W, H, base: sinLetras, trazos, porFin, guias, esc, arcilla, cielo, papel, ruido, NW, NH, prepMs: Math.round(performance.now() - tPrep),
+    // ── las capas de profundidad (3/9: «cargar capas, como la demo»). El render
+    // se parte en cielo, vecinos, la torre en tres tramos y los árboles del
+    // frente. En la etapa de materiales entran una por una, cada una con su
+    // propio desplazamiento, hasta que se ve la torre entera.
+    const verdeS = new Float32Array(SW * SH);
+    for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) {
+      const k = (y * W + x) * 4, r = dsl.data[k], gg = dsl.data[k + 1], b = dsl.data[k + 2];
+      if (gg > r + 12 && gg > b + 8 && gg > 40) verdeS[((y / cyS) | 0) * SW + ((x / cxS) | 0)] += 1;
+    }
+    for (let i = 0; i < verdeS.length; i++) verdeS[i] = verdeS[i] / (cxS * cyS / 4) > 0.35 ? 1 : 0;
+    let verde = blurS(verdeS, 1); for (let i = 0; i < verde.length; i++) verde[i] = verde[i] > 0.3 ? 1 : 0;
+    verde = blurS(verde, 1);
+    let torreTop = SH, torreBot = 0;
+    for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) if (sil[y * SW + x]) { if (y < torreTop) torreTop = y; if (y > torreBot) torreBot = y; }
+    const HZ = Math.round(SH * 0.52);
+    const capasM = {}; ["cielo", "suelo", "arboles", "t0", "t1", "t2"].forEach((k) => { capasM[k] = new Float32Array(SW * SH); });
+    for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) {
+      const i = y * SW + x, sT = sil[i], v = verde[i] * (1 - sT);
+      if (sT) { const f = (y - torreTop) / Math.max(1, torreBot - torreTop); (f < 0.34 ? capasM.t0 : f < 0.67 ? capasM.t1 : capasM.t2)[i] = 1; }
+      else { capasM.arboles[i] = v; const resto = 1 - v; const c = clamp01((HZ + SH * 0.09 - y) / (SH * 0.18)); capasM.cielo[i] = resto * c; capasM.suelo[i] = resto * (1 - c); }
+    }
+    const capas = {};
+    Object.entries(capasM).forEach(([k, m]) => {
+      const suave = blurS(m, 1);
+      const mc = lienzo(SW, SH), gm = mc.getContext("2d"), dm = gm.createImageData(SW, SH);
+      for (let i = 0; i < suave.length; i++) dm.data[i * 4 + 3] = Math.round(255 * Math.min(1, suave[i]));
+      gm.putImageData(dm, 0, 0);
+      const c = lienzo(W, H), gc2 = c.getContext("2d");
+      gc2.drawImage(sinLetras, 0, 0); gc2.globalCompositeOperation = "destination-in"; gc2.imageSmoothingEnabled = true; gc2.drawImage(mc, 0, 0, W, H);
+      capas[k] = c;
+    });
+
+    escena = { W, H, base: sinLetras, trazos, porFin, guias, esc, arcilla, cielo, papel, capas, ruido, NW, NH, prepMs: Math.round(performance.now() - tPrep),
       hecho: lienzo(W, H), hechoHasta: 0, ultimoT: -1,
       mascara: lienzo(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
     heroListo = true;
@@ -994,12 +1026,22 @@
     e.fundido = pA;                                   // el fundido al papel de arriba sólo cuando hay cielo (ver presentar)
     if (pA > 0) { o.globalAlpha = pA * 0.94; o.drawImage(e.arcilla, 0, 0); o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0); o.globalAlpha = 1; }
     // 4 · los materiales
+    // 4 · los materiales, por capas: el cielo, los vecinos, la torre de abajo
+    //     hacia arriba en tres tramos, y al final los árboles del frente, que
+    //     entran un poco más grandes y se asientan (la capa más cercana)
     const pM = fase(t, "materiales");
-    if (pM > 0) {
-      const m = mascaraMateriales(pM), t2 = e.tmp.getContext("2d");
-      t2.clearRect(0, 0, W, H); t2.globalCompositeOperation = "source-over"; t2.drawImage(e.base, 0, 0);
-      t2.globalCompositeOperation = "destination-in"; t2.imageSmoothingEnabled = true; t2.drawImage(m, 0, 0, W, H);
-      o.drawImage(e.tmp, 0, 0);
+    if (pM >= 1) o.drawImage(e.base, 0, 0);
+    else if (pM > 0) {
+      const suave = (a, b) => { const v = clamp01((pM - a) / (b - a)); return v * v * (3 - 2 * v); };
+      const ORDEN = [["cielo", 0, .4, -.025], ["suelo", .08, .5, .03], ["t2", .26, .6, .035], ["t1", .4, .74, .035], ["t0", .54, .88, .035], ["arboles", .66, 1, .05]];
+      ORDEN.forEach(([k, a, b, oy]) => {
+        const p = suave(a, b); if (p <= 0) return;
+        o.globalAlpha = p;
+        const dy = oy * H * (1 - p);
+        if (k === "arboles") { const sc = 1 + 0.04 * (1 - p); o.save(); o.translate(W / 2, H); o.scale(sc, sc); o.translate(-W / 2, -H); o.drawImage(e.capas[k], 0, dy); o.restore(); }
+        else o.drawImage(e.capas[k], 0, dy);
+      });
+      o.globalAlpha = 1;
     }
   }
 
