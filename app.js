@@ -1014,12 +1014,16 @@
     // el cuadro baja una franja (16 % del alto): la azotea y su cota quedan a la
     // vista debajo de la cabecera, y arriba el cielo sigue con las primeras
     // filas del propio cuadro estiradas (pedido del 3/9: «bajar un poco el hero»)
-    const franja = Math.round(ph * 0.10);
+    const franja = Math.round(ph * 0.08);
     // el cuadro entra entero de arriba abajo (la azotea y la base, las dos a la
     // vista); se admite hasta un 10 % de recorte abajo antes de dejar papel a
     // los costados en pantallas muy apaisadas: el cuadro montado en la hoja
-    const esc = Math.max((ph - franja) / e.H, Math.min(pw / e.W, (ph - franja) / (e.H * 0.90)));
-    const dw = e.W * esc, dh = e.H * esc, dx = (pw - dw) / 2, dy = franja;
+    // la torre completa, de la azotea a la vereda, en cualquier pantalla (3/9):
+    // se ajusta por alto; si sobra ancho queda papel a los costados, y si
+    // falta (celular) el recorte se centra en la torre
+    const esc = (ph - franja) / e.H;
+    const dw = e.W * esc, dh = e.H * esc, dy = franja;
+    const dx = dw <= pw ? (pw - dw) / 2 : Math.max(pw - dw, Math.min(0, pw / 2 - EJE.x * dw));
     heroSec.style.setProperty("--hero-dx", (dx / dpr).toFixed(1) + "px");   // el texto se alinea con el borde del cuadro
     const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph);
     // la franja de arriba es papel, y el cuadro se funde al papel en un borde
@@ -1151,22 +1155,22 @@
     const PARRAFOS = ".parrafo, .partida-lista li, .contacto-texto, .res-desc, .diseno-titulo, .partida-titulo, .visita-panel p, .adentro-cab .parrafo";
     $$(PARRAFOS).forEach((el) => {
       const ws = partirPalabras(el); if (!ws.length) return;
-      gsap.from(ws, { yPercent: 70, opacity: 0, duration: .7, ease: "power2.out", stagger: 0.014, delay: .15, scrollTrigger: { trigger: el, start: "top 86%", once: true } });
+      gsap.fromTo(ws, { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: .7, ease: "power2.out", stagger: 0.014, delay: .15, scrollTrigger: { trigger: el, start: "top 86%", once: true } });
     });
-    const SUBEN = ".rotulo, .boton, .lista-materiales li, .form-modos, .form label, .boton-pildora, .form-pie, .firma, .unidad, .leyenda, .nota, .pasos li, .cerca li, .ab, .visita-panel h3, .res-ficha, .res-pie, .tresd-marco, .adentro-marco .adentro-pie";
+    const SUBEN = ".rotulo, .boton, .lista-materiales li, .form-modos, .form label, .boton-pildora, .form-pie, .firma, .unidad, .leyenda, .nota, .pasos li, .cerca li, .ab, .visita-panel h3, .res-ficha, .res-pie, .adentro-marco .adentro-pie";
     $$(SUBEN).forEach((el) => {
       if (el.closest(".hero, .cab, .ficha, .intro, .cookies")) return;
-      gsap.from(el, { y: 22, opacity: 0, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
+      gsap.fromTo(el, { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
     });
     const FOTOS = ".blob img, .partida-foto img, .bloque-media img, .visita-panel img, .contacto-foto img, .res-foto";
     $$(FOTOS).forEach((el, i) => {
-      gsap.from(el, { scale: 1.14, xPercent: i % 2 ? 6 : -6, opacity: 0, duration: 1.4, ease: "power3.out", scrollTrigger: { trigger: el.parentElement, start: "top 85%", once: true } });
+      gsap.fromTo(el, { scale: 1.14, xPercent: i % 2 ? 6 : -6, opacity: 0 }, { scale: 1, xPercent: 0, opacity: 1, duration: 1.4, ease: "power3.out", scrollTrigger: { trigger: el.parentElement, start: "top 85%", once: true } });
     });
     // cada bloque de contenido llega entero, subiendo, y recién adentro el
     // texto se arma por palabras (la demo: nada está quieto cuando aparece)
     const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .ubicacion-texto, .pasos, .contacto-sobre, .form, .visita-cab, .pie-grid";
     $$(BLOQUES).forEach((el) => {
-      gsap.from(el, { y: 44, opacity: 0, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 84%", once: true } });
+      gsap.fromTo(el, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 84%", once: true } });
     });
     // las palabras grandes derivan de a poco con el scroll
     $$(".partida-palabra, .res-palabra").forEach((el) => {
@@ -1303,6 +1307,45 @@
     new IntersectionObserver((en) => en.forEach((x) => { if (x.isIntersecting) reiniciar(); else clearInterval(timer); }), { threshold: .3 }).observe(marcoAd);
     document.addEventListener("idioma-pintado", () => irAImagen(ai));
   }
+
+
+  /* ── el mapa de la zona: Leaflet con teselas de CARTO, cargado al acercarse ── */
+  const PUNTOS = {
+    torre: { c: [-24.77358, -65.41078] },
+    portal: { c: [-24.77214, -65.41268], t: "ubicacion.shopping" },
+    hospital: { c: [-24.77216, -65.41562], t: "ubicacion.hospital" },
+    paseo: { c: [-24.77898, -65.41144], t: "ubicacion.paseo" },
+  };
+  const mapaEl = $("#mapa");
+  let mapa = null, marcas = {};
+  function armarMapa() {
+    if (mapa || !window.L) return;
+    mapa = L.map(mapaEl, { scrollWheelZoom: false, zoomControl: true, attributionControl: true });
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 19 }).addTo(mapa);
+    Object.entries(PUNTOS).forEach(([k, p]) => {
+      const icono = L.divIcon({ className: "", html: `<div class="${k === "torre" ? "marca-torre" : "marca-poi"}" data-marca="${k}"></div>`, iconSize: k === "torre" ? [18, 18] : [14, 14], iconAnchor: k === "torre" ? [9, 9] : [7, 7] });
+      const m = L.marker(p.c, { icon: icono, keyboard: false }).addTo(mapa);
+      m.bindTooltip(k === "torre" ? "La Torre" : t(p.t), { permanent: true, direction: k === "torre" ? "top" : "right", offset: k === "torre" ? [0, -10] : [10, 0], className: "rotulo-mapa" + (k === "torre" ? " rotulo-torre" : "") });
+      marcas[k] = m;
+    });
+    mapa.fitBounds(L.latLngBounds(Object.values(PUNTOS).map((p) => p.c)), { padding: [48, 48], maxZoom: 16 });
+    $$(".cerca li[data-poi]").forEach((li) => {
+      const k = li.dataset.poi;
+      const activar = (si) => { li.classList.toggle("activo", si); const d = mapaEl.querySelector(`[data-marca="${k}"]`); if (d) d.classList.toggle("activo", si); };
+      li.addEventListener("mouseenter", () => activar(true)); li.addEventListener("mouseleave", () => activar(false));
+      li.addEventListener("click", () => { mapa.flyTo(PUNTOS[k].c, 17, { duration: .9 }); activar(true); });
+    });
+    document.addEventListener("idioma-pintado", () => Object.entries(PUNTOS).forEach(([k, p]) => { if (p.t) marcas[k].setTooltipContent(t(p.t)); }));
+  }
+  if (mapaEl) {
+    const cargarLeaflet = () => {
+      if (window.L) return armarMapa();
+      const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css);
+      const js = document.createElement("script"); js.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; js.onload = armarMapa; document.head.appendChild(js);
+    };
+    new IntersectionObserver((en, io) => { if (en.some((x) => x.isIntersecting)) { cargarLeaflet(); io.disconnect(); } }, { rootMargin: "600px 0px" }).observe(mapaEl);
+  }
+  window.cargarMapa = () => { if (mapaEl) { if (window.L) armarMapa(); else { const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css); const js = document.createElement("script"); js.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; js.onload = armarMapa; document.head.appendChild(js); } } };
 
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -92 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }

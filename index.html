@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilos.css?v=202609031508">
+<link rel="stylesheet" href="estilos.css?v=202609031532">
 </head>
 <body data-idioma="es">
 
@@ -219,8 +219,8 @@
   </section>
 
   <!-- ══ COCHERAS: partida invertida, panel crema ══ -->
-  <section id="cocheras" class="partida invertida" data-screen-label="Cocheras">
-    <div class="partida-foto"><img class="parallax" src="img/cochera-bloque.jpg" alt="" loading="lazy" style="object-position:42% 50%"></div>
+  <section id="cocheras" class="partida partida-ancha" data-screen-label="Cocheras">
+    <div class="partida-foto"><img src="img/cochera-bloque.jpg" alt="" loading="lazy"></div>
     <div class="partida-panel partida-crema">
       <p class="rotulo" data-t="cocheras.rotulo"></p>
       <h2 class="partida-titulo partir" data-t="cocheras.titulo"></h2>
@@ -280,15 +280,15 @@
 
   <!-- ══ UBICACIÓN ══ -->
   <section id="ubicacion" class="ubicacion" data-screen-label="Ubicación">
-    <img class="ubicacion-fondo parallax" src="img/render-ascenso.jpg" alt="" loading="lazy">
+    <div class="ubicacion-mapa" id="mapa" aria-label="Mapa de la zona" role="img"></div>
     <div class="ubicacion-texto">
       <p class="rotulo rotulo-claro" data-t="ubicacion.rotulo"></p>
       <h2 class="titulo partir" data-t="ubicacion.titulo"></h2>
       <p class="parrafo" data-t="ubicacion.texto"></p>
       <ul class="cerca">
-        <li><b>600 m</b><span data-t="ubicacion.shopping"></span></li>
-        <li><b>700 m</b><span data-t="ubicacion.paseo"></span></li>
-        <li><b>700 m</b><span data-t="ubicacion.hospital"></span></li>
+        <li data-poi="portal"><b>600 m</b><span data-t="ubicacion.shopping"></span></li>
+        <li data-poi="paseo"><b>700 m</b><span data-t="ubicacion.paseo"></span></li>
+        <li data-poi="hospital"><b>700 m</b><span data-t="ubicacion.hospital"></span></li>
       </ul>
       <a class="boton boton-linea boton-claro" target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Aniceto+Latorre+y+Balcarce,+Salta,+Argentina" data-t="ubicacion.maps"></a>
     </div>
@@ -366,7 +366,7 @@
     <nav class="pie-col"><h4 data-t="pie.edificio"></h4><a href="#diseno" data-t="nav.diseno"></a><a href="#tipologias" data-t="nav.tipologias"></a><a href="#unidades" data-t="nav.unidades"></a><a href="#avance" data-t="nav.avance"></a></nav>
     <nav class="pie-col"><h4 data-t="pie.donde"></h4><a href="#ubicacion" data-t="nav.ubicacion"></a><a target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Aniceto+Latorre+y+Balcarce,+Salta,+Argentina" data-t="ubicacion.maps"></a></nav>
     <div class="pie-col"><h4 data-t="pie.quien"></h4>
-      <div class="pie-firma"><img src="img/logo-molins.png" alt="" width="40" height="40" loading="lazy"><span>Francisco Molins<small>Molins Negocios Inmobiliarios</small></span></div>
+      <div class="pie-firma"><span>Francisco Molins<small>Molins Negocios Inmobiliarios · CUCIS 251</small></span></div>
       <span class="pie-lpz"><small data-t="pie.comercializa"></small><img src="img/logo-lpz.png" alt="Grupo LPZ-Molins · CUCIS 251" width="86" height="106" loading="lazy"></span>
     </div>
   </div>
@@ -411,6 +411,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
-<script src="app.js?v=202609031508"></script>
+<script src="app.js?v=202609031532"></script>
 </body>
 </html>
