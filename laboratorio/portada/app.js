@@ -53,6 +53,10 @@
   /* ── 2 · el diccionario ────────────────────────────────────────────────── */
   const DICC = {
     es: {
+      "diseno.cta": "Explorar en 3D",
+      "tipologias.palabra": "Residencias",
+      "tipologias.disponibles": "unidades disponibles",
+      "tipologias.verLamina": "Ver la lámina",
       "marca": "LA TORRE",
       "nav.diseno": "El edificio", "nav.tipologias": "Tipologías", "nav.unidades": "Unidades", "nav.tresd": "Recorrido 3D",
       "nav.ubicacion": "Ubicación", "nav.contacto": "Contacto", "nav.avance": "Avance de obra",
@@ -125,6 +129,10 @@
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
     },
     en: {
+      "diseno.cta": "Explore in 3D",
+      "tipologias.palabra": "Residences",
+      "tipologias.disponibles": "units available",
+      "tipologias.verLamina": "See the floor plan",
       "intro.titulo": "Two towers on the corner of Balcarce and Aniceto Latorre",
       "intro.texto": "La Torre is twelve homes in two six-story towers, North and South, in Salta, Argentina. Studios of 37 and 42 m² and one-bedroom units of 55 m², with parking on the ground floor. The materials are left exposed: concrete, brick, black frames, timber. It is sold off-plan, with one price list for everyone.",
       "diseno.rotulo": "Architecture",
@@ -255,6 +263,10 @@
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
     },
     pt: {
+      "diseno.cta": "Explorar em 3D",
+      "tipologias.palabra": "Residências",
+      "tipologias.disponibles": "unidades disponíveis",
+      "tipologias.verLamina": "Ver a planta",
       "intro.titulo": "Duas torres, doze apartamentos e uma rua de Salta.",
       "intro.texto": "O Edifício La Torre fica em Salta, entre as ruas Balcarce e Aniceto Latorre. Torre Norte e Torre Sul, seis andares cada uma, apartamentos de 37 a 55 m² e vagas de garagem no térreo. A venda é na planta: entrada na assinatura do contrato e parcelas durante a obra. Uma só tabela de preços, a mesma para todos.",
       "diseno.rotulo": "Arquitetura",
@@ -953,6 +965,9 @@
     document.addEventListener("idioma-pintado", partirDeNuevo);
 
     // parallax suave en las imágenes marcadas
+    if (!reduce) $$(".parallax-lento").forEach((el) => {
+      gsap.fromTo(el, { yPercent: 4 }, { yPercent: -4, ease: "none", scrollTrigger: { trigger: el.closest("section"), start: "top bottom", end: "bottom top", scrub: true } });
+    });
     if (!reduce) $$(".parallax").forEach((img) => {
       gsap.fromTo(img, { yPercent: -6 }, { yPercent: 6, ease: "none", scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true } });
     });
@@ -979,28 +994,43 @@
 
   /* ── 7 · tipologías, unidades, A/B, 3D ─────────────────────────────────── */
   let tipoActiva = TIPOS[0].clave;
-  const solapas = $("#solapas-tipo");
+  const resLista = $("#res-lista");
   TIPOS.forEach((tp) => {
+    const li = document.createElement("li");
     const b = document.createElement("button");
-    b.type = "button"; b.role = "tab"; b.textContent = tp.nombre; b.dataset.tipo = tp.clave;
+    b.type = "button"; b.setAttribute("role", "tab"); b.textContent = tp.nombre; b.dataset.tipo = tp.clave;
     b.addEventListener("click", () => pintarTipologia(tp.clave));
-    solapas.appendChild(b);
+    li.appendChild(b); resLista.appendChild(li);
   });
+  let fotoActiva = "a";
   function pintarTipologia(clave) {
+    const cambia = clave !== tipoActiva;
     tipoActiva = clave;
     const tp = TIPOS.find((x) => x.clave === clave);
-    $$("button", solapas).forEach((b) => b.setAttribute("aria-selected", b.dataset.tipo === clave ? "true" : "false"));
-    $("#tipo-lamina").src = tp.lamina; $("#tipo-lamina").alt = tp.nombre;
-    $("#tipo-lamina-pie").textContent = t("tipo.laminaPie");
-    $("#tipo-nombre").textContent = tp.nombre;
-    $("#tipo-desc").textContent = t("tipo." + clave + ".desc");
-    $("#tipo-amb").textContent = t("tipo." + clave + ".amb");
-    $("#tipo-ubic").textContent = t("tipo." + clave + ".ubic");
-    $("#tipo-render").src = tp.render; $("#tipo-render").alt = tp.nombre;
-    $("#tipo-render-pie").textContent = t("tipo.renderPie");
+    $$("button", resLista).forEach((b) => b.setAttribute("aria-selected", b.dataset.tipo === clave ? "true" : "false"));
+    $("#res-desc").textContent = t("tipo." + clave + ".desc");
+    $("#res-amb").textContent = t("tipo." + clave + ".amb");
+    $("#res-ubic").textContent = t("tipo." + clave + ".ubic");
+    // la foto entra por fundido: dos imágenes que se alternan
+    const entra = $(cambia ? (fotoActiva === "a" ? "#res-img-b" : "#res-img-a") : "#res-img-" + fotoActiva);
+    const sale = $(cambia ? "#res-img-" + fotoActiva : (fotoActiva === "a" ? "#res-img-b" : "#res-img-a"));
+    if (entra.getAttribute("src") !== tp.render) entra.src = tp.render;
+    entra.alt = tp.nombre + " — " + t("tipo.renderPie");
+    entra.classList.add("activa"); sale.classList.remove("activa");
+    if (cambia) fotoActiva = fotoActiva === "a" ? "b" : "a";
+    $("#res-lamina-img").src = tp.lamina; $("#res-lamina-img").alt = tp.nombre;
+    $("#res-lamina-pie").textContent = tp.nombre + " · " + t("tipo.laminaPie");
+    $("#res-consultar").addEventListener("click", () => { const u = UNIDADES.find((x) => slugDe(x.tip) === clave); if (u) $("#form-unidad").value = u.id; }, { once: true });
   }
+  const tipoIdx = () => TIPOS.findIndex((x) => x.clave === tipoActiva);
+  $("#res-prev").addEventListener("click", () => pintarTipologia(TIPOS[(tipoIdx() + TIPOS.length - 1) % TIPOS.length].clave));
+  $("#res-next").addEventListener("click", () => pintarTipologia(TIPOS[(tipoIdx() + 1) % TIPOS.length].clave));
+  $("#res-lamina-btn").addEventListener("click", () => { $("#res-lamina").hidden = false; });
+  $("#res-lamina-cerrar").addEventListener("click", () => { $("#res-lamina").hidden = true; });
+  function pintarContador() { $("#res-libres").textContent = String(UNIDADES.filter((u) => u.estado === "libre").length); }
 
   function pintarUnidades() {
+    pintarContador();
     ["Norte", "Sur"].forEach((torre) => {
       const cont = $("#pisos-" + torre.toLowerCase()); cont.innerHTML = "";
       UNIDADES.filter((u) => u.torre === torre).sort((a, b) => b.piso - a.piso).forEach((u) => {
