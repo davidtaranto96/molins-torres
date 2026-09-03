@@ -469,7 +469,10 @@
   let lenis = null;
   if (window.gsap && window.ScrollTrigger) {
     gsap.registerPlugin(ScrollTrigger);
-    if (!reduce && window.Lenis) {
+    // `?sinlenis` apaga el scroll suave: sirve para depurar y como salida para
+    // quien lo prefiera nativo. Con reduced-motion tampoco se enciende.
+    const sinLenis = /[?&]sinlenis/.test(location.search);
+    if (!reduce && !sinLenis && window.Lenis) {
       lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
       lenis.on("scroll", ScrollTrigger.update);
       gsap.ticker.add((t) => lenis.raf(t * 1000));
@@ -495,14 +498,12 @@
           boceto.style.opacity = traz;
           $(".hero-velo").style.opacity = render;
           hero.classList.toggle("claro", render > 0.5);
+          document.body.classList.toggle("hero-claro", render > 0.5);
           // el título respira: se achica apenas y sube
-          const tit = $(".hero-titulo");
-          tit.style.transform = `translateY(${-p * 24}px) scale(${1 - p * 0.06})`;
           document.body.classList.toggle("paso-el-hero", p > 0.98);
         },
       });
       // las letras del título, una por una, cuando termina la intro
-      gsap.from(".hero-titulo .letra", { yPercent: 60, opacity: 0, duration: 1.1, ease: "power3.out", stagger: 0.05, delay: 0.7 });
       gsap.from(".hero-bajada, .hero-ctas, .hero-pista", { y: 16, opacity: 0, duration: .9, ease: "power2.out", stagger: 0.08, delay: 1.2 });
     } else {
       document.body.classList.add("paso-el-hero");
@@ -684,5 +685,5 @@
   pintarIdioma();
   document.dispatchEvent(new Event("idioma-pintado"));
   visita();
-  window.PORTADA = { DICC, pintarIdioma, cambiarIdioma: (i) => { idioma = i; pintarIdioma(); document.dispatchEvent(new Event("idioma-pintado")); }, UNIDADES: () => UNIDADES };
+  window.PORTADA = { lenis: () => lenis, DICC, pintarIdioma, cambiarIdioma: (i) => { idioma = i; pintarIdioma(); document.dispatchEvent(new Event("idioma-pintado")); }, UNIDADES: () => UNIDADES };
 })();

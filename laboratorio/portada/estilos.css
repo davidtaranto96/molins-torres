@@ -15,7 +15,10 @@
   --curva:cubic-bezier(.22,1,.36,1);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+/* Sin scroll-behavior:smooth en el html: la suavidad la pone Lenis, y el salto
+   nativo a un ancla (#tipologias en la URL) tiene que ser inmediato. Con
+   smooth, en una pestaña en segundo plano el salto tardaba segundos. */
+html{scroll-behavior:auto}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto}
 body{margin:0;background:var(--hueso);color:var(--tinta);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip}
@@ -56,16 +59,21 @@ button,input,select,textarea{font:inherit}
 .intro-marca{position:absolute;bottom:32px;left:0;right:0;text-align:center;font-family:var(--serif);letter-spacing:.34em;font-size:14px;color:rgba(243,234,218,.6)}
 
 /* ── cabecera ── */
-.cab{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--lado);color:var(--crema);transition:background .3s ease,color .3s ease,box-shadow .3s ease}
+/* La barra arranca en tinta porque el hero arranca claro (el boceto sobre
+   crema); pasa a crema cuando el render oscuro está a la vista, y vuelve a
+   tinta cuando se vuelve sólida al dejar el hero. En la primera captura era
+   crema sobre crema: invisible. */
+.cab{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--lado);color:var(--tinta);transition:background .3s ease,color .3s ease,box-shadow .3s ease}
+body.hero-claro .cab:not(.solida){color:var(--crema)}
 .cab.solida{background:rgba(251,249,246,.9);backdrop-filter:blur(10px);color:var(--tinta);box-shadow:0 1px 0 rgba(41,33,26,.08)}
 .cab-marca{font-family:var(--serif);letter-spacing:.34em;font-size:16px;text-decoration:none;color:inherit}
 .cab-nav{display:none;gap:22px}
-.cab-nav a{color:inherit;text-decoration:none;font-size:13.5px;letter-spacing:.03em;opacity:.85;transition:opacity .18s}
+.cab-nav a{color:inherit;text-decoration:none;font-size:13.5px;letter-spacing:.03em;opacity:.85;transition:opacity .18s;display:inline-flex;align-items:center;min-height:44px}
 .cab-nav a:hover{opacity:1}
 .cab-der{display:flex;align-items:center;gap:12px}
 .cab-cta{display:none;min-height:40px;padding:0 16px;font-size:13.5px}
 .idiomas{display:flex;gap:2px}
-.idiomas button{background:none;border:1px solid transparent;color:inherit;opacity:.65;font-size:12px;letter-spacing:.06em;padding:6px 8px;border-radius:3px;cursor:pointer;min-height:32px}
+.idiomas button{background:none;border:1px solid transparent;color:inherit;opacity:.65;font-size:12px;letter-spacing:.06em;padding:0 9px;border-radius:3px;cursor:pointer;min-height:44px;min-width:44px}
 .idiomas button[aria-pressed=true]{opacity:1;border-color:currentColor}
 .hamb{width:44px;height:44px;background:none;border:1px solid currentColor;border-radius:4px;color:inherit;cursor:pointer;display:grid;place-items:center;gap:5px;padding:0}
 .hamb span{display:block;width:18px;height:1.5px;background:currentColor;transition:transform .25s}
@@ -82,10 +90,18 @@ body.menu-abierto .cab{color:var(--crema);background:var(--tinta-oscura)}
 .hero-boceto{opacity:1;mix-blend-mode:multiply}
 .hero-velo{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,12,9,.28) 0%,rgba(18,12,9,0) 30%,rgba(18,12,9,.12) 60%,rgba(18,12,9,.86) 100%);opacity:0}
 .hero-texto{position:absolute;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(56px,9vh,96px);max-width:var(--ancho);margin:0 auto}
-.hero-titulo{margin:6px 0 0;font-family:var(--serif);font-weight:300;font-size:clamp(64px,14vw,190px);line-height:.9;letter-spacing:.06em;color:var(--tinta);transition:color .5s}
+/* A 14vw las ocho letras no entraban en 1280 px y el título se partía en tres
+   renglones al medio de la palabra. Las palabras van en nowrap y el tamaño
+   se acota para que siempre entre en una línea en escritorio. */
+/* EL TITULAR ES EL LOGOTIPO DEL RENDER. Viene quemado adentro del JPG, grande y
+   bien tipografiado, y un «LA TORRE» en HTML del mismo tamaño se le pisaba
+   encima (visto en la captura a 1280 px). Es la misma decisión del sitio
+   actual: el texto de la página va abajo y chico, y deja que la marca del
+   render sea la protagonista. El h1 queda para lectores de pantalla. */
+.hero-titulo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .hero-titulo .letra{display:inline-block}
 .hero.claro .hero-titulo,.hero.claro .hero-bajada{color:var(--crema)}
-.hero-bajada{margin:16px 0 0;max-width:46ch;font-size:clamp(15px,1.4vw,18px);color:var(--tinta-suave);transition:color .5s}
+.hero-bajada{margin:10px 0 0;max-width:30ch;font-family:var(--serif);font-weight:300;font-size:clamp(24px,3vw,40px);line-height:1.15;color:var(--tinta);transition:color .5s;text-wrap:balance}
 .hero-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
 .hero-pista{position:absolute;right:var(--lado);bottom:22px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-claro)}
 .hero.claro .hero-pista{color:rgba(243,234,218,.6)}
@@ -209,7 +225,7 @@ i.libre{background:var(--libre)}i.reservada{background:var(--reservada)}i.vendid
 .pie-marca p{margin:12px 0 0;font-size:13.5px;line-height:1.7;max-width:38ch}
 .pie-wa{display:inline-flex;align-items:center;gap:9px;margin-top:16px;min-height:44px;padding:0 16px;color:var(--crema);font-size:13.5px;font-weight:500;text-decoration:none;border:1px solid rgba(243,234,218,.28);border-radius:4px}
 .pie-col h4{font-family:var(--serif);font-weight:400;font-size:15px;color:var(--crema);margin:0 0 12px}
-.pie-col a{display:block;color:rgba(243,234,218,.72);text-decoration:none;font-size:13.5px;padding:6px 0}
+.pie-col a{display:flex;align-items:center;min-height:44px;color:rgba(243,234,218,.72);text-decoration:none;font-size:13.5px;padding:0}
 .pie-col a:hover{color:var(--crema)}
 .pie-firma{display:flex;align-items:center;gap:11px;padding:8px 0;color:var(--crema)}
 .pie-firma img{border-radius:8px}
@@ -228,13 +244,13 @@ body.en-contacto .wa-flotante{opacity:0!important;visibility:hidden!important}
 /* ── cookies: uno solo, consentimiento por navegación ── */
 .cookies{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--tinta-oscura);color:rgba(243,234,218,.88);border-top:1px solid rgba(243,234,218,.18);padding:14px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13.5px}
 .cookies p{margin:0;flex:1 1 240px;line-height:1.5}
+/* en columna el flex-basis se aplica a la ALTURA: es el bug de ayer, y va reseteado */
 .cookies strong{color:var(--crema)}
 .cookies button{min-height:44px;padding:0 26px;border-radius:4px;background:var(--crema);color:var(--tinta-oscura);border:1px solid var(--crema);font-weight:600;cursor:pointer;flex:1 1 100%}
-@media (min-width:901px){.cookies{left:20px;right:auto;bottom:20px;max-width:420px;border:1px solid rgba(243,234,218,.18);border-radius:8px;box-shadow:var(--sombra-2);flex-direction:column;align-items:flex-start;padding:18px}.cookies button{flex:0 0 auto;align-self:flex-end}}
+@media (min-width:901px){.cookies{left:20px;right:auto;bottom:20px;max-width:420px;border:1px solid rgba(243,234,218,.18);border-radius:8px;box-shadow:var(--sombra-2);flex-direction:column;align-items:flex-start;padding:18px}.cookies p{flex:0 1 auto}.cookies button{flex:0 0 auto;align-self:flex-end}}
 
 /* ── movimiento: todo lo que anima respeta reduced-motion ── */
 @media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
   #intro{transition:none}
   .hero{height:100svh}
   .hero-render{opacity:1}
