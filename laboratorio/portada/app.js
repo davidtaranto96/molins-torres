@@ -8,7 +8,7 @@
      4 · la intro y la cabecera
      5 · el hero: del boceto al render, al ritmo del scroll
      6 · scroll suave (Lenis) + títulos partidos + parallax (GSAP)
-     7 · tipologías, unidades, A/B, la visita horizontal, el 3D
+     7 · tipologías, unidades, A/B, las partidas, adentro, el 3D
      8 · el CRM: visita, clics y consulta
      9 · cookies
    ══════════════════════════════════════════════════════════════════════════ */
@@ -53,6 +53,24 @@
   /* ── 2 · el diccionario ────────────────────────────────────────────────── */
   const DICC = {
     es: {
+      "espacios.rotulo": "Los espacios",
+      "espacios.titulo": "Lo que se comparte, y lo que es sólo tuyo",
+      "espacios.i1": "Acceso por Aniceto Latorre, iluminado y con verde",
+      "espacios.i2": "Circulaciones con muros verdes que suben piso a piso",
+      "espacios.i3": "Terraza propia en el 5.º de Torre Norte, por el retiro del volumen",
+      "espacios.i4": "Balcones en todas las unidades, dos en Torre Sur",
+      "espacios.palabra": "Espacios",
+      "cocheras.rotulo": "Las cocheras",
+      "cocheras.titulo": "Llegás en auto y ya estás en tu casa",
+      "cocheras.i1": "Cocheras en planta baja",
+      "cocheras.i2": "Entrada vehicular por Aniceto Latorre",
+      "cocheras.i3": "A metros del ascensor",
+      "cocheras.palabra": "Cocheras",
+      "adentro.rotulo": "Adentro",
+      "adentro.titulo": "Así se vive en La Torre",
+      "adentro.texto": "Los renders de los interiores, ambiente por ambiente. Cuando haya video de obra, va acá mismo.",
+      "adentro.estar.t": "El estar",
+      "adentro.estar.p": "Abierto a la cocina y al balcón.",
       "ficha.render": "Render",
       "ficha.lamina": "Lámina",
       "ficha.tipologia": "Tipología",
@@ -139,6 +157,24 @@
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
     },
     en: {
+      "espacios.rotulo": "The spaces",
+      "espacios.titulo": "What is shared, and what is only yours",
+      "espacios.i1": "Entrance on Aniceto Latorre, lit and planted",
+      "espacios.i2": "Plant-lined walkways rising floor by floor",
+      "espacios.i3": "A private terrace on the 5th floor of the North Tower, where the volume steps back",
+      "espacios.i4": "Balconies in every unit, two in the South Tower",
+      "espacios.palabra": "Spaces",
+      "cocheras.rotulo": "Parking",
+      "cocheras.titulo": "Drive in and you are already home",
+      "cocheras.i1": "Parking on the ground floor",
+      "cocheras.i2": "Vehicle entrance on Aniceto Latorre",
+      "cocheras.i3": "Steps from the lift",
+      "cocheras.palabra": "Parking",
+      "adentro.rotulo": "Inside",
+      "adentro.titulo": "Life at La Torre",
+      "adentro.texto": "The interior renders, room by room. When there is footage from the site, it goes right here.",
+      "adentro.estar.t": "The living room",
+      "adentro.estar.p": "Open to the kitchen and the balcony.",
       "ficha.render": "Render",
       "ficha.lamina": "Floor plan",
       "ficha.tipologia": "Layout",
@@ -283,6 +319,24 @@
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
     },
     pt: {
+      "espacios.rotulo": "Os espaços",
+      "espacios.titulo": "O que se compartilha, e o que é só seu",
+      "espacios.i1": "Acesso pela Aniceto Latorre, iluminado e com verde",
+      "espacios.i2": "Circulações com paredes verdes que sobem andar por andar",
+      "espacios.i3": "Terraço próprio no 5.º da Torre Norte, pelo recuo do volume",
+      "espacios.i4": "Sacadas em todas as unidades, duas na Torre Sul",
+      "espacios.palabra": "Espaços",
+      "cocheras.rotulo": "A garagem",
+      "cocheras.titulo": "Você chega de carro e já está em casa",
+      "cocheras.i1": "Vagas no térreo",
+      "cocheras.i2": "Entrada de veículos pela Aniceto Latorre",
+      "cocheras.i3": "A poucos metros do elevador",
+      "cocheras.palabra": "Garagem",
+      "adentro.rotulo": "Por dentro",
+      "adentro.titulo": "Assim se vive no La Torre",
+      "adentro.texto": "Os renders dos interiores, ambiente por ambiente. Quando houver vídeo da obra, entra aqui mesmo.",
+      "adentro.estar.t": "A sala",
+      "adentro.estar.p": "Aberta à cozinha e à sacada.",
       "ficha.render": "Render",
       "ficha.lamina": "Planta",
       "ficha.tipologia": "Tipologia",
@@ -1032,13 +1086,14 @@
     // la burbuja de WhatsApp se esconde donde ya hay un botón grande
     ScrollTrigger.create({ trigger: "#contacto", start: "top 65%", end: "bottom top", onToggle: (st) => document.body.classList.toggle("en-contacto", st.isActive) });
 
-    // la visita, horizontal y pinneada
-    const riel = $("#visita-riel");
-    if (!reduce && riel) {
-      const recorrido = () => riel.scrollWidth - innerWidth;
-      gsap.to(riel, { x: () => -recorrido(), ease: "none",
-        scrollTrigger: { trigger: "#vida", start: "top top", end: () => "+=" + recorrido(), pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1 } });
-    }
+    // las partidas: la lista entra escalonada y la palabra grande sube
+    $$(".partida").forEach((sec) => {
+      gsap.from($$(".partida-lista li", sec), { y: 18, opacity: 0, duration: .7, ease: "power2.out", stagger: .09, scrollTrigger: { trigger: sec, start: "top 70%", once: true } });
+      gsap.from($(".partida-palabra", sec), { yPercent: 40, opacity: 0, duration: 1, ease: "power3.out", scrollTrigger: { trigger: sec, start: "top 60%", once: true } });
+    });
+    // el marco de adentro se abre al llegar: la máscara pasa de un óvalo a la caja entera
+    const marco = $("#adentro-marco");
+    if (marco) gsap.fromTo(marco, { clipPath: "inset(12% 16% round 220px)" }, { clipPath: "inset(0% 0% round 18px)", ease: "none", scrollTrigger: { trigger: marco, start: "top 90%", end: "top 30%", scrub: true } });
   } else {
     document.body.classList.add("paso-el-hero");
   }
@@ -1140,6 +1195,25 @@
   $("#ficha-consultar").addEventListener("click", () => { if (fichaU) $("#form-unidad").value = fichaU.id; cerrarFicha(); setTimeout(() => irA("#contacto"), 80); });
   $("#ficha-wa").addEventListener("click", () => clic("whatsapp", "ficha-" + (fichaU ? fichaU.id : "")));
   document.addEventListener("idioma-pintado", pintarFicha);
+
+
+  /* adentro: los ambientes pasan solos, con un paneo lento, sólo mientras se ven */
+  const marcoAd = $("#adentro-marco");
+  if (marcoAd) {
+    const imgs = $$(".adentro-img", marcoAd), puntos = $("#adentro-puntos");
+    const PIES = ["adentro.estar", "vida.cocina", "vida.suite", "vida.terraza"];
+    let ai = 0, timer = null;
+    const irAImagen = (i) => {
+      ai = i; imgs.forEach((im, k) => im.classList.toggle("activa", k === i));
+      $$("button", puntos).forEach((b, k) => b.setAttribute("aria-current", k === i ? "true" : "false"));
+      $("#adentro-t").textContent = t(PIES[i] + ".t"); $("#adentro-p").textContent = t(PIES[i] + ".p");
+    };
+    const reiniciar = () => { clearInterval(timer); if (!reduce) timer = setInterval(() => irAImagen((ai + 1) % imgs.length), 5200); };
+    imgs.forEach((_, i) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-label", t(PIES[i] + ".t")); b.addEventListener("click", () => { irAImagen(i); reiniciar(); }); puntos.appendChild(b); });
+    irAImagen(0);
+    new IntersectionObserver((en) => en.forEach((x) => { if (x.isIntersecting) reiniciar(); else clearInterval(timer); }), { threshold: .3 }).observe(marcoAd);
+    document.addEventListener("idioma-pintado", () => irAImagen(ai));
+  }
 
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -72 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
