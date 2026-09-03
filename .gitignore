@@ -3,6 +3,10 @@
 # Los renders originales en PNG: 97 MB que el sitio NO usa (el HTML referencia
 # sólo los .jpg). En git lo que entra queda en el historial para siempre.
 *.png
+# Menos las marcas, que son chicas y el sitio SÍ las usa. Sin esta excepción,
+# `git add` las ignora sin decir nada y el sitio queda con dos imágenes rotas
+# en producción: pasó el 2/9.
+!img/logo-*.png
 
 # La salida intermedia del transpilador. Se regenera con:
 #   node scripts/transpilar.mjs
