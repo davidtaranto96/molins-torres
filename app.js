@@ -1033,7 +1033,7 @@
     // propio cuadro espejado y desenfocado: arriba sigue el cielo, a los lados
     // siguen los árboles. En el boceto es papel espejado, o sea papel.
     if (!e.mini) { e.mini = lienzo(1, 1); e.mini2 = lienzo(1, 1); }
-    const espejo = (sx, sy, sw, sh, tx, ty, tw, th, fx, fy) => {
+    const espejo = (ctx, sx, sy, sw, sh, tx, ty, tw, th, fx, fy) => {
       if (tw < 1 || th < 1 || sw < 1 || sh < 1) return;
       const m1 = e.mini, m2 = e.mini2, g1 = m1.getContext("2d"), g2 = m2.getContext("2d");
       m1.width = Math.max(1, Math.round(tw / 4)); m1.height = Math.max(1, Math.round(th / 4));
@@ -1041,17 +1041,35 @@
       g1.save(); g1.translate(fx ? m1.width : 0, fy ? m1.height : 0); g1.scale(fx ? -1 : 1, fy ? -1 : 1);
       g1.drawImage(e.out, sx, sy, sw, sh, 0, 0, m1.width, m1.height); g1.restore();
       g2.imageSmoothingEnabled = true; g2.drawImage(m1, 0, 0, m2.width, m2.height);
-      g.imageSmoothingEnabled = true; g.drawImage(m2, 0, 0, m2.width, m2.height, tx, ty, tw, th);
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(m2, 0, 0, m2.width, m2.height, tx, ty, tw, th);
     };
     const izq = Math.max(0, Math.round(dx)), der = Math.max(0, Math.round(pw - dw - dx));
     const sTop = Math.min(Math.round(e.H * 0.06), Math.ceil(franja / esc));
-    espejo(Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sTop, 0, 0, pw, franja + 1, false, true);   // arriba: el cielo, tomado del lado abierto del cuadro
-    if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(0, 0, sw, e.H, 0, dy, izq + 1, dh, true, false); }
-    if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(e.W - sw, 0, sw, e.H, dx + dw - 1, dy, der + 1, dh, true, false); }
-    // y un velo suave sobre los bordes para que el cuadro sea el foco
-    g.fillStyle = "rgba(18,12,9,.16)";
-    g.fillRect(0, 0, pw, franja); if (izq > 0) g.fillRect(0, franja, izq, ph - franja); if (der > 0) g.fillRect(dx + dw, franja, der + 1, ph - franja);
+    espejo(g, Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sTop, 0, 0, pw, franja + 1, false, true);   // arriba: el cielo, tomado del lado abierto del cuadro
+    if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(g, 0, 0, sw, e.H, 0, dy, izq + 1, dh, true, false); }
+    if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(g, e.W - sw, 0, sw, e.H, dx + dw - 1, dy, der + 1, dh, true, false); }
+    // el velo sobre los bordes sólo cuando ya hay render (en el boceto delataba el relleno)
+    const velo = 0.12 * (e.fundido || 0);
+    if (velo > 0) { g.fillStyle = `rgba(18,12,9,${velo.toFixed(3)})`; g.fillRect(0, 0, pw, franja); if (izq > 0) g.fillRect(0, franja, izq, ph - franja); if (der > 0) g.fillRect(dx + dw, franja, der + 1, ph - franja); }
     g.drawImage(e.out, dx, dy, dw, dh);
+    // la pluma: el borde del cuadro se desenfoca hacia afuera unos píxeles, y la costura con el relleno desaparece
+    const pluma = Math.round(Math.min(64, pw * 0.045));
+    const plumar = (sx, sy, sw, sh, tx, ty, tw, th, horizontal, alFinal) => {
+      if (!e.plumaC) e.plumaC = lienzo(1, 1);
+      const pc = e.plumaC, cx = pc.getContext("2d");
+      if (pc.width !== Math.round(tw) || pc.height !== Math.round(th)) { pc.width = Math.max(1, Math.round(tw)); pc.height = Math.max(1, Math.round(th)); }
+      cx.globalCompositeOperation = "source-over"; cx.clearRect(0, 0, pc.width, pc.height);
+      espejo(cx, sx, sy, sw, sh, 0, 0, pc.width, pc.height, false, false);
+      cx.globalCompositeOperation = "destination-in";
+      const gr = horizontal ? cx.createLinearGradient(0, 0, pc.width, 0) : cx.createLinearGradient(0, 0, 0, pc.height);
+      gr.addColorStop(0, alFinal ? "rgba(0,0,0,0)" : "rgba(0,0,0,1)"); gr.addColorStop(1, alFinal ? "rgba(0,0,0,1)" : "rgba(0,0,0,0)");
+      cx.fillStyle = gr; cx.fillRect(0, 0, pc.width, pc.height); cx.globalCompositeOperation = "source-over";
+      g.drawImage(pc, tx, ty);
+    };
+    const sPl = Math.ceil(pluma / esc);
+    if (izq > 0) plumar(0, 0, sPl, e.H, dx, dy, pluma, dh, true, false);
+    if (der > 0) plumar(e.W - sPl, 0, sPl, e.H, dx + dw - pluma, dy, pluma, dh, true, true);
+    plumar(0, 0, e.W, sPl, dx, dy, dw, pluma, false, false);
 
   }
 
@@ -1323,11 +1341,11 @@
   }
 
 
-  /* ── ubicación: el mapa del render se acerca al punto elegido, y sigue al cursor apenas ── */
+  /* ── ubicación: el mapa del render se acerca al punto que se elige con un clic ── */
   const escenaMapa = $("#mapa-escena"), zoomMapa = $("#mapa-zoom");
   if (escenaMapa) {
     const puntos = $$(".punto", escenaMapa), filas = $$(".cerca li[data-poi]");
-    let activo = null, temporizador = null;
+    let activo = null;
     const activar = (k) => {
       activo = k;
       puntos.forEach((p) => p.classList.toggle("activo", p.dataset.poi === k));
@@ -1336,18 +1354,10 @@
       if (p) { zoomMapa.style.setProperty("--ox", p.style.getPropertyValue("--x")); zoomMapa.style.setProperty("--oy", p.style.getPropertyValue("--y")); escenaMapa.classList.add("cerca-de"); }
       else escenaMapa.classList.remove("cerca-de");
     };
-    filas.forEach((f) => {
-      f.addEventListener("mouseenter", () => { clearTimeout(temporizador); activar(f.dataset.poi); });
-      f.addEventListener("mouseleave", () => { temporizador = setTimeout(() => activar(null), 900); });
-      f.addEventListener("click", () => activar(activo === f.dataset.poi ? null : f.dataset.poi));
-    });
+    // se elige con un clic (en la lista o en el punto); el hover sólo marca la fila
+    filas.forEach((f) => f.addEventListener("click", () => activar(activo === f.dataset.poi ? null : f.dataset.poi)));
+    $("#ubicacion").addEventListener("keydown", (ev) => { if (ev.key === "Escape") activar(null); });
     puntos.forEach((p) => p.addEventListener("click", () => activar(activo === p.dataset.poi ? null : p.dataset.poi)));
-    // un paneo leve con el cursor, sólo en escritorio
-    if (!reduce && matchMedia("(hover:hover)").matches) {
-      const sec = $("#ubicacion");
-      sec.addEventListener("mousemove", (ev) => { const r = sec.getBoundingClientRect(); const fx = (ev.clientX - r.left) / r.width - .5, fy = (ev.clientY - r.top) / r.height - .5; escenaMapa.style.translate = `calc(-50% + ${(-fx * 18).toFixed(1)}px) calc(-50% + ${(-fy * 12).toFixed(1)}px)`; });
-      sec.addEventListener("mouseleave", () => { escenaMapa.style.translate = ""; });
-    }
   }
 
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

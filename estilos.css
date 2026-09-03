@@ -317,6 +317,11 @@ body.con-ficha{overflow:hidden}
 .mapa-escena{position:absolute;top:50%;left:46%;width:max(108%,92svh * 1.7785);aspect-ratio:2200/1237;transform:translate(-50%,-50%);pointer-events:none}
 .mapa-zoom{position:absolute;inset:0;transform-origin:var(--ox,50%) var(--oy,50%);transition:transform 1.4s var(--curva);will-change:transform;pointer-events:auto}
 .mapa-escena.cerca-de .mapa-zoom{transform:scale(1.32)}
+.mapa-zoom::after{content:"";position:absolute;inset:0;background:rgba(18,12,9,0);transition:background .8s ease;pointer-events:none}
+.mapa-escena.cerca-de .mapa-zoom::after{background:rgba(18,12,9,.22)}
+.punto{z-index:2}
+.cerca li::after{content:"";margin-left:auto;width:8px;height:8px;border-radius:50%;background:rgba(243,234,218,.35);align-self:center;transition:background .3s,transform .3s}
+.cerca li.activo::after{background:var(--terracota-claro);transform:scale(1.4)}
 .mapa-img{position:absolute;inset:0;width:100%;height:100%;display:block}
 .punto{position:absolute;left:var(--x);top:var(--y);width:44px;height:44px;margin:-22px 0 0 -22px;background:none;border:0;padding:0;cursor:pointer}
 .punto i{position:absolute;inset:15px;border-radius:50%;background:var(--crema);box-shadow:0 0 0 0 rgba(243,234,218,.55);animation:pulso 2.6s ease-out infinite;transition:transform .35s var(--curva),background .3s}
