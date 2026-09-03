@@ -77,7 +77,7 @@
     sel: "4B", tipoActiva: "Horizonte",
     simU: "4B", simPct: 35, simCuotas: 24, simCochera: false,
     fUnidad: "4B", fMsg: "", fNombre: "", fTel: "", envio: "idle",
-    modal: null, consent: "pend",
+    modal: null, consent: "si", ckVisto: false,
   };
   const ctx = { campania: CFG.campaniaPorDefecto, origen: "directo", unidadAviso: null };
 
@@ -124,10 +124,69 @@
    */
   const cabeceras = () => ({ "Content-Type": "application/json", "x-sitio-clave": CFG.clave });
 
+  /** Id de visitante: primera parte, durable. Es lo que va a permitir cruzar un
+   *  WhatsApp que llega con la campaña que lo trajo. */
+  function idGuardado(donde, llave) {
+    try {
+      let v = donde.getItem(llave);
+      if (!v) { v = llave[0] + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); donde.setItem(llave, v); }
+      return v;
+    } catch (e) { return null; }
+  }
+  const visitanteId = () => idGuardado(localStorage, "latorre_visitante");
+  const sesionId = () => idGuardado(sessionStorage, "sesion_latorre") || "s" + Math.random().toString(36).slice(2, 14);
+
+  /** Los nombres que declara el CRM, y sólo esos. */
+  const atribucion = () => ({
+    visitanteId: visitanteId(),
+    utm_campaign: ctx.campania || null,
+    utm_source: ctx.origen || null,
+    referrer: document.referrer || null,
+    dispositivo: window.innerWidth < 768 ? "celular" : "escritorio",
+    idioma: (navigator.language || "es").slice(0, 5),
+  });
+
+  /**
+   * La visita, a `/api/publico/visitas` — la ruta que alimenta el módulo de
+   * Cookies del CRM (país, hora, tiempo real).
+   *
+   * OJO, 2/9: esto era `clic("visita")` contra `/api/publico/clics`, y ahí
+   * `tipo` es un ENUM CERRADO que no incluye "visita". La ruta devolvía 400 en
+   * cada carga y no se registró ni una sola visita del sitio, sin que nadie se
+   * enterara: el `.catch(() => {})` se tragaba el error. Verificado contra
+   * producción.
+   */
+  function visita() {
+    if (EMBEBIDO || !CFG.clave) return;
+    const minimo = { sesionId: sesionId(), consentimiento: st.consent === "no" ? "no" : "si" };
+    // Con una negativa explícita se manda lo mínimo y nada más. El CRM igual
+    // descarta el resto si llega, pero no hace falta mandárselo para que lo tire.
+    const cuerpo = JSON.stringify(
+      st.consent === "no" ? minimo : {
+        ...minimo, ...atribucion(),
+        paginaEntrada: location.href,
+        zonaHoraria: (Intl.DateTimeFormat().resolvedOptions().timeZone || "").slice(0, 64) || null,
+      }
+    );
+    fetch(base() + "/api/publico/visitas", { method: "POST", headers: cabeceras(), body: cuerpo, keepalive: true }).catch(() => {});
+  }
+
+  /** Los `tipo` que acepta `/api/publico/clics`. Es un enum del lado del CRM. */
+  const TIPOS_CLIC = ["whatsapp", "whatsapp_visita", "whatsapp_directo", "llamar", "correo", "instagram", "linkedin"];
+
   function clic(tipo, dato) {
     if (EMBEBIDO) return;
     if (st.consent !== "si" || !CFG.clave) return;
-    const cuerpo = JSON.stringify({ tipo, dato: dato ?? null, campania: ctx.campania, origen: ctx.origen, url: location.href });
+    if (!TIPOS_CLIC.includes(tipo)) return;
+    const cuerpo = JSON.stringify({
+      tipo,
+      // `dato` —contacto, flotante, pie— no tiene campo en el esquema y Zod lo
+      // tira en silencio. Lo que sí sirve, y sí existe, es qué unidad estaba
+      // mirando cuando apretó.
+      propiedadCodigo: dato === "ficha" ? st.sel || null : ctx.unidadAviso || null,
+      ...atribucion(),
+      pagina: location.href,
+    });
     // `fetch` con keepalive y no `sendBeacon`: sendBeacon no deja poner
     // cabeceras, y esta ruta del CRM pide la clave en la cabecera. keepalive
     // sobrevive igual a que se cierre la pestaña.
@@ -391,20 +450,12 @@
       modalSrc: st.modal ? st.modal.src : "",
       modalTitulo: st.modal ? st.modal.titulo : "",
       modalCerrar: () => { st.modal = null; pintar(); },
-      consentVisible: !EMBEBIDO && st.consent === "pend",
-      aceptarMedicion: () => guardarConsent("si"),
-      rechazarMedicion: () => guardarConsent("no"),
+      consentVisible: !EMBEBIDO && !st.ckVisto,
+      aceptarMedicion: () => cerrarAviso(),
       waDisplay: waDisplay(),
       clicWaGeneral: () => clic("whatsapp", "contacto"),
       clicWaFlotante: () => clic("whatsapp", "flotante"),
       clicWaPie: () => clic("whatsapp", "pie"),
-      // Desde el pie se puede volver a decidir: borra la respuesta guardada y
-      // el banner vuelve a aparecer, como en Aires.
-      volverAElegirCookies: () => {
-        try { localStorage.removeItem("latorre_consent"); } catch (e) {}
-        st.consent = "pend"; pintar();
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      },
     };
   }
 
@@ -431,10 +482,15 @@
     window.scrollTo({ top: y, behavior: rm ? "auto" : "smooth" });
   }
 
-  function guardarConsent(v) {
-    st.consent = v;
-    try { localStorage.setItem("latorre_consent", v); } catch (e) {}
-    if (v === "si") clic("visita");
+  /**
+   * El consentimiento es por navegación (regla de DT System, 29/8): entrar ya
+   * es aceptar y el aviso sólo informa. Por eso acá no se guarda una
+   * respuesta, se guarda que YA LO VIO — si no, el aviso vuelve en cada
+   * página y termina siendo el ruido que uno aprende a ignorar.
+   */
+  function cerrarAviso() {
+    st.ckVisto = true;
+    try { localStorage.setItem("latorre_cookies", "visto"); } catch (e) {}
     pintar();
   }
 
@@ -471,9 +527,14 @@
       }
     } catch (e) {}
     try {
-      const c = localStorage.getItem("latorre_consent");
-      if (c === "si" || c === "no") { st.consent = c; if (c === "si") clic("visita"); }
+      // La única excepción a "navegar es aceptar": quien alcanzó a apretar
+      // "Prefiero no" en la versión de dos botones sigue sin medirse. Una
+      // negativa explícita no se da vuelta sola porque cambiemos el diseño.
+      const viejo = localStorage.getItem("latorre_consent");
+      if (viejo === "no") st.consent = "no";
+      if (viejo || localStorage.getItem("latorre_cookies") === "visto") st.ckVisto = true;
     } catch (e) {}
+    visita();
   }
 
   function reveals() {

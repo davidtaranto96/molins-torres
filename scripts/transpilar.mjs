@@ -264,17 +264,28 @@ if (etapas) {
 // "Drop an image" y no hay forma de llenarlas. Se reemplazan por los renders
 // que el diseño dejó sin usar, ROTULADOS COMO RENDERS: son del brochure, no
 // fotos de obra, y decir lo contrario sería inventar avance.
+//
+// OJO, 2/9: `fachada-balcarce.jpg` SALIÓ de esta lista. Francisco avisó que le
+// dijeron que no es este edificio, y se verifica solo: la lámina tiene ocho
+// plantas sobre planta baja y llega a +28,50 m, con balcones de vidrio y un
+// núcleo vidriado al centro; el proyecto vende "12 unidades · 6 plantas por
+// torre" y el render de portada es otra cosa —ladrillo visto, parasoles y seis
+// niveles—. La imagen sigue en `img/` por si Francisco confirma lo contrario.
+// Si vuelve, vuelve acá y en index.html.
 const RENDERS = [
   ["render-ascenso.jpg", "El edificio desde Aniceto Latorre"],
   ["render-nocturno.jpg", "Vista nocturna del frente"],
-  ["fachada-balcarce.jpg", "Fachada sobre Balcarce"],
 ];
 let i = 0;
 cuerpo = cuerpo.replace(
   /<div style="height:210px"><image-slot[^>]*><\/image-slot><\/div>/g,
   () => {
-    const [img, alt] = RENDERS[i++] ?? RENDERS[0];
-    return `<div style="height:210px"><img src="img/${img}" alt="${alt}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>`;
+    // Sin render que poner, la caja se va entera: repetir el primero llenaría
+    // el avance de obra con la misma imagen dos veces.
+    const par = RENDERS[i++];
+    if (!par) return "";
+    const [img, alt] = par;
+    return `<div style="aspect-ratio:16/9"><img src="img/${img}" alt="${alt}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>`;
   }
 );
 // y los pies dejan de prometer una fecha que no existe

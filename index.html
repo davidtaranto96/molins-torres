@@ -5,6 +5,28 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Edificio La Torre — Balcarce y Aniceto Latorre, Salta</title>
+
+  <!-- La tarjeta que arman WhatsApp, Instagram y Facebook cuando alguien pega
+       el link. Sin esto se comparte una línea de texto pelada, que es la
+       diferencia entre un link que se abre y uno que no. La imagen tiene que
+       ser ABSOLUTA y liviana: WhatsApp no sigue rutas relativas y descarta la
+       vista previa arriba de ~600 KB. -->
+  <link rel="canonical" href="https://edificiolatorre.com/">
+  <meta name="description" content="Doce unidades en pozo entre Torre Norte y Torre Sur, sobre Balcarce y Aniceto Latorre, Salta Capital. De 37 a 55 m², con cocheras en planta baja.">
+  <meta name="theme-color" content="#9C3A20">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Edificio La Torre">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:url" content="https://edificiolatorre.com/">
+  <meta property="og:title" content="Edificio La Torre — Balcarce y Aniceto Latorre, Salta">
+  <meta property="og:description" content="Doce unidades en pozo entre Torre Norte y Torre Sur. De 37 a 55 m², con cocheras en planta baja. Comercializa Grupo LPZ-Molins.">
+  <meta property="og:image" content="https://edificiolatorre.com/img/og-latorre.jpg">
+  <meta property="og:image:secure_url" content="https://edificiolatorre.com/img/og-latorre.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="El Edificio La Torre visto desde la esquina de Balcarce y Aniceto Latorre">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -399,16 +421,12 @@
     
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px;margin-top:26px">
       <figure data-reveal="1" style="margin:0;border:1px solid rgba(41,33,26,0.14);border-radius:6px;overflow:hidden;background:var(--hueso)">
-        <div style="height:210px"><img src="img/hero-cover.jpg" alt="El edificio completo, en render" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="aspect-ratio:16/9"><img src="img/hero-cover.jpg" alt="El edificio completo, en render" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>
         <figcaption style="padding:10px 14px;font-size:13px;color:var(--gris-calido);border-top:1px solid rgba(41,33,26,0.12)">El edificio — render del proyecto, no es una foto de obra</figcaption>
       </figure>
       <figure data-reveal="1" style="margin:0;border:1px solid rgba(41,33,26,0.14);border-radius:6px;overflow:hidden;background:var(--hueso)">
-        <div style="height:210px"><img src="img/render-nocturno.jpg" alt="Cocheras y circulación en planta baja" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="aspect-ratio:16/9"><img src="img/render-nocturno.jpg" alt="Cocheras y circulación en planta baja" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>
         <figcaption style="padding:10px 14px;font-size:13px;color:var(--gris-calido);border-top:1px solid rgba(41,33,26,0.12)">Cocheras y circulación — render del proyecto, no es una foto de obra</figcaption>
-      </figure>
-      <figure data-reveal="1" style="margin:0;border:1px solid rgba(41,33,26,0.14);border-radius:6px;overflow:hidden;background:var(--hueso)">
-        <div style="height:210px"><img src="img/fachada-balcarce.jpg" alt="Lámina técnica de la fachada, con sus alturas" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;background:#fff"></div>
-        <figcaption style="padding:10px 14px;font-size:13px;color:var(--gris-calido);border-top:1px solid rgba(41,33,26,0.12)">La fachada con sus alturas — lámina técnica del proyecto</figcaption>
       </figure>
     </div>
     <p style="margin:18px 0 0;font-size:13px;color:var(--gris-claro)">Cada certificación de obra suma acá su foto con fecha. Todavía no hay fotos de obra cargadas en esta versión.</p>
@@ -539,7 +557,6 @@
     </div>
     <div class="foot-bottom">
       <span>© 2026 Edificio La Torre · Salta Capital</span>
-      <button class="foot-ck fx-tap-g" type="button" data-click="volverAElegirCookies">Volver a elegir tus cookies</button>
       <span><span data-si="verPrecios" hidden>Precios en USD · vigencia <span data-txt="vigencia"></span> · </span>Cuadro de precios único, administrado desde el sistema de Molins</span>
     </div>
   </div>
@@ -549,12 +566,16 @@
   <i class="fa-brands fa-whatsapp"></i>
 </a>
 
+<!-- El aviso de cookies. Es la fórmula fija de DT System: una sola línea,
+     consentimiento por navegación y un solo botón. No es un diálogo —no
+     interrumpe ni atrapa el foco—, así que va como `region`, no como `dialog`.
+     Cuelga del <body> y nunca de un [data-reveal]: adentro de un reveal se
+     queda invisible hasta que alguien scrollea. -->
 <div data-si="consentVisible" hidden>
-  <div class="ck-torre" role="dialog" aria-live="polite" aria-labelledby="ck-t">
+  <div class="ck-torre" role="region" aria-label="Aviso de cookies">
     <div class="ck-in">
-      <p id="ck-t">Medimos las visitas para saber qué anuncio trae cada consulta. El sitio funciona igual si no aceptás.</p>
+      <p>Al navegar por este sitio <strong>aceptás el uso de cookies</strong> para mejorar tu experiencia.</p>
       <div class="ck-btns">
-        <button class="ck-no fx-tap-g" data-click="rechazarMedicion" type="button">Prefiero no</button>
         <button class="ck-si fx-tap-g" data-click="aceptarMedicion" type="button">Entendido</button>
       </div>
     </div>

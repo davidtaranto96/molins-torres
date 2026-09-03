@@ -106,7 +106,10 @@ body.paso-el-hero .header-torre .nav-link:hover{color:var(--terracota)}
 
 .riel-historia{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x proximity;padding:clamp(36px,5vh,54px) max(24px,calc((100vw - 1280px)/2 + 24px)) 26px;scrollbar-width:thin}
 .panel-historia{position:relative;flex:0 0 auto;width:min(78vw,560px);border-radius:8px;overflow:hidden;scroll-snap-align:start;background:#2A1D15}
-.panel-historia img{width:100%;height:min(52vh,430px);object-fit:cover;display:block}
+/* Los renders son todos 2200×1237 (16:9). Con una altura fija en vh, `cover`
+   les comía un 16 %: se cortaba arriba y abajo. Con la proporción puesta, la
+   caja mide exactamente lo que mide la imagen y no recorta nada. */
+.panel-historia img{width:100%;aspect-ratio:16/9;height:auto;object-fit:cover;display:block}
 .panel-pie{display:flex;gap:16px;align-items:flex-start;padding:18px 20px 22px;color:var(--crema)}
 .panel-num{font-family:var(--serif);font-size:clamp(34px,4vw,52px);line-height:0.9;color:var(--terracota-claro)}
 .panel-pie h3{font-family:var(--serif);font-weight:400;font-size:21px;margin:0}
@@ -228,19 +231,31 @@ body.paso-el-hero .wa-flotante{opacity:1;visibility:visible;transform:none}
 .lista-unidades button{flex-direction:column !important;align-items:flex-start !important;justify-content:flex-start !important;gap:2px !important;padding:12px 13px !important;min-height:74px}
 @media (min-width:1100px){.lista-unidades{grid-template-columns:1fr}.lista-unidades button{flex-direction:row !important;align-items:center !important;justify-content:space-between !important;min-height:0}}
 
-/* ── 12 · LA COCHERA: la imagen manda, el texto va adentro ───────────────*/
-.bloque-cochera{position:relative;border-radius:8px;overflow:hidden;min-height:clamp(230px,34vh,340px);display:flex;align-items:flex-end}
-.bloque-cochera img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.04);transition:transform 900ms cubic-bezier(0.22,1,0.36,1)}
-.bloque-cochera:hover img{transform:scale(1.1)}
-.bloque-cochera .cochera-txt{position:relative;padding:22px;color:var(--crema);background:linear-gradient(180deg,rgba(18,12,9,0) 0%,rgba(18,12,9,0.82) 62%);width:100%}
+/* ── 12 · LA COCHERA: el render entero, y el texto donde no lo tape ──────
+   El render es una franja de 2200×536. Tenía altura fija (hasta 340px) y el
+   `cover` se comía casi un quinto del ANCHO: los autos quedaban cortados por
+   la mitad. Encima el scale(1.04) recortaba otro 4 % sin que nadie lo pidiera.
+   Ahora la caja toma la proporción de la imagen, así que no recorta nada, y
+   el zoom del hover se fue: en un render de obra el encuadre es el dato. */
+.bloque-cochera{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:2200/536;display:flex;align-items:flex-end}
+.bloque-cochera img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.bloque-cochera .cochera-txt{position:relative;box-sizing:border-box;padding:22px;color:var(--crema);background:linear-gradient(180deg,rgba(18,12,9,0) 0%,rgba(18,12,9,0.86) 58%);width:100%}
+/* En pantalla angosta esa franja mide 90px de alto: el texto no entra encima
+   sin taparlo. Se apila abajo, sobre el mismo fondo oscuro. */
+@media (max-width:820px){
+  .bloque-cochera{aspect-ratio:auto;display:block;background:var(--tinta-oscura)}
+  .bloque-cochera img{position:static;width:100%;height:auto;aspect-ratio:2200/536}
+  .bloque-cochera .cochera-txt{background:none;padding:16px 18px 20px}
+}
 
 /* ── 13 · LAS CUATRO TIPOLOGÍAS, HORIZONTALES Y PAREJAS ─────────────────*/
 .riel-tipologias{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x proximity;padding:8px 4px 22px;margin:36px -4px 0;scrollbar-width:thin}
 .tipo-card{flex:0 0 auto;width:min(320px,80vw);scroll-snap-align:start;background:#fff;border:1px solid rgba(41,33,26,0.14);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:border-color 260ms ease,box-shadow 260ms ease,transform 260ms ease}
 .tipo-card:hover{border-color:var(--terracota);box-shadow:0 14px 34px rgba(156,58,32,0.16);transform:translateY(-3px)}
 .tipo-card > button:first-child{padding:0;border:none;background:none;cursor:zoom-in;display:block;overflow:hidden}
-.tipo-card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;transition:transform 700ms cubic-bezier(0.22,1,0.36,1)}
-.tipo-card:hover img{transform:scale(1.05)}
+/* 4:3 sobre un render 16:9 se comía un cuarto de la imagen, y el zoom del
+   hover otro 5 %. La proporción real, y el hover que ya no recorta. */
+.tipo-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
 .tipo-card .tipo-cuerpo{padding:18px 18px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
 .tipo-card .tipo-acciones{display:flex;gap:8px;margin-top:auto;padding-top:14px}
 
@@ -264,25 +279,34 @@ body.paso-el-hero .wa-flotante{opacity:1;visibility:visible;transform:none}
 .foot-ck{background:none;border:0;padding:8px 0;color:rgba(243,234,218,0.72);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
 .foot-ck:hover{color:var(--crema)}
 
-/* ── 15 · EL BANNER DE COOKIES, como el de Aires ────────────────────────
-   Barra al pie en el celular, tarjeta abajo a la izquierda en escritorio.
-   Las dos opciones pesan lo mismo: rechazar tiene que ser tan fácil como
-   aceptar, y es lo que hace honesta la tasa de aceptación del CRM. */
-.ck-torre{position:fixed;left:0;right:0;bottom:0;z-index:150;padding:14px}
-.ck-torre .ck-in{max-width:1040px;margin:0 auto;background:var(--tinta-oscura);color:var(--crema);border:1px solid rgba(243,234,218,0.18);border-radius:8px;box-shadow:0 14px 40px rgba(18,12,9,0.4);padding:16px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.ck-torre p{flex:1 1 300px;margin:0;font-size:13.5px;line-height:1.5;color:rgba(243,234,218,0.9)}
-.ck-torre .ck-btns{display:flex;gap:8px;align-items:center;flex:0 0 auto}
-.ck-torre button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-size:13.5px;border-radius:4px}
-.ck-no{background:none;border:0;padding:12px 14px;color:rgba(243,234,218,0.75);text-decoration:underline;text-underline-offset:3px}
-.ck-no:hover{color:var(--crema)}
-.ck-si{background:var(--crema);color:var(--tinta-oscura);border:1px solid var(--crema);padding:12px 24px;font-weight:600}
+/* ── 15 · EL AVISO DE COOKIES ───────────────────────────────────────────
+   Uno solo, consentimiento por navegación y un solo botón. Barra al pie en el
+   celular, tarjeta abajo a la izquierda en escritorio, 44px de área táctil.
+
+   OJO CON LO QUE HABÍA: `.ck-torre p` llevaba `flex:1 1 300px`, pensado para
+   la fila del celular. En escritorio el contenedor pasa a COLUMNA, y en una
+   columna el `flex-basis` se aplica a la ALTURA: dos renglones de texto
+   quedaban en una caja de 392px de alto, casi media pantalla. Si algún día se
+   vuelve a poner una base en flex, que sea `flex:1 1 auto` o que se resetee
+   adentro del media query. */
+.ck-torre{position:fixed;left:0;right:0;bottom:0;z-index:150}
+.ck-torre .ck-in{background:var(--tinta-oscura);color:var(--crema);border-top:1px solid rgba(243,234,218,0.18);box-shadow:0 -8px 30px rgba(18,12,9,0.34);padding:14px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.ck-torre p{flex:1 1 240px;margin:0;font-size:13.5px;line-height:1.5;color:rgba(243,234,218,0.88)}
+.ck-torre p strong{color:var(--crema);font-weight:600}
+.ck-torre .ck-btns{display:flex;flex:0 0 auto}
+.ck-si{min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-size:13.5px;border-radius:4px;background:var(--crema);color:var(--tinta-oscura);border:1px solid var(--crema);padding:12px 26px;font-weight:600;transition:background 160ms ease}
 .ck-si:hover{background:#fff}
-@media (min-width:901px){.ck-torre{right:auto;max-width:min(440px,calc(100vw - 40px));padding:20px}.ck-torre .ck-in{flex-direction:column;align-items:flex-start}.ck-torre .ck-btns{width:100%;justify-content:flex-end}}
-@media (max-width:560px){.ck-torre{padding:0}.ck-torre .ck-in{border-radius:0;border-left:0;border-right:0;border-bottom:0}.ck-torre .ck-btns{width:100%}.ck-si{flex:1}}
+@media (min-width:901px){
+  .ck-torre{right:auto;left:20px;bottom:20px;max-width:min(420px,calc(100vw - 40px))}
+  .ck-torre .ck-in{flex-direction:column;align-items:flex-start;gap:12px;padding:18px;border:1px solid rgba(243,234,218,0.18);border-radius:8px;box-shadow:0 14px 40px rgba(18,12,9,0.4)}
+  .ck-torre p{flex:0 1 auto}
+  .ck-torre .ck-btns{width:100%;justify-content:flex-end}
+}
+@media (max-width:560px){.ck-torre .ck-btns{width:100%}.ck-si{width:100%}}
 
 @media (prefers-reduced-motion: reduce){
   .hero-img,.nav-menu,body.menu-abierto .nav-menu > *,.nav-burger i,
-  .panel-historia,.panel-historia img,.tipo-card,.tipo-card img,.bloque-cochera img,.wa-flotante{animation:none !important;transition:none !important;transform:none !important;clip-path:none !important}
+  .panel-historia,.tipo-card,.wa-flotante{animation:none !important;transition:none !important;transform:none !important;clip-path:none !important}
   .wa-flotante{opacity:1;visibility:visible}
 }
 

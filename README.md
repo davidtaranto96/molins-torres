@@ -31,9 +31,12 @@ Lo que quedó, y lo que hay que saber para no repetirlo:
   y el render de cocheras traía «Cocheras | Disponibles» al medio (se recortó la
   franja de abajo en `cochera-bloque.jpg`).
 - **Precios tapados** con `CFG.mostrarPrecios` (`window.TORRE_CONFIG` lo revierte).
-- **Cookies y pie** calcados de Aires: barra al pie en celular, tarjeta abajo a la
-  izquierda en escritorio, las dos opciones con el mismo peso, y «Volver a elegir
-  tus cookies» en la barra inferior del pie.
+- **Cookies**: barra al pie en celular, tarjeta abajo a la izquierda en
+  escritorio. **Reescrito el 2/9** a la fórmula fija de DT System: una línea,
+  consentimiento por navegación y un solo botón. La versión de dos botones tenía
+  además un bug de layout —`flex:1 1 300px` en un contenedor que en escritorio
+  pasa a columna, así que los 300px iban a la ALTURA— y el aviso ocupaba media
+  pantalla.
 
 
 | | |
@@ -41,7 +44,7 @@ Lo que quedó, y lo que hay que saber para no repetirlo:
 | Presupuesto | **USD 300**, aprobado el 26/8. Dos pagos de 150. |
 | Abono | pasa de USD 35 a **45**, con esta web adentro |
 | Plazo | 2 semanas **desde que estén la marca y los materiales** |
-| Hoy | v1 publicada como `franciscomolins.com/torres/`, a la espera de la marca |
+| Hoy | **publicada en `edificiolatorre.com`** (2/9), a la espera de la marca |
 
 ## Qué hay acá
 
@@ -64,13 +67,15 @@ Del presupuesto, textual. Nada de esto lo podemos hacer nosotros:
    sin identidad no hay rediseño que hacer.
 2. **El plano con las unidades**, con tipología, metros y precio de cada una.
 3. **Los renders y las fotos de obra**, para el avance.
-4. **El dominio** y los datos de Francisco para registrarlo a su nombre.
 
-## La decisión de dominio, abierta
+## El dominio, resuelto
 
-El presupuesto dice «sitio propio, con su nombre y su dirección». Hoy vive en
-`franciscomolins.com/torres/`, que contradice eso. Las opciones están en
-`docs/dominio.md`.
+`edificiolatorre.com`, comprado por David el 2/9 en Cloudflare Registrar y a
+nombre de Francisco. Es la opción A de `docs/dominio.md`, que es la que decía el
+presupuesto. Sirve desde GitHub Pages, con certificado y HTTPS forzado.
+
+Sigue abierto qué pasa con `franciscomolins.com/torres/`, que hoy muestra el
+mismo sitio en otra dirección: lo sano es dejarlo como redirección.
 
 ## Conexión con el CRM
 
@@ -80,4 +85,12 @@ código de campaña. Es el mismo mecanismo del portal de Molins y de la web de
 Aires: la consulta entra ya sabiendo de qué anuncio salió y qué unidad miraba.
 
 **Cada sitio necesita su propia clave**, que se crea en el CRM desde
-Carteras → Claves de sitio. La de Torre todavía no existe.
+Carteras → Claves de sitio. La de Torre ya existe y está puesta en `src/app.js`.
+
+**Trampa verificada el 2/9**: los esquemas de esas rutas son objetos de Zod, y
+Zod tira en silencio lo que no declara. `clic()` mandaba `tipo:"visita"` —que no
+está en el enum de `/api/publico/clics`— más `dato`, `campania`, `origen` y
+`url`, ninguno de los cuales existe: **la ruta devolvía 400 en cada carga y no
+se midió una sola visita**, sin un error visible porque el `.catch(() => {})` se
+lo tragaba. La visita va a `/api/publico/visitas`, que es otra ruta y otro
+cuerpo. Antes de tocar cualquiera de las tres, leé el `z.object()` de la ruta.
