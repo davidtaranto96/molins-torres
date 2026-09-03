@@ -30,14 +30,14 @@
     { id:"5A", piso:5, torre:"Norte", tip:"Evolución", sup:42, estado:"libre" },
     { id:"4A", piso:4, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
     { id:"3A", piso:3, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
-    { id:"2A", piso:2, torre:"Norte", tip:"Esencia",   sup:55, estado:"reservada" },
-    { id:"1A", piso:1, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
+    { id:"2A", piso:2, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
+    { id:"1A", piso:1, torre:"Norte", tip:"Esencia",   sup:55, estado:"reservada" },
     { id:"6B", piso:6, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
     { id:"5B", piso:5, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
     { id:"4B", piso:4, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
-    { id:"3B", piso:3, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"reservada" },
+    { id:"3B", piso:3, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
     { id:"2B", piso:2, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
-    { id:"1B", piso:1, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"libre" },
+    { id:"1B", piso:1, torre:"Sur",   tip:"Cúspide",   sup:55, estado:"reservada" },
   ];
   const TIPOS = [
     { clave:"horizonte", nombre:"Horizonte", lamina:"img/plano-tipologia-1-horizonte.jpg", render:"img/render-tipologia-1.jpg", foto:"img/area-dormitorio.jpg" },
