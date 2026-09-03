@@ -604,9 +604,9 @@
   const EJE = { x: 0.43, y: 0.5 };
   // el dibujo termina a los 4,8 s y se SOSTIENE hasta los 5,7: en el video el
   // boceto completo se ve entero un momento antes de volverse arcilla
-  // el doble de lo que era y después un 30 % más rápido (pedidos del 3/9): 14,3 s en total
-  const DUR = { lineas: 6.7, cotas: 2.1, arcilla: 1.7, materiales: 3.9, cierre: 0.85 };
-  const INICIO = { lineas: 0, cotas: 4.1, arcilla: 8.0, materiales: 9.5, cierre: 13.4 };
+  // 10 s en total (3/9: se dobló, y después dos veces «un 30 % más rápido»)
+  const DUR = { lineas: 4.7, cotas: 1.5, arcilla: 1.2, materiales: 2.7, cierre: 0.6 };
+  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.6, materiales: 6.65, cierre: 9.4 };
   const TOTAL = INICIO.cierre + DUR.cierre;
   const esCelular = Math.min(screen.width, screen.height) < 700;
   let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
@@ -622,7 +622,7 @@
     const tPrep = performance.now();
     // Sin límite de peso, por pedido de David: en escritorio se trabaja a la
     // resolución nativa del render y el canvas va a la densidad de la pantalla.
-    const W = Math.min(esCelular ? 1200 : 2400, heroImg.naturalWidth), H = Math.round(W * heroImg.naturalHeight / heroImg.naturalWidth);
+    const W = Math.min(esCelular ? 1400 : 2400, heroImg.naturalWidth), H = Math.round(W * heroImg.naturalHeight / heroImg.naturalWidth);
     const base = lienzo(W, H), g = base.getContext("2d");
     g.drawImage(heroImg, 0, 0, W, H);
     const src = g.getImageData(0, 0, W, H).data;
@@ -1014,46 +1014,40 @@
     // el cuadro baja una franja (16 % del alto): la azotea y su cota quedan a la
     // vista debajo de la cabecera, y arriba el cielo sigue con las primeras
     // filas del propio cuadro estiradas (pedido del 3/9: «bajar un poco el hero»)
-    const franja = Math.round(ph * 0.08);
-    // el cuadro entra entero de arriba abajo (la azotea y la base, las dos a la
-    // vista); se admite hasta un 10 % de recorte abajo antes de dejar papel a
-    // los costados en pantallas muy apaisadas: el cuadro montado en la hoja
-    // la torre completa, de la azotea a la vereda, en cualquier pantalla (3/9):
-    // se ajusta por alto; si sobra ancho queda papel a los costados, y si
-    // falta (celular) el recorte se centra en la torre
-    const esc = (ph - franja) / e.H;
-    const dw = e.W * esc, dh = e.H * esc, dy = franja;
+    // La torre completa en cualquier pantalla (3/9). El cuadro entra entero por
+    // alto y, en pantallas angostas, además la torre entera por ancho (ocupa
+    // el 36 % del cuadro). Lo que sobra alrededor se rellena con el propio
+    // cuadro espejado y muy desenfocado, con una pluma en la costura.
+    const ANCHO_TORRE = 0.36;
+    const esc = Math.min(ph / e.H, (pw * 0.96) / (ANCHO_TORRE * e.W));
+    const dw = e.W * esc, dh = e.H * esc;
     const dx = dw <= pw ? (pw - dw) / 2 : Math.max(pw - dw, Math.min(0, pw / 2 - EJE.x * dw));
+    const dy = dh <= ph ? (ph - dh) * 0.42 : 0;
     const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph);
-    // la franja de arriba es papel, y el cuadro se funde al papel en un borde
-    // corto: el render queda montado en la hoja, como el boceto. (Estirar o
-    // reflejar las primeras filas del cuadro arrastraba la antena y el techo.)
     g.drawImage(e.papel, 0, 0, pw, ph);
-    // los bordes (arriba y, si sobra ancho, los costados) se rellenan con el
-    // propio cuadro espejado y desenfocado: arriba sigue el cielo, a los lados
-    // siguen los árboles. En el boceto es papel espejado, o sea papel.
     if (!e.mini) { e.mini = lienzo(1, 1); e.mini2 = lienzo(1, 1); }
     const espejo = (ctx, sx, sy, sw, sh, tx, ty, tw, th, fx, fy) => {
       if (tw < 1 || th < 1 || sw < 1 || sh < 1) return;
       const m1 = e.mini, m2 = e.mini2, g1 = m1.getContext("2d"), g2 = m2.getContext("2d");
-      m1.width = Math.max(1, Math.round(tw / 4)); m1.height = Math.max(1, Math.round(th / 4));
-      m2.width = Math.max(1, Math.round(tw / 16)); m2.height = Math.max(1, Math.round(th / 16));
+      m1.width = Math.max(1, Math.round(tw / 6)); m1.height = Math.max(1, Math.round(th / 6));
+      m2.width = Math.max(1, Math.round(tw / 28)); m2.height = Math.max(1, Math.round(th / 28));
       g1.save(); g1.translate(fx ? m1.width : 0, fy ? m1.height : 0); g1.scale(fx ? -1 : 1, fy ? -1 : 1);
       g1.drawImage(e.out, sx, sy, sw, sh, 0, 0, m1.width, m1.height); g1.restore();
       g2.imageSmoothingEnabled = true; g2.drawImage(m1, 0, 0, m2.width, m2.height);
       ctx.imageSmoothingEnabled = true; ctx.drawImage(m2, 0, 0, m2.width, m2.height, tx, ty, tw, th);
     };
     const izq = Math.max(0, Math.round(dx)), der = Math.max(0, Math.round(pw - dw - dx));
-    const sTop = Math.min(Math.round(e.H * 0.06), Math.ceil(franja / esc));
-    espejo(g, Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sTop, 0, 0, pw, franja + 1, false, true);   // arriba: el cielo, tomado del lado abierto del cuadro
+    const arr = Math.max(0, Math.round(dy)), aba = Math.max(0, Math.round(ph - dy - dh));
+    const sV = Math.min(e.H, Math.round(e.H * 0.06));
+    if (arr > 0) espejo(g, Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sV, 0, 0, pw, arr + 1, false, true);            // arriba: el cielo
+    if (aba > 0) espejo(g, 0, e.H - sV, e.W, sV, 0, dy + dh - 1, pw, aba + 1, false, true);                                    // abajo: la vereda
     if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(g, 0, 0, sw, e.H, 0, dy, izq + 1, dh, true, false); }
     if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(g, e.W - sw, 0, sw, e.H, dx + dw - 1, dy, der + 1, dh, true, false); }
-    // el velo sobre los bordes sólo cuando ya hay render (en el boceto delataba el relleno)
-    const velo = 0.12 * (e.fundido || 0);
-    if (velo > 0) { g.fillStyle = `rgba(18,12,9,${velo.toFixed(3)})`; g.fillRect(0, 0, pw, franja); if (izq > 0) g.fillRect(0, franja, izq, ph - franja); if (der > 0) g.fillRect(dx + dw, franja, der + 1, ph - franja); }
+    const velo = 0.14 * (e.fundido || 0);
+    if (velo > 0) { g.fillStyle = `rgba(18,12,9,${velo.toFixed(3)})`; if (arr > 0) g.fillRect(0, 0, pw, arr); if (aba > 0) g.fillRect(0, dy + dh, pw, aba + 1); if (izq > 0) g.fillRect(0, 0, izq, ph); if (der > 0) g.fillRect(dx + dw, 0, der + 1, ph); }
     g.drawImage(e.out, dx, dy, dw, dh);
-    // la pluma: el borde del cuadro se desenfoca hacia afuera unos píxeles, y la costura con el relleno desaparece
-    const pluma = Math.round(Math.min(64, pw * 0.045));
+    // la pluma: el borde del cuadro se desenfoca hacia adentro, y la costura con el relleno desaparece
+    const pluma = Math.round(Math.min(90, Math.max(pw, ph) * 0.06));
     const plumar = (sx, sy, sw, sh, tx, ty, tw, th, horizontal, alFinal) => {
       if (!e.plumaC) e.plumaC = lienzo(1, 1);
       const pc = e.plumaC, cx = pc.getContext("2d");
@@ -1069,7 +1063,8 @@
     const sPl = Math.ceil(pluma / esc);
     if (izq > 0) plumar(0, 0, sPl, e.H, dx, dy, pluma, dh, true, false);
     if (der > 0) plumar(e.W - sPl, 0, sPl, e.H, dx + dw - pluma, dy, pluma, dh, true, true);
-    plumar(0, 0, e.W, sPl, dx, dy, dw, pluma, false, false);
+    if (arr > 0) plumar(0, 0, e.W, sPl, dx, dy, dw, pluma, false, false);
+    if (aba > 0) plumar(0, e.H - sPl, e.W, sPl, dx, dy + dh - pluma, dw, pluma, false, true);
 
   }
 
@@ -1389,11 +1384,16 @@
   $$(".ab-btn").forEach((b) => b.addEventListener("click", () => pintarAB(b.dataset.ab)));
 
   // el 3D se carga cuando se pide: es el asset más pesado de la página
+  $("#tresd-pantalla").addEventListener("click", () => {
+    const marco = $("#tresd-marco");
+    if (marco.requestFullscreen) marco.requestFullscreen().catch(() => window.open(CFG.tresd, "_blank"));
+    else window.open(CFG.tresd, "_blank");       // iOS no deja pantalla completa de un div: se abre aparte
+  });
   $("#tresd-arrancar").addEventListener("click", () => {
     const marco = $("#tresd-marco");
     const f = document.createElement("iframe");
     f.src = CFG.tresd; f.title = t("tresD.titulo"); f.loading = "eager"; f.allow = "fullscreen";
-    marco.appendChild(f); $("#tresd-arrancar").remove();
+    marco.appendChild(f); $("#tresd-arrancar").remove(); marco.classList.add("activo");
     clic("whatsapp_visita", "3d");   // se registra que alguien abrió el 3D
   });
 

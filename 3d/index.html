@@ -138,6 +138,20 @@
     #ficha .caja{border-radius:10px 10px 0 0;max-height:66vh;transform:translateY(20px)}
     #pista{display:none}
   }
+  /* embebido chico (el marco de la portada en un celular): lo justo para tocar */
+  @media (max-width:520px), (max-height:640px){
+    #rotulo{display:none}
+    #leyenda{display:none}
+    #reloj{width:calc(100vw - 24px);padding-bottom:60px}
+    #reloj .caja{padding:10px 12px}
+    #reloj .hora{font-size:18px}
+    #reloj .fila{margin-bottom:5px}
+    #reloj .pie{margin-top:3px}
+    #reloj .pie > span{display:none}
+    #reloj button{min-height:30px;font-size:11px}
+    #camaras{padding:0 12px 10px;max-width:none;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    #camaras button{min-height:32px;padding:0 10px;font-size:11px;white-space:nowrap;flex:0 0 auto}
+  }
   @media (prefers-reduced-motion: reduce){
     #ficha .caja{transition:opacity 200ms ease,visibility 200ms}
   }
