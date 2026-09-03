@@ -16,3 +16,6 @@ build/
 # y duplica las imágenes que ya están en img/. Queda en la carpeta de trabajo.
 Rediseño con datos pendientes/
 *.zip
+
+# Grabaciones de pantalla que David deja acá para que las analice: no se versionan.
+*.mov

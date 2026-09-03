@@ -421,12 +421,12 @@
   function terminarIntro() {
     if (cargado) return; cargado = true;
     pct.textContent = "100";
-    setTimeout(() => { intro.classList.add("fuera"); document.body.classList.remove("cargando"); setTimeout(() => intro.remove(), 1000); }, reduce ? 0 : 350);
+    setTimeout(() => { intro.classList.add("fuera"); document.body.classList.remove("cargando"); document.dispatchEvent(new Event("intro-terminada")); setTimeout(() => intro.remove(), 1000); }, reduce ? 0 : 350);
   }
   // el contador acompaña la carga del hero: no es decorativo, es la espera real
   let n = 0;
   const tick = setInterval(() => { if (cargado) return clearInterval(tick); n = Math.min(92, n + 3 + Math.random() * 6); pct.textContent = String(n | 0); }, 90);
-  if (heroImg.complete) terminarIntro(); else heroImg.addEventListener("load", terminarIntro);
+  if (heroImg.complete && heroImg.naturalWidth) terminarIntro(); else heroImg.addEventListener("load", terminarIntro);
   setTimeout(terminarIntro, 4000);   // pase lo que pase, no se queda clavada
 
   const cab = $(".cab"), hamb = $(".hamb");
@@ -437,33 +437,267 @@
   $$(".cab-nav a").forEach((a) => a.addEventListener("click", () => { document.body.classList.remove("menu-abierto"); hamb.setAttribute("aria-expanded", "false"); }));
   addEventListener("keydown", (e) => { if (e.key === "Escape") { document.body.classList.remove("menu-abierto"); hamb.setAttribute("aria-expanded", "false"); } });
 
-  /* ── 5 · el hero: del boceto al render ─────────────────────────────────── */
-  /* El boceto no es un archivo: se calcula acá con un detector de bordes
-     (Sobel) sobre el mismo render. Cero bytes de red, y si algún día cambia el
-     render, el boceto cambia solo. La referencia usa un video de 10 MB. */
+  /* ── 5 · el hero: del boceto al render, en cinco etapas ──────────────── */
+  /* Leído cuadro por cuadro del video de la referencia (15,6 s, se reproduce
+     solo al cargar, sin scroll): 1) líneas de construcción que se dibujan,
+     2) el boceto completo, 3) un modelo blanco de arcilla con el cielo
+     apareciendo atrás, 4) los materiales que entran desde el centro con una
+     máscara suave e irregular, 5) el render final. Acá se hace lo mismo con
+     UN render y cero archivos: el boceto, la arcilla y la máscara se calculan
+     en la página. Y el logotipo que viene quemado en el render se reserva
+     para el final: primero «LA», después «TORRE».
+
+     Todo vive en coordenadas de la imagen (ancho tope 1400) y se pinta al
+     canvas visible con la misma regla que object-fit: cover / center 30 %. */
   const boceto = $(".hero-boceto");
-  function dibujarBoceto() {
+  const heroSec = $(".hero");
+  const heroTexto = $(".hero-texto");
+  // las cajas del logotipo, medidas sobre hero-cover.jpg (fracciones)
+  const LOGO = { la: { x0: 0.42, x1: 0.545, y0: 0.325, y1: 0.45 }, torre: { x0: 0.405, x1: 0.595, y0: 0.44, y1: 0.675 } };
+  const DUR = { lineas: 2.2, finas: 1.8, arcilla: 1.5, materiales: 3.2, la: 0.7, torre: 0.9, cierre: 0.7 };
+  const INICIO = { lineas: 0, finas: 1.1, arcilla: 2.9, materiales: 4.1, la: 7.3, torre: 8.0, cierre: 8.9 };
+  const TOTAL = INICIO.cierre + DUR.cierre;
+  let escena = null;   // lo precalculado
+  let tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null;
+
+  const lienzo = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+  const suave = (x) => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+  const fase = (t, k) => suave((t - INICIO[k]) / DUR[k]);
+
+  function prepararHero() {
     const W = Math.min(1400, heroImg.naturalWidth), H = Math.round(W * heroImg.naturalHeight / heroImg.naturalWidth);
-    boceto.width = W; boceto.height = H;
-    const g = boceto.getContext("2d");
+    const base = lienzo(W, H), g = base.getContext("2d");
     g.drawImage(heroImg, 0, 0, W, H);
-    const src = g.getImageData(0, 0, W, H), d = src.data;
+    const src = g.getImageData(0, 0, W, H).data;
     const gris = new Float32Array(W * H);
-    for (let i = 0, j = 0; i < d.length; i += 4, j++) gris[j] = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
-    const out = g.createImageData(W, H), o = out.data;
+    for (let i = 0, j = 0; i < src.length; i += 4, j++) gris[j] = src[i] * 0.299 + src[i + 1] * 0.587 + src[i + 2] * 0.114;
+
+    // ── las letras del logotipo, píxel por píxel ──
+    // No se tapa la caja entera (dejaba un parche vacío en el boceto y un
+    // rectángulo de arcilla durante los materiales): se detectan los píxeles
+    // claros adentro de cada caja y se dilatan dos píxeles. Eso es la letra.
+    const enCaja = (x, y, c) => { const fx = x / W, fy = y / H; return fx > c.x0 && fx < c.x1 && fy > c.y0 && fy < c.y1; };
+    const letra = new Uint8Array(W * H);   // 1 = LA, 2 = TORRE
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const j = y * W + x; if (gris[j] < 224) continue;
+      if (enCaja(x, y, LOGO.la)) letra[j] = 1; else if (enCaja(x, y, LOGO.torre)) letra[j] = 2;
+    }
+    const letraD = new Uint8Array(W * H);
+    for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
+      const j = y * W + x; if (!letra[j]) continue;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const k = j + dy * W + dx; if (!letraD[k]) letraD[k] = letra[j]; }
+    }
+    const enLogo = (x, y) => letraD[y * W + x] > 0;
+
+    // ── el render SIN el logotipo ──
+    // Las letras tapan la fachada y no hay foto de lo que hay detrás. Se
+    // rellena cada corrida de píxeles de letra interpolando, en su fila, entre
+    // el píxel de la izquierda y el de la derecha. En trazos de 15 a 25 px el
+    // rayado horizontal no se nota, y es lo que hace que las letras de verdad
+    // APAREZCAN al final en vez de haber estado siempre.
+    const sinLetras = lienzo(W, H);
+    const dsl = sinLetras.getContext("2d").createImageData(W, H);
+    dsl.data.set(src);
+    for (let y = 0; y < H; y++) {
+      let x = 0;
+      while (x < W) {
+        if (!letraD[y * W + x]) { x++; continue; }
+        let x2 = x; while (x2 < W && letraD[y * W + x2]) x2++;
+        const izq = x > 0 ? x - 1 : (x2 < W ? x2 : x), der = x2 < W ? x2 : izq;
+        const ki = (y * W + izq) * 4, kd = (y * W + der) * 4, n = x2 - x + 1;
+        for (let xx = x; xx < x2; xx++) {
+          const f = (xx - x + 1) / n, k = (y * W + xx) * 4;
+          for (let c = 0; c < 3; c++) dsl.data[k + c] = src[ki + c] * (1 - f) + src[kd + c] * f;
+          dsl.data[k + 3] = 255;
+        }
+        x = x2;
+      }
+    }
+    sinLetras.getContext("2d").putImageData(dsl, 0, 0);
+    const grisSin = new Float32Array(W * H);
+    for (let j = 0; j < W * H; j++) { const k = j * 4; grisSin[j] = dsl.data[k] * 0.299 + dsl.data[k + 1] * 0.587 + dsl.data[k + 2] * 0.114; }
+    const fuerte = lienzo(W, H), fino = lienzo(W, H);
+    const df = fuerte.getContext("2d").createImageData(W, H), dn = fino.getContext("2d").createImageData(W, H);
     for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
       const i = y * W + x;
       const gx = -gris[i - W - 1] + gris[i - W + 1] - 2 * gris[i - 1] + 2 * gris[i + 1] - gris[i + W - 1] + gris[i + W + 1];
       const gy = -gris[i - W - 1] - 2 * gris[i - W] - gris[i - W + 1] + gris[i + W - 1] + 2 * gris[i + W] + gris[i + W + 1];
-      let m = Math.sqrt(gx * gx + gy * gy) / 4;          // 0..255
-      m = Math.max(0, m - 14) * 1.9;                     // umbral: el papel queda limpio
-      const a = Math.min(255, m);
+      let m = Math.sqrt(gx * gx + gy * gy) / 4;
+      if (enLogo(x, y)) m = 0;                                  // el logotipo no se dibuja: se reserva
       const k = i * 4;
-      o[k] = 41; o[k + 1] = 33; o[k + 2] = 26; o[k + 3] = a;   // tinta sobre papel transparente
+      const aF = Math.min(255, Math.max(0, m - 38) * 2.6);      // sólo los bordes fuertes
+      const aN = Math.min(255, Math.max(0, m - 12) * 1.7);      // todo el trazo
+      df.data[k] = 41; df.data[k + 1] = 33; df.data[k + 2] = 26; df.data[k + 3] = aF;
+      dn.data[k] = 41; dn.data[k + 1] = 33; dn.data[k + 2] = 26; dn.data[k + 3] = aN * 0.85;
     }
-    g.putImageData(out, 0, 0);
+    fuerte.getContext("2d").putImageData(df, 0, 0);
+    fino.getContext("2d").putImageData(dn, 0, 0);
+
+    // ── la arcilla: el volumen en blanco, con sombra suave y sin color ──
+    const arcilla = lienzo(W, H);
+    const da = arcilla.getContext("2d").createImageData(W, H);
+    const letrasLa = lienzo(W, H), letrasTorre = lienzo(W, H);
+    const dl = letrasLa.getContext("2d").createImageData(W, H), dt = letrasTorre.getContext("2d").createImageData(W, H);
+    for (let j = 0; j < W * H; j++) {
+      const k = j * 4;
+      const v = 236 + (grisSin[j] - 128) * 0.22;                 // la arcilla, ya sin letras
+      da.data[k] = v + 4; da.data[k + 1] = v + 1; da.data[k + 2] = v - 6; da.data[k + 3] = 255;
+      // las letras REALES del render, recortadas, para que aparezcan al final
+      const cap = letraD[j] === 1 ? dl : letraD[j] === 2 ? dt : null;
+      if (cap) { cap.data[k] = src[k]; cap.data[k + 1] = src[k + 1]; cap.data[k + 2] = src[k + 2]; cap.data[k + 3] = 255; }
+    }
+    arcilla.getContext("2d").putImageData(da, 0, 0);
+    letrasLa.getContext("2d").putImageData(dl, 0, 0);
+    letrasTorre.getContext("2d").putImageData(dt, 0, 0);
+    // el cielo aparece detrás de la arcilla: se recorta el render por un
+    // degradé vertical (el cielo del hero termina cerca del 30 % de alto)
+    const cielo = lienzo(W, H); const gc = cielo.getContext("2d");
+    gc.drawImage(sinLetras, 0, 0);
+    gc.globalCompositeOperation = "destination-in";
+    const grad = gc.createLinearGradient(0, H * 0.22, 0, H * 0.52);
+    grad.addColorStop(0, "rgba(0,0,0,1)"); grad.addColorStop(1, "rgba(0,0,0,0)");
+    gc.fillStyle = grad; gc.fillRect(0, 0, W, H);
+
+    // ── el ruido de la máscara de materiales (baja resolución, suavizado) ──
+    const NW = 160, NH = Math.round(160 * H / W);
+    let ruido = new Float32Array(NW * NH);
+    for (let i = 0; i < ruido.length; i++) ruido[i] = Math.random();
+    for (let paso = 0; paso < 3; paso++) {              // tres pasadas de desenfoque de caja
+      const r2 = new Float32Array(NW * NH);
+      for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) {
+        let s = 0, n = 0;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+          const yy = y + dy, xx = x + dx; if (yy < 0 || yy >= NH || xx < 0 || xx >= NW) continue;
+          s += ruido[yy * NW + xx]; n++;
+        }
+        r2[y * NW + x] = s / n;
+      }
+      ruido = r2;
+    }
+    let mn = 1, mx = 0; ruido.forEach((v) => { if (v < mn) mn = v; if (v > mx) mx = v; });
+    ruido = ruido.map((v) => (v - mn) / (mx - mn || 1));
+
+    escena = { W, H, base: sinLetras, fuerte, fino, arcilla, cielo, ruido, NW, NH, letrasLa, letrasTorre,
+      mascara: lienzo(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
+    heroListo = true;
   }
-  if (heroImg.complete && heroImg.naturalWidth) dibujarBoceto(); else heroImg.addEventListener("load", dibujarBoceto);
+
+  /* la máscara de materiales: radial desde el edificio + ruido, sin el logotipo */
+  function mascaraMateriales(p) {
+    const { NW, NH, ruido, mascara, W, H } = escena;
+    const img = mascara.getContext("2d").createImageData(NW, NH);
+    const cx = 0.5, cy = 0.55;
+    const R = p * 1.35, pluma = 0.28;
+    for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) {
+      const fx = x / NW, fy = y / NH;
+      const d = Math.hypot((fx - cx) * (W / H), fy - cy) / 1.1;
+      let a = (R - d) / pluma + (ruido[y * NW + x] - 0.5) * 0.7;
+      a = Math.max(0, Math.min(1, a));
+      const k = (y * NW + x) * 4;
+      img.data[k] = img.data[k + 1] = img.data[k + 2] = 0; img.data[k + 3] = a * 255;
+    }
+    mascara.getContext("2d").putImageData(img, 0, 0);
+    return mascara;
+  }
+
+  /* un cuadro del hero, en coordenadas de la imagen */
+  function pintarHero(t) {
+    const e = escena, { W, H } = e;
+    const o = e.out.getContext("2d");
+    o.globalCompositeOperation = "source-over";
+    o.fillStyle = "#F3EADA"; o.fillRect(0, 0, W, H);           // el papel
+
+    // 1 · las líneas fuertes se dibujan de arriba hacia abajo, con un frente suave
+    const barrer = (capa, p) => {
+      if (p <= 0) return;
+      const t2 = e.tmp.getContext("2d");
+      t2.clearRect(0, 0, W, H); t2.globalCompositeOperation = "source-over";
+      t2.drawImage(capa, 0, 0);
+      if (p < 1) {
+        t2.globalCompositeOperation = "destination-in";
+        const frente = p * 1.25 * H;
+        const gr = t2.createLinearGradient(0, frente - H * 0.25, 0, frente);
+        gr.addColorStop(0, "rgba(0,0,0,1)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+        t2.fillStyle = gr; t2.fillRect(0, 0, W, H);
+      }
+      o.drawImage(e.tmp, 0, 0);
+    };
+    barrer(e.fuerte, fase(t, "lineas"));
+    barrer(e.fino, fase(t, "finas"));
+
+    // 3 · la arcilla aparece encima del boceto, y el cielo detrás
+    const pA = fase(t, "arcilla");
+    if (pA > 0) {
+      o.globalAlpha = pA * 0.96; o.drawImage(e.arcilla, 0, 0);
+      o.globalAlpha = pA; o.drawImage(e.cielo, 0, 0);
+      o.globalAlpha = 1;
+    }
+
+    // 4 · los materiales entran desde el centro; 5 · LA y después TORRE
+    const pM = fase(t, "materiales"), pLa = fase(t, "la"), pTo = fase(t, "torre");
+    if (pM > 0 || pLa > 0) {
+      const m = mascaraMateriales(pM);
+      const t2 = e.tmp.getContext("2d");
+      t2.clearRect(0, 0, W, H); t2.globalCompositeOperation = "source-over";
+      t2.drawImage(e.base, 0, 0);
+      t2.globalCompositeOperation = "destination-in";
+      t2.imageSmoothingEnabled = true;
+      t2.drawImage(m, 0, 0, W, H);
+      o.drawImage(e.tmp, 0, 0);
+    }
+    // 5 · el logotipo aparece al final, sobre el render ya terminado: LA, y después TORRE
+    if (pLa > 0) { o.globalAlpha = pLa; o.drawImage(e.letrasLa, 0, 0); }
+    if (pTo > 0) { o.globalAlpha = pTo; o.drawImage(e.letrasTorre, 0, 0); }
+    o.globalAlpha = 1;
+  }
+
+  /* del canvas de la imagen al canvas visible, con la regla de object-fit: cover */
+  function presentar() {
+    const e = escena;
+    const vw = boceto.clientWidth, vh = boceto.clientHeight;
+    if (boceto.width !== vw || boceto.height !== vh) { boceto.width = vw; boceto.height = vh; }
+    const esc = Math.max(vw / e.W, vh / e.H);
+    const dw = e.W * esc, dh = e.H * esc;
+    const dx = (vw - dw) / 2, dy = (vh - dh) * 0.30;   // object-position: center 30%
+    const g = boceto.getContext("2d");
+    g.clearRect(0, 0, vw, vh);
+    g.drawImage(e.out, dx, dy, dw, dh);
+  }
+
+  function terminarHero() {
+    if (heroTerminado) return;
+    heroTerminado = true;
+    boceto.style.transition = "opacity .7s ease";
+    boceto.style.opacity = "0";
+    heroSec.classList.add("claro");
+    document.body.classList.add("hero-claro");
+    heroTexto.classList.add("visible");
+    if (window.gsap && !reduce) gsap.from(".hero-texto > *", { y: 18, opacity: 0, duration: .9, ease: "power2.out", stagger: 0.1 });
+    setTimeout(() => { boceto.style.display = "none"; }, 800);
+  }
+
+  function bucleHero(ts) {
+    if (!heroListo) { requestAnimationFrame(bucleHero); return; }
+    if (ultimoTs == null) ultimoTs = ts;
+    const dt = Math.min(0.05, (ts - ultimoTs) / 1000); ultimoTs = ts;
+    tHero += dt * (apurar ? 6 : 1);          // si el usuario apura, se acelera seis veces
+    pintarHero(tHero); presentar();
+    if (fase(tHero, "materiales") > 0.55) { heroSec.classList.add("claro"); document.body.classList.add("hero-claro"); }
+    if (tHero >= TOTAL) { terminarHero(); return; }
+    requestAnimationFrame(bucleHero);
+  }
+
+  function arrancarHero() {
+    if (reduce) { boceto.style.display = "none"; heroSec.classList.add("claro"); document.body.classList.add("hero-claro"); heroTexto.classList.add("visible"); heroTerminado = true; return; }
+    prepararHero();
+    // el que scrollea o toca no espera: se apura el resto
+    const apurarYa = () => { apurar = true; };
+    addEventListener("wheel", apurarYa, { passive: true, once: true });
+    addEventListener("touchstart", apurarYa, { passive: true, once: true });
+    boceto.addEventListener("click", apurarYa, { once: true });
+    requestAnimationFrame(bucleHero);
+  }
+  addEventListener("resize", () => { if (heroListo && !heroTerminado) presentar(); });
 
   /* ── 6 · scroll suave, títulos partidos, parallax ──────────────────────── */
   let lenis = null;
@@ -484,30 +718,9 @@
       }));
     }
 
-    // el hero: 0 → 1 mientras la sección pinneada se desplaza
-    const hero = $(".hero");
-    if (!reduce) {
-      ScrollTrigger.create({
-        trigger: hero, start: "top top", end: "bottom bottom", scrub: 0.6,
-        onUpdate: (st) => {
-          const p = st.progress;
-          // el boceto se va (0,45 → 0,85) mientras entra el render (0,35 → 0,9)
-          const render = gsap.utils.clamp(0, 1, (p - 0.35) / 0.55);
-          const traz = 1 - gsap.utils.clamp(0, 1, (p - 0.45) / 0.4);
-          heroImg.style.opacity = render;
-          boceto.style.opacity = traz;
-          $(".hero-velo").style.opacity = render;
-          hero.classList.toggle("claro", render > 0.5);
-          document.body.classList.toggle("hero-claro", render > 0.5);
-          // el título respira: se achica apenas y sube
-          document.body.classList.toggle("paso-el-hero", p > 0.98);
-        },
-      });
-      // las letras del título, una por una, cuando termina la intro
-      gsap.from(".hero-bajada, .hero-ctas, .hero-pista", { y: 16, opacity: 0, duration: .9, ease: "power2.out", stagger: 0.08, delay: 1.2 });
-    } else {
-      document.body.classList.add("paso-el-hero");
-    }
+    // el hero ya no depende del scroll: se reproduce solo al cargar. Lo único
+    // atado al scroll es saber cuándo se lo dejó atrás.
+    ScrollTrigger.create({ trigger: ".hero", start: "bottom 60%", onEnter: () => document.body.classList.add("paso-el-hero"), onLeaveBack: () => document.body.classList.remove("paso-el-hero") });
 
     // títulos partidos: cada letra entra cuando el título llega a la vista
     $$(".partir").forEach((el) => {
@@ -551,6 +764,8 @@
   } else {
     document.body.classList.add("paso-el-hero");
   }
+  // arranca cuando termina la intro (o ya, si la intro ya se fue)
+  if (cargado) arrancarHero(); else document.addEventListener("intro-terminada", arrancarHero, { once: true });
 
   /* ── 7 · tipologías, unidades, A/B, 3D ─────────────────────────────────── */
   let tipoActiva = TIPOS[0].clave;
@@ -685,5 +900,5 @@
   pintarIdioma();
   document.dispatchEvent(new Event("idioma-pintado"));
   visita();
-  window.PORTADA = { lenis: () => lenis, DICC, pintarIdioma, cambiarIdioma: (i) => { idioma = i; pintarIdioma(); document.dispatchEvent(new Event("idioma-pintado")); }, UNIDADES: () => UNIDADES };
+  window.PORTADA = { hero: { pintar: pintarHero, presentar, listo: () => heroListo, escena: () => escena, preparar: prepararHero, TOTAL }, lenis: () => lenis, DICC, pintarIdioma, cambiarIdioma: (i) => { idioma = i; pintarIdioma(); document.dispatchEvent(new Event("idioma-pintado")); }, UNIDADES: () => UNIDADES };
 })();

@@ -82,29 +82,25 @@ body.menu-abierto .cab-nav{display:flex;position:fixed;inset:64px 0 0;background
 body.menu-abierto .cab-nav a{font-family:var(--serif);font-size:30px;color:var(--crema);padding:10px 0}
 body.menu-abierto .cab{color:var(--crema);background:var(--tinta-oscura)}
 
-/* ── hero: del boceto al render ── */
-.hero{height:230svh;position:relative;background:var(--crema)}
-.hero-fijo{position:sticky;top:0;height:100svh;overflow:hidden;background:var(--crema)}
+/* ── hero: del boceto al render, en cinco etapas, sin scroll ── */
+.hero{height:100svh;position:relative;background:var(--crema);overflow:hidden}
+.hero-fijo{position:relative;height:100svh;overflow:hidden;background:var(--crema)}
 .hero-render,.hero-boceto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%}
-.hero-render{opacity:0}
-.hero-boceto{opacity:1;mix-blend-mode:multiply}
-.hero-velo{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,12,9,.28) 0%,rgba(18,12,9,0) 30%,rgba(18,12,9,.12) 60%,rgba(18,12,9,.86) 100%);opacity:0}
-.hero-texto{position:absolute;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(56px,9vh,96px);max-width:var(--ancho);margin:0 auto}
-/* A 14vw las ocho letras no entraban en 1280 px y el título se partía en tres
-   renglones al medio de la palabra. Las palabras van en nowrap y el tamaño
-   se acota para que siempre entre en una línea en escritorio. */
-/* EL TITULAR ES EL LOGOTIPO DEL RENDER. Viene quemado adentro del JPG, grande y
-   bien tipografiado, y un «LA TORRE» en HTML del mismo tamaño se le pisaba
-   encima (visto en la captura a 1280 px). Es la misma decisión del sitio
-   actual: el texto de la página va abajo y chico, y deja que la marca del
-   render sea la protagonista. El h1 queda para lectores de pantalla. */
+.hero-render{opacity:1}
+.hero-boceto{opacity:1;z-index:2}
+.hero-velo{position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(18,12,9,.28) 0%,rgba(18,12,9,0) 30%,rgba(18,12,9,.12) 60%,rgba(18,12,9,.86) 100%);opacity:0;transition:opacity .9s ease}
+.hero.claro .hero-velo{opacity:1}
+.hero-texto{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(56px,9vh,96px);max-width:var(--ancho);margin:0 auto;opacity:0;transition:opacity .4s ease}
+.hero-texto.visible{opacity:1}
+/* EL TITULAR ES EL LOGOTIPO DEL RENDER: viene quemado en el JPG y aparece al
+   final de la secuencia, primero «LA» y después «TORRE». El h1 queda para
+   lectores de pantalla. */
 .hero-titulo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.hero-titulo .letra{display:inline-block}
-.hero.claro .hero-titulo,.hero.claro .hero-bajada{color:var(--crema)}
 .hero-bajada{margin:10px 0 0;max-width:30ch;font-family:var(--serif);font-weight:300;font-size:clamp(24px,3vw,40px);line-height:1.15;color:var(--tinta);transition:color .5s;text-wrap:balance}
+.hero.claro .hero-bajada{color:var(--crema)}
 .hero-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-.hero-pista{position:absolute;right:var(--lado);bottom:22px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-claro)}
-.hero.claro .hero-pista{color:rgba(243,234,218,.6)}
+.hero-pista{position:absolute;z-index:4;right:var(--lado);bottom:22px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-claro);opacity:0;transition:opacity .6s ease 1s}
+.hero.claro .hero-pista{color:rgba(243,234,218,.6);opacity:1}
 
 /* ── manifiesto ── */
 .manifiesto{padding:clamp(84px,14vh,160px) var(--lado);max-width:980px;margin:0 auto;text-align:center}
@@ -252,10 +248,8 @@ body.en-contacto .wa-flotante{opacity:0!important;visibility:hidden!important}
 /* ── movimiento: todo lo que anima respeta reduced-motion ── */
 @media (prefers-reduced-motion:reduce){
   #intro{transition:none}
-  .hero{height:100svh}
-  .hero-render{opacity:1}
   .hero-boceto{display:none}
   .hero-velo{opacity:1}
-  .hero.claro .hero-titulo{color:var(--crema)}
+  .hero-texto{opacity:1}
   .partir .l{transform:none!important;opacity:1!important}
 }
