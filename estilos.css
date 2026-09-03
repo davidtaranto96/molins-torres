@@ -60,6 +60,7 @@ button,input,select,textarea{font:inherit}
 .intro-num{font-family:var(--serif);font-weight:300;font-size:clamp(52px,10vw,120px);line-height:1;font-variant-numeric:tabular-nums}
 .intro-marca{position:absolute;bottom:32px;left:0;right:0;text-align:center;font-family:var(--serif);letter-spacing:.34em;font-size:14px;color:rgba(243,234,218,.6)}
 
+html{overflow-x:clip}
 [id]{scroll-margin-top:92px}   /* la barra flotante tapa 76 px; sin Lenis los anclajes paran debajo */
 /* ── cabecera: la barra flotante que se abre en la tarjeta del menú ──
    Una píldora oscura despegada de los bordes, con MENÚ y dos líneas a la
@@ -110,7 +111,7 @@ body.menu-abierto .cab-fondo{opacity:1;pointer-events:auto}
 .hero-boceto{opacity:1;z-index:2}
 .hero-velo{position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(18,12,9,.28) 0%,rgba(18,12,9,0) 30%,rgba(18,12,9,.18) 55%,rgba(18,12,9,.9) 100%);opacity:0;transition:opacity .9s ease}
 .hero.claro .hero-velo{opacity:1}
-.hero-texto{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(16px,3vh,30px) max(var(--lado),var(--hero-dx,0px));opacity:0;transition:opacity .4s ease}
+.hero-texto{position:absolute;z-index:4;left:0;right:0;bottom:0;padding:0 var(--lado) clamp(16px,3vh,30px);opacity:0;transition:opacity .4s ease}
 .hero-texto.visible{opacity:1}
 /* Editorial, como la referencia: el título va al pie, de una sola línea, sobre
    la base del render y no sobre la fachada. Arriba, en una fila, el rótulo con
@@ -295,11 +296,11 @@ body.con-ficha{overflow:hidden}
 .adentro-puntos button{width:34px;height:44px;padding:0;border:0;background:transparent;cursor:pointer;position:relative}
 .adentro-puntos button::after{content:"";position:absolute;left:0;right:0;top:20px;height:4px;border-radius:2px;background:rgba(243,234,218,.35);transition:background .3s}
 .adentro-puntos button[aria-current=true]::after{background:var(--crema)}
-@media (max-width:640px){.adentro-marco{aspect-ratio:4/5}.adentro-pie{flex-direction:column;align-items:flex-start;gap:6px}}
+@media (max-width:640px){.tresd-marco{aspect-ratio:4/5;max-height:none}.adentro-marco{aspect-ratio:4/5}.adentro-pie{flex-direction:column;align-items:flex-start;gap:6px}}
 @media (prefers-reduced-motion:reduce){.adentro-img.activa{animation:none}}
 
 /* ── 3D ── */
-.tresd-marco{position:relative;margin:32px auto 0;aspect-ratio:16/10;max-height:78vh;min-height:320px;border-radius:10px;overflow:hidden;background:var(--tinta-oscura);box-shadow:var(--sombra-2)}
+.tresd-marco{position:relative;margin:32px auto 0;width:100%;max-width:100%;aspect-ratio:16/10;max-height:78vh;border-radius:10px;overflow:hidden;background:var(--tinta-oscura);box-shadow:var(--sombra-2)}
 .tresd-marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .tresd-arrancar{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:6px;background:linear-gradient(180deg,rgba(33,23,17,.35),rgba(33,23,17,.85)),url(img/hero-cover.jpg) center/cover;color:var(--crema);border:0;cursor:pointer;font-family:var(--serif);font-size:clamp(22px,3vw,34px);font-weight:300}
 .tresd-arrancar small{font-family:var(--sans);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,234,218,.6)}
@@ -311,29 +312,28 @@ body.con-ficha{overflow:hidden}
 .ab-texto{margin:14px 0 0;font-size:14.5px;color:var(--tinta-suave);min-height:3.4em}
 
 /* ── ubicación ── */
-.ubicacion{position:relative;display:grid;background:var(--tinta-oscura);color:var(--crema);overflow:hidden}
-.ubicacion-mapa{position:relative;min-height:min(90vw,520px);background:#2A1D15;filter:sepia(.35) saturate(.7) brightness(.82) contrast(1.05)}
-.ubicacion-mapa .leaflet-tile-pane{opacity:.95}
-.ubicacion-texto{position:relative;padding:clamp(56px,9vh,110px) var(--lado);width:100%}
+/* ── ubicación: el mapa del render (con sus rótulos), que se acerca al punto que se elige ── */
+.ubicacion{position:relative;overflow:hidden;background:var(--tinta-oscura);color:var(--crema);min-height:92svh;display:flex;align-items:center}
+.mapa-escena{position:absolute;top:50%;left:46%;width:max(108%,92svh * 1.7785);aspect-ratio:2200/1237;transform:translate(-50%,-50%);pointer-events:none}
+.mapa-zoom{position:absolute;inset:0;transform-origin:var(--ox,50%) var(--oy,50%);transition:transform 1.4s var(--curva);will-change:transform;pointer-events:auto}
+.mapa-escena.cerca-de .mapa-zoom{transform:scale(1.32)}
+.mapa-img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.punto{position:absolute;left:var(--x);top:var(--y);width:44px;height:44px;margin:-22px 0 0 -22px;background:none;border:0;padding:0;cursor:pointer}
+.punto i{position:absolute;inset:15px;border-radius:50%;background:var(--crema);box-shadow:0 0 0 0 rgba(243,234,218,.55);animation:pulso 2.6s ease-out infinite;transition:transform .35s var(--curva),background .3s}
+.punto-torre i{inset:12px;background:var(--terracota-claro);box-shadow:0 0 0 0 rgba(217,139,111,.6)}
+.punto.activo i{transform:scale(1.5);background:var(--terracota-claro)}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(243,234,218,.55)}70%{box-shadow:0 0 0 18px rgba(243,234,218,0)}100%{box-shadow:0 0 0 0 rgba(243,234,218,0)}}
+.ubicacion-texto{position:relative;z-index:1;width:100%;max-width:600px;margin-left:auto;padding:clamp(56px,9vh,110px) var(--lado) clamp(56px,9vh,110px) calc(var(--lado) + 40px);background:linear-gradient(90deg,rgba(18,12,9,0) 0%,rgba(18,12,9,.94) 14%,rgba(18,12,9,1) 26%,rgba(18,12,9,1) 100%)}
 .ubicacion .titulo{color:var(--crema)}
 .ubicacion .parrafo{color:rgba(243,234,218,.8)}
 .cerca{list-style:none;padding:0;margin:30px 0 26px;display:grid;gap:0;max-width:520px}
 .cerca li{display:flex;gap:16px;align-items:baseline;border-top:1px solid rgba(243,234,218,.2);padding:12px 8px 12px 0;cursor:pointer;transition:background .2s,padding-left .3s var(--curva)}
 .cerca li:hover,.cerca li.activo{padding-left:10px;background:rgba(243,234,218,.05)}
-.cerca b{font-family:var(--serif);font-weight:400;font-size:26px;min-width:88px;font-variant-numeric:tabular-nums}
-.cerca span{font-size:15px;color:rgba(243,234,218,.85)}
-.marca-torre{width:18px;height:18px;border-radius:50%;background:var(--terracota);border:3px solid var(--crema);box-shadow:0 0 0 8px rgba(156,58,32,.28),0 4px 14px rgba(0,0,0,.4)}
-.marca-poi{width:14px;height:14px;border-radius:50%;background:var(--crema);border:2px solid var(--tinta-oscura);box-shadow:0 2px 8px rgba(0,0,0,.4);transition:transform .25s var(--curva)}
-.marca-poi.activo{transform:scale(1.6);background:var(--terracota-claro)}
-.leaflet-tooltip.rotulo-mapa{background:var(--tinta-oscura);color:var(--crema);border:1px solid rgba(243,234,218,.25);border-radius:999px;padding:5px 12px;font-family:var(--sans);font-size:12px;letter-spacing:.06em;box-shadow:none}
-.leaflet-tooltip.rotulo-mapa::before{display:none}
-.leaflet-tooltip.rotulo-torre{background:var(--terracota);border-color:var(--terracota);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px}
+.cerca b{font-family:var(--serif);font-weight:400;font-size:26px;min-width:84px;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.cerca span{font-size:15px;color:rgba(243,234,218,.85);white-space:nowrap}
 .ubicacion-texto .boton{align-self:flex-start}
-.leaflet-container{font-family:var(--sans)}
-.leaflet-control-attribution{background:rgba(33,23,17,.7)!important;color:rgba(243,234,218,.6)!important;font-size:10px!important}
-.leaflet-control-attribution a{color:rgba(243,234,218,.8)!important}
-.leaflet-control-zoom a{background:var(--tinta-oscura)!important;color:var(--crema)!important;border-color:rgba(243,234,218,.2)!important}
-@media (min-width:900px){.ubicacion{grid-template-columns:1fr 1.25fr;min-height:92svh}.ubicacion-mapa{min-height:92svh;order:2}.ubicacion-texto{display:flex;flex-direction:column;justify-content:center}}
+@media (max-width:899px){.ubicacion{display:block;min-height:0}.mapa-escena{position:relative;top:auto;left:auto;transform:none;width:100%;aspect-ratio:auto;height:min(78vw,480px);overflow:hidden}.mapa-zoom{width:calc(min(78vw,480px) * 1.7785 * 1.34);height:100%;left:0;transform:none}.mapa-escena.cerca-de .mapa-zoom{transform:scale(1.25)}.mapa-img{object-fit:cover}.ubicacion-texto{max-width:none;margin:0;background:none;padding:34px var(--lado) 56px}}
+@media (prefers-reduced-motion:reduce){.punto i{animation:none}.mapa-zoom{transition:none}}
 
 /* ── plan ── */
 .plan{background:var(--crema)}

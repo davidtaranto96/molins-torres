@@ -1024,20 +1024,35 @@
     const esc = (ph - franja) / e.H;
     const dw = e.W * esc, dh = e.H * esc, dy = franja;
     const dx = dw <= pw ? (pw - dw) / 2 : Math.max(pw - dw, Math.min(0, pw / 2 - EJE.x * dw));
-    heroSec.style.setProperty("--hero-dx", (dx / dpr).toFixed(1) + "px");   // el texto se alinea con el borde del cuadro
     const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph);
     // la franja de arriba es papel, y el cuadro se funde al papel en un borde
     // corto: el render queda montado en la hoja, como el boceto. (Estirar o
     // reflejar las primeras filas del cuadro arrastraba la antena y el techo.)
-    g.drawImage(e.papel, dx, dy - dh, dw, dh);                // el mismo papel con grano: sin costura en el boceto
-    if (dw < pw) { g.drawImage(e.papel, dx - dw, 0, dw, ph); g.drawImage(e.papel, dx + dw, 0, dw, ph); }
+    g.drawImage(e.papel, 0, 0, pw, ph);
+    // los bordes (arriba y, si sobra ancho, los costados) se rellenan con el
+    // propio cuadro espejado y desenfocado: arriba sigue el cielo, a los lados
+    // siguen los árboles. En el boceto es papel espejado, o sea papel.
+    if (!e.mini) { e.mini = lienzo(1, 1); e.mini2 = lienzo(1, 1); }
+    const espejo = (sx, sy, sw, sh, tx, ty, tw, th, fx, fy) => {
+      if (tw < 1 || th < 1 || sw < 1 || sh < 1) return;
+      const m1 = e.mini, m2 = e.mini2, g1 = m1.getContext("2d"), g2 = m2.getContext("2d");
+      m1.width = Math.max(1, Math.round(tw / 4)); m1.height = Math.max(1, Math.round(th / 4));
+      m2.width = Math.max(1, Math.round(tw / 16)); m2.height = Math.max(1, Math.round(th / 16));
+      g1.save(); g1.translate(fx ? m1.width : 0, fy ? m1.height : 0); g1.scale(fx ? -1 : 1, fy ? -1 : 1);
+      g1.drawImage(e.out, sx, sy, sw, sh, 0, 0, m1.width, m1.height); g1.restore();
+      g2.imageSmoothingEnabled = true; g2.drawImage(m1, 0, 0, m2.width, m2.height);
+      g.imageSmoothingEnabled = true; g.drawImage(m2, 0, 0, m2.width, m2.height, tx, ty, tw, th);
+    };
+    const izq = Math.max(0, Math.round(dx)), der = Math.max(0, Math.round(pw - dw - dx));
+    const sTop = Math.min(Math.round(e.H * 0.06), Math.ceil(franja / esc));
+    espejo(Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sTop, 0, 0, pw, franja + 1, false, true);   // arriba: el cielo, tomado del lado abierto del cuadro
+    if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(0, 0, sw, e.H, 0, dy, izq + 1, dh, true, false); }
+    if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(e.W - sw, 0, sw, e.H, dx + dw - 1, dy, der + 1, dh, true, false); }
+    // y un velo suave sobre los bordes para que el cuadro sea el foco
+    g.fillStyle = "rgba(18,12,9,.16)";
+    g.fillRect(0, 0, pw, franja); if (izq > 0) g.fillRect(0, franja, izq, ph - franja); if (der > 0) g.fillRect(dx + dw, franja, der + 1, ph - franja);
     g.drawImage(e.out, dx, dy, dw, dh);
-    if (e.fundido > 0) {
-      const fundido = Math.round(ph * 0.05);
-      const gr = g.createLinearGradient(0, franja - 1, 0, franja + fundido);
-      gr.addColorStop(0, "rgba(243,234,218,1)"); gr.addColorStop(1, "rgba(243,234,218,0)");
-      g.globalAlpha = e.fundido; g.fillStyle = gr; g.fillRect(0, franja - 1, pw, fundido + 1); g.globalAlpha = 1;
-    }
+
   }
 
   /* el título aparece cuando el render está casi entero: «LA», y después «TORRE» */
@@ -1050,7 +1065,6 @@
       gsap.set(letras, { yPercent: 70, opacity: 0 });
       gsap.to(letras.slice(0, 2), { yPercent: 0, opacity: 1, duration: .9, ease: "power3.out", stagger: 0.08 });
       gsap.to(letras.slice(2), { yPercent: 0, opacity: 1, duration: .9, ease: "power3.out", stagger: 0.07, delay: 0.55 });
-      gsap.from(".hero-rotulo, .hero-bajada, .hero-ctas, .hero-pista", { y: 14, opacity: 0, duration: .8, ease: "power2.out", stagger: 0.08, delay: 1.1 });
     }
   }
   function terminarHero() {
@@ -1309,43 +1323,32 @@
   }
 
 
-  /* ── el mapa de la zona: Leaflet con teselas de CARTO, cargado al acercarse ── */
-  const PUNTOS = {
-    torre: { c: [-24.77358, -65.41078] },
-    portal: { c: [-24.77214, -65.41268], t: "ubicacion.shopping" },
-    hospital: { c: [-24.77216, -65.41562], t: "ubicacion.hospital" },
-    paseo: { c: [-24.77898, -65.41144], t: "ubicacion.paseo" },
-  };
-  const mapaEl = $("#mapa");
-  let mapa = null, marcas = {};
-  function armarMapa() {
-    if (mapa || !window.L) return;
-    mapa = L.map(mapaEl, { scrollWheelZoom: false, zoomControl: true, attributionControl: true });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 19 }).addTo(mapa);
-    Object.entries(PUNTOS).forEach(([k, p]) => {
-      const icono = L.divIcon({ className: "", html: `<div class="${k === "torre" ? "marca-torre" : "marca-poi"}" data-marca="${k}"></div>`, iconSize: k === "torre" ? [18, 18] : [14, 14], iconAnchor: k === "torre" ? [9, 9] : [7, 7] });
-      const m = L.marker(p.c, { icon: icono, keyboard: false }).addTo(mapa);
-      m.bindTooltip(k === "torre" ? "La Torre" : t(p.t), { permanent: true, direction: k === "torre" ? "top" : "right", offset: k === "torre" ? [0, -10] : [10, 0], className: "rotulo-mapa" + (k === "torre" ? " rotulo-torre" : "") });
-      marcas[k] = m;
-    });
-    mapa.fitBounds(L.latLngBounds(Object.values(PUNTOS).map((p) => p.c)), { padding: [48, 48], maxZoom: 16 });
-    $$(".cerca li[data-poi]").forEach((li) => {
-      const k = li.dataset.poi;
-      const activar = (si) => { li.classList.toggle("activo", si); const d = mapaEl.querySelector(`[data-marca="${k}"]`); if (d) d.classList.toggle("activo", si); };
-      li.addEventListener("mouseenter", () => activar(true)); li.addEventListener("mouseleave", () => activar(false));
-      li.addEventListener("click", () => { mapa.flyTo(PUNTOS[k].c, 17, { duration: .9 }); activar(true); });
-    });
-    document.addEventListener("idioma-pintado", () => Object.entries(PUNTOS).forEach(([k, p]) => { if (p.t) marcas[k].setTooltipContent(t(p.t)); }));
-  }
-  if (mapaEl) {
-    const cargarLeaflet = () => {
-      if (window.L) return armarMapa();
-      const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css);
-      const js = document.createElement("script"); js.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; js.onload = armarMapa; document.head.appendChild(js);
+  /* ── ubicación: el mapa del render se acerca al punto elegido, y sigue al cursor apenas ── */
+  const escenaMapa = $("#mapa-escena"), zoomMapa = $("#mapa-zoom");
+  if (escenaMapa) {
+    const puntos = $$(".punto", escenaMapa), filas = $$(".cerca li[data-poi]");
+    let activo = null, temporizador = null;
+    const activar = (k) => {
+      activo = k;
+      puntos.forEach((p) => p.classList.toggle("activo", p.dataset.poi === k));
+      filas.forEach((f) => f.classList.toggle("activo", f.dataset.poi === k));
+      const p = puntos.find((x) => x.dataset.poi === k);
+      if (p) { zoomMapa.style.setProperty("--ox", p.style.getPropertyValue("--x")); zoomMapa.style.setProperty("--oy", p.style.getPropertyValue("--y")); escenaMapa.classList.add("cerca-de"); }
+      else escenaMapa.classList.remove("cerca-de");
     };
-    new IntersectionObserver((en, io) => { if (en.some((x) => x.isIntersecting)) { cargarLeaflet(); io.disconnect(); } }, { rootMargin: "600px 0px" }).observe(mapaEl);
+    filas.forEach((f) => {
+      f.addEventListener("mouseenter", () => { clearTimeout(temporizador); activar(f.dataset.poi); });
+      f.addEventListener("mouseleave", () => { temporizador = setTimeout(() => activar(null), 900); });
+      f.addEventListener("click", () => activar(activo === f.dataset.poi ? null : f.dataset.poi));
+    });
+    puntos.forEach((p) => p.addEventListener("click", () => activar(activo === p.dataset.poi ? null : p.dataset.poi)));
+    // un paneo leve con el cursor, sólo en escritorio
+    if (!reduce && matchMedia("(hover:hover)").matches) {
+      const sec = $("#ubicacion");
+      sec.addEventListener("mousemove", (ev) => { const r = sec.getBoundingClientRect(); const fx = (ev.clientX - r.left) / r.width - .5, fy = (ev.clientY - r.top) / r.height - .5; escenaMapa.style.translate = `calc(-50% + ${(-fx * 18).toFixed(1)}px) calc(-50% + ${(-fy * 12).toFixed(1)}px)`; });
+      sec.addEventListener("mouseleave", () => { escenaMapa.style.translate = ""; });
+    }
   }
-  window.cargarMapa = () => { if (mapaEl) { if (window.L) armarMapa(); else { const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css); const js = document.createElement("script"); js.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; js.onload = armarMapa; document.head.appendChild(js); } } };
 
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -92 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
