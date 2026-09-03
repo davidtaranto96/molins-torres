@@ -604,9 +604,9 @@
   const EJE = { x: 0.43, y: 0.5 };
   // el dibujo termina a los 4,8 s y se SOSTIENE hasta los 5,7: en el video el
   // boceto completo se ve entero un momento antes de volverse arcilla
-  // al doble de lo que era (pedido del 3/9: «que se aprecie más la portada»)
-  const DUR = { lineas: 9.6, cotas: 3.0, arcilla: 2.4, materiales: 5.6, cierre: 1.2 };
-  const INICIO = { lineas: 0, cotas: 5.8, arcilla: 11.4, materiales: 13.6, cierre: 19.2 };
+  // el doble de lo que era y después un 30 % más rápido (pedidos del 3/9): 14,3 s en total
+  const DUR = { lineas: 6.7, cotas: 2.1, arcilla: 1.7, materiales: 3.9, cierre: 0.85 };
+  const INICIO = { lineas: 0, cotas: 4.1, arcilla: 8.0, materiales: 9.5, cierre: 13.4 };
   const TOTAL = INICIO.cierre + DUR.cierre;
   const esCelular = Math.min(screen.width, screen.height) < 700;
   let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
@@ -1151,7 +1151,7 @@
     const PARRAFOS = ".parrafo, .partida-lista li, .contacto-texto, .res-desc, .diseno-titulo, .partida-titulo, .visita-panel p, .adentro-cab .parrafo";
     $$(PARRAFOS).forEach((el) => {
       const ws = partirPalabras(el); if (!ws.length) return;
-      gsap.from(ws, { yPercent: 70, opacity: 0, duration: .7, ease: "power2.out", stagger: 0.014, scrollTrigger: { trigger: el, start: "top 90%", once: true } });
+      gsap.from(ws, { yPercent: 70, opacity: 0, duration: .7, ease: "power2.out", stagger: 0.014, delay: .15, scrollTrigger: { trigger: el, start: "top 86%", once: true } });
     });
     const SUBEN = ".rotulo, .boton, .lista-materiales li, .form-modos, .form label, .boton-pildora, .form-pie, .firma, .unidad, .leyenda, .nota, .pasos li, .cerca li, .ab, .visita-panel h3, .res-ficha, .res-pie, .tresd-marco, .adentro-marco .adentro-pie";
     $$(SUBEN).forEach((el) => {
@@ -1159,8 +1159,14 @@
       gsap.from(el, { y: 22, opacity: 0, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
     });
     const FOTOS = ".blob img, .partida-foto img, .bloque-media img, .visita-panel img, .contacto-foto img, .res-foto";
-    $$(FOTOS).forEach((el) => {
-      gsap.from(el, { scale: 1.12, opacity: 0, duration: 1.3, ease: "power2.out", scrollTrigger: { trigger: el.parentElement, start: "top 88%", once: true } });
+    $$(FOTOS).forEach((el, i) => {
+      gsap.from(el, { scale: 1.14, xPercent: i % 2 ? 6 : -6, opacity: 0, duration: 1.4, ease: "power3.out", scrollTrigger: { trigger: el.parentElement, start: "top 85%", once: true } });
+    });
+    // cada bloque de contenido llega entero, subiendo, y recién adentro el
+    // texto se arma por palabras (la demo: nada está quieto cuando aparece)
+    const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .ubicacion-texto, .pasos, .contacto-sobre, .form, .visita-cab, .pie-grid";
+    $$(BLOQUES).forEach((el) => {
+      gsap.from(el, { y: 44, opacity: 0, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 84%", once: true } });
     });
     // las palabras grandes derivan de a poco con el scroll
     $$(".partida-palabra, .res-palabra").forEach((el) => {
