@@ -42,8 +42,8 @@
   const TIPOS = [
     { clave:"horizonte", nombre:"Horizonte", lamina:"img/plano-tipologia-1-horizonte.jpg", render:"img/render-tipologia-1.jpg", foto:"img/area-dormitorio.jpg" },
     { clave:"evolucion", nombre:"Evolución", lamina:"img/plano-tipologia-2-evolucion.jpg", render:"img/render-tipologia-2.jpg", foto:"img/area-terraza.jpg" },
-    { clave:"esencia",   nombre:"Esencia",   lamina:"img/plano-tipologia-3-esencia.jpg",   render:"img/render-tipologia-3.jpg", foto:"img/area-suite.jpg" },
-    { clave:"cuspide",   nombre:"Cúspide",   lamina:"img/plano-tipologia-4-cuspide.jpg",   render:"img/render-tipologia-4.jpg", foto:"img/area-estar.jpg" },
+    { clave:"esencia",   nombre:"Esencia",   lamina:"img/plano-tipologia-3-esencia.jpg",   render:"img/interior-estar.jpg",  foto:"img/area-suite.jpg" },
+    { clave:"cuspide",   nombre:"Cúspide",   lamina:"img/plano-tipologia-4-cuspide.jpg",   render:"img/interior-balcon.jpg", foto:"img/area-estar.jpg" },
   ];
   let UNIDADES = RESPALDO.slice();
   const $ = (s, r = document) => r.querySelector(s);
@@ -67,22 +67,22 @@
       "cta.consultarCorto": "Consultar",
       "espacios.rotulo": "Los espacios",
       "espacios.titulo": "Lo que se comparte, y lo que es sólo tuyo",
-      "espacios.i1": "Acceso por Aniceto Latorre, iluminado y con verde",
-      "espacios.i2": "Circulaciones con muros verdes que suben piso a piso",
-      "espacios.i3": "Terraza propia en el 5.º de Torre Norte, por el retiro del volumen",
-      "espacios.i4": "Balcones en todas las unidades, dos en Torre Sur",
+      "espacios.i1": "Patio de aire y luz de 16 m² entre las dos torres, abierto al cielo",
+      "espacios.i2": "Ascensor y escalera de hormigón en el núcleo, entre Torre Norte y Torre Sur",
+      "espacios.i3": "Dos balcones en cada unidad de un dormitorio",
+      "espacios.i4": "Palier y depósito en planta baja, con jardín en el acceso peatonal",
       "espacios.palabra": "Espacios",
       "cocheras.rotulo": "Las cocheras",
       "cocheras.titulo": "Llegás en auto y ya estás en tu casa",
-      "cocheras.i1": "Cocheras en planta baja",
-      "cocheras.i2": "Entrada vehicular por Aniceto Latorre",
-      "cocheras.i3": "A metros del ascensor",
+      "cocheras.i1": "Seis cocheras en planta baja",
+      "cocheras.i2": "Plato giratorio de 4,5 m para entrar y salir de frente, sin marcha atrás",
+      "cocheras.i3": "Portón vehicular sobre Aniceto Latorre",
       "cocheras.palabra": "Cocheras",
       "adentro.rotulo": "Adentro",
-      "adentro.titulo": "Así se vive en La Torre",
-      "adentro.texto": "Los renders de los interiores, ambiente por ambiente. Cuando haya video de obra, va acá mismo.",
+      "adentro.titulo": "Aquí, no solo vives, te transformas.",
+      "adentro.texto": "Los renders de los interiores de las unidades de un dormitorio: el estar, el balcón, la cocina y el dormitorio. Cuando haya video de obra, va acá mismo.",
       "adentro.estar.t": "El estar",
-      "adentro.estar.p": "Abierto a la cocina y al balcón.",
+      "adentro.estar.p": "Abierto al balcón, con la mesa del comedor y el mueble de la tele en un mismo ambiente.",
       "ficha.render": "Render",
       "ficha.lamina": "Lámina",
       "ficha.tipologia": "Tipología",
@@ -109,9 +109,9 @@
       "intro.datos": "12 unidades · 6 plantas por torre · 37 a 55 m² · cocheras en planta baja",
       "diseno.rotulo": "El edificio",
       "diseno.titulo": "Hormigón, ladrillo y verde que sube con vos",
-      "diseno.texto": "Dos torres sobre un mismo acceso, con el núcleo de escalera al medio y una unidad por torre en cada planta. Materiales que envejecen bien: hormigón visto, ladrillo en las esquinas, carpinterías negras y parasoles de madera que dan sombra sin cerrar la vista.",
-      "diseno.m1": "Hormigón visto en losas y pórtico", "diseno.m2": "Ladrillo visto en los pilares",
-      "diseno.m3": "Parasoles de listones de madera", "diseno.m4": "Muros verdes en las circulaciones",
+      "diseno.texto": "Dos torres sobre un mismo acceso, el núcleo de escalera y ascensor al medio y una unidad por torre en cada planta. Los materiales van a la vista: losas y parasoles de hormigón, ladrillo en los pilares de esquina, carpinterías de aluminio negro con vidrio 6+6 y listones de madera en los balcones. Adentro, porcelanato y cielorrasos suspendidos.",
+      "diseno.m1": "Losas y parasoles de hormigón visto", "diseno.m2": "Ladrillo visto en los pilares de esquina",
+      "diseno.m3": "Aluminio negro con vidrio 6+6", "diseno.m4": "Listones de madera y muros verdes",
       "tipologias.rotulo": "Las plantas", "tipologias.titulo": "Cuatro tipologías",
       "tipologias.texto": "Del monoambiente al dormitorio en suite. Cada tipología con su lámina, su superficie y las unidades donde se repite.",
       "tipo.horizonte.desc": "Monoambiente · 37 m²", "tipo.horizonte.amb": "Dormitorio · Kitchenette · Baño", "tipo.horizonte.ubic": "Unidad 6.º A · Torre Norte",
@@ -124,21 +124,21 @@
       "unidades.nota": "Los valores se conversan al consultar. Acá no se reserva ni se seña online.",
       "torre.norte": "Torre Norte", "torre.sur": "Torre Sur", "piso": "Piso",
       "estado.libre": "Libre", "estado.reservada": "Reservada", "estado.vendida": "Vendida",
-      "vida.rotulo": "La visita", "vida.titulo": "Eleva tu vida, un piso a la vez",
+      "vida.rotulo": "La visita", "vida.titulo": "Eleva tu vida, un piso a la vez.",
       "vida.texto": "Recorré el edificio como si ya vivieras acá. Deslizá para caminar el recorrido.",
-      "vida.llegada.t": "La llegada", "vida.llegada.p": "Entrás por Aniceto Latorre. El acceso, iluminado y con verde, te recibe todos los días.",
-      "vida.cochera.t": "Tu cochera", "vida.cochera.p": "En planta baja, a metros del ascensor. Llegás y ya estás en tu casa.",
-      "vida.ascenso.t": "El ascenso", "vida.ascenso.p": "Circulaciones con muros verdes que suben con vos, piso a piso.",
-      "vida.cocina.t": "La cocina", "vida.cocina.p": "Equipada y abierta al estar: el lugar donde empieza el día.",
+      "vida.llegada.t": "La llegada", "vida.llegada.p": "Entrás por Aniceto Latorre. De noche, el hall te recibe con los pilares iluminados, el ladrillo y las plantas.",
+      "vida.cochera.t": "Tu cochera", "vida.cochera.p": "Seis cocheras en planta baja, a metros del ascensor. Un plato giratorio de 4,5 m te deja entrar y salir de frente.",
+      "vida.ascenso.t": "El ascenso", "vida.ascenso.p": "La circulación de planta baja: un muro verde de un lado, el vidriado del otro, y el ascensor con la escalera de hormigón en el núcleo.",
+      "vida.cocina.t": "El comedor", "vida.cocina.p": "La cocina integrada al comedor: el lugar donde empieza el día.",
       "vida.suite.t": "La suite", "vida.suite.p": "Dormitorio en suite, con dos balcones propios.",
-      "vida.terraza.t": "Tu terraza", "vida.terraza.p": "El cielo de Salta desde tu propio piso, sin compartirlo con nadie.",
+      "vida.terraza.t": "Tu terraza", "vida.terraza.p": "La terraza propia del 5.º de Torre Norte, sobre el retiro del volumen, con los cerros de Salta de fondo.",
       "tresD.rotulo": "El edificio en 3D", "tresD.titulo": "Girá la torre y mirá cómo se prende de noche",
       "tresD.texto": "El volumen del edificio, piso por piso, con el recorrido real del sol en Salta. Tocá una unidad para ver su ficha.",
       "tresD.abrir": "Abrir el recorrido 3D", "tresD.peso": "Carga unos 300 KB",
-      "desdeArriba.rotulo": "Desde arriba", "desdeArriba.titulo": "Dos torres, un acceso",
-      "desdeArriba.texto": "El corte del conjunto: Torre Norte sobre la calle, Torre Sur al fondo del lote, y el núcleo de escalera y ascensor entre las dos.",
-      "desdeArriba.norte": "Sobre Aniceto Latorre. Seis unidades, del monoambiente del 6.º A al dormitorio en suite de los pisos 1 a 4. El 5.º tiene terraza propia por el retiro del volumen.",
-      "desdeArriba.sur": "Al fondo del lote, con más silencio. Seis unidades de un dormitorio en suite con dos balcones, una por planta.",
+      "desdeArriba.rotulo": "Los alzados", "desdeArriba.titulo": "Dos torres, dos alzados",
+      "desdeArriba.texto": "Los alzados del proyecto, tal como están en los planos: el frente sobre Aniceto Latorre es Torre Norte y el contrafrente es Torre Sur. Elegí una torre para ver su alzado.",
+      "desdeArriba.norte": "Sobre Aniceto Latorre. Cuatro plantas con balcones y, arriba, dos plantas que retiran el frente unos cuatro metros: por eso el 5.º tiene terraza propia sobre el retiro y el 6.º es el monoambiente más chico.",
+      "desdeArriba.sur": "Al fondo del lote. Seis plantas iguales, una unidad de un dormitorio por planta, cada una con su balcón y su parasol de listones.",
       "ubicacion.rotulo": "El entorno", "ubicacion.titulo": "La ciudad a mano. El ruido, lejos.",
       "ubicacion.texto": "Balcarce y Aniceto Latorre: comercio, salud y el polo gastronómico de Salta a distancia de caminata.",
       "ubicacion.shopping": "Portal Salta Shopping", "ubicacion.paseo": "Paseo Balcarce", "ubicacion.hospital": "Hospital Materno Infantil",
@@ -167,6 +167,36 @@
       "cookies.boton": "Entendido",
       "wa.hola": "Hola Francisco, te escribo por el Edificio La Torre.",
       "wa.unidad": "Hola Francisco, te escribo por la unidad {u} del Edificio La Torre.",
+      "nav.galeria": "Desde la calle",
+      "galeria.rotulo": "La galería",
+      "galeria.titulo": "La Torre desde la calle",
+      "galeria.texto": "Seis vistas del edificio: de frente sobre Aniceto Latorre, desde la vereda, desde la esquina opuesta y desde las cocheras. Tocá una para verla en grande.",
+      "galeria.f1": "El frente sobre Aniceto Latorre",
+      "galeria.f2": "La cuadra, desde la vereda de enfrente",
+      "galeria.f3": "Los balcones de Torre Norte, de cerca",
+      "galeria.f4": "El lateral largo, con el ladrillo y la sala de máquinas",
+      "galeria.f5": "Entre las copas de los árboles",
+      "galeria.f6": "Torre Sur desde las cocheras, con el plato giratorio",
+      "galeria.a1": "Render del Edificio La Torre visto de frente desde Aniceto Latorre: cuatro pisos con balcones de listones de madera, ladrillo visto en las esquinas y dos pisos retirados arriba",
+      "galeria.a2": "Render del Edificio La Torre desde la vereda de enfrente, con la cuadra y una camioneta estacionada",
+      "galeria.a3": "Render del Edificio La Torre visto de cerca desde la calle, con los balcones y el parasol de listones",
+      "galeria.a4": "Render del lateral del Edificio La Torre desde la esquina opuesta, con el ladrillo visto y la sala de máquinas en la azotea",
+      "galeria.a5": "Render del Edificio La Torre entre las copas de los árboles",
+      "galeria.a6": "Render de Torre Sur vista desde las cocheras, con seis balcones de listones y el plato giratorio en el piso",
+      "visor.titulo": "Fotos del edificio",
+      "visor.cerrar": "Cerrar el visor",
+      "visor.anterior": "Foto anterior",
+      "visor.siguiente": "Foto siguiente",
+      "cocheras.i4": "A metros del ascensor",
+      "adentro.balcon.t": "El balcón",
+      "adentro.balcon.p": "Se sale desde el estar. Baranda negra y la ciudad enfrente.",
+      "adentro.cocina.t": "La cocina",
+      "adentro.cocina.p": "Equipada e integrada al comedor-estar.",
+      "adentro.dormitorio.t": "El dormitorio",
+      "adentro.dormitorio.p": "En suite en las unidades de un dormitorio.",
+      "desdeArriba.altNorte": "Alzado de frente del Edificio La Torre sobre Aniceto Latorre: cuatro pisos con balcones y dos pisos retirados arriba",
+      "desdeArriba.altSur": "Alzado del contrafrente del Edificio La Torre: seis plantas iguales con balcón y parasol de listones",
+      "pie.hacen": "Quienes hacen La Torre",
     },
     en: {
       "contacto.t1": "Ask about",
@@ -183,22 +213,22 @@
       "cta.consultarCorto": "Inquire",
       "espacios.rotulo": "The spaces",
       "espacios.titulo": "What is shared, and what is only yours",
-      "espacios.i1": "Entrance on Aniceto Latorre, lit and planted",
-      "espacios.i2": "Plant-lined walkways rising floor by floor",
-      "espacios.i3": "A private terrace on the 5th floor of the North Tower, where the volume steps back",
-      "espacios.i4": "Balconies in every unit, two in the South Tower",
+      "espacios.i1": "A 16 m² light well between the two towers, open to the sky",
+      "espacios.i2": "Lift and concrete stair in the core, between North and South Tower",
+      "espacios.i3": "Two balconies in every one-bedroom unit",
+      "espacios.i4": "Lobby and storage room on the ground floor, with a garden at the pedestrian entrance",
       "espacios.palabra": "Spaces",
       "cocheras.rotulo": "Parking",
       "cocheras.titulo": "Drive in and you are already home",
-      "cocheras.i1": "Parking on the ground floor",
-      "cocheras.i2": "Vehicle entrance on Aniceto Latorre",
-      "cocheras.i3": "Steps from the lift",
+      "cocheras.i1": "Six parking spaces on the ground floor",
+      "cocheras.i2": "A 4.5 m turntable to drive in and out facing forward, no reversing",
+      "cocheras.i3": "Vehicle gate on Aniceto Latorre",
       "cocheras.palabra": "Parking",
       "adentro.rotulo": "Inside",
-      "adentro.titulo": "Life at La Torre",
-      "adentro.texto": "The interior renders, room by room. When there is footage from the site, it goes right here.",
+      "adentro.titulo": "Here you don't just live. You transform.",
+      "adentro.texto": "The interior renders of the one-bedroom units: living room, balcony, kitchen and bedroom. When there is footage from the site, it goes right here.",
       "adentro.estar.t": "The living room",
-      "adentro.estar.p": "Open to the kitchen and the balcony.",
+      "adentro.estar.p": "Open to the balcony, with the dining table and the TV unit in one room.",
       "ficha.render": "Render",
       "ficha.lamina": "Floor plan",
       "ficha.tipologia": "Layout",
@@ -217,7 +247,7 @@
       "intro.texto": "La Torre is twelve homes in two six-story towers, North and South, in Salta, Argentina. Studios of 37 and 42 m² and one-bedroom units of 55 m², with parking on the ground floor. The materials are left exposed: concrete, brick, black frames, timber. It is sold off-plan, with one price list for everyone.",
       "diseno.rotulo": "Architecture",
       "diseno.titulo": "Made of what you see",
-      "diseno.texto": "Exposed concrete and exposed brick, with nothing covering them. Black window and door frames. Timber-slat sunscreens to filter the sun. Green walls along the shared walkways. Parking on the ground floor, with its entrance on Aniceto Latorre.",
+      "diseno.texto": "Two towers over one entrance, the stair and lift core in the middle, and one unit per tower on every floor. The materials are left exposed: concrete slabs and sunscreens, brick on the corner piers, black aluminium frames with 6+6 glass and timber slats on the balconies. Inside, porcelain tile floors and suspended ceilings.",
       "ubicacion.rotulo": "Location",
       "ubicacion.titulo": "Balcarce and Aniceto Latorre, Salta",
       "ubicacion.texto": "La Torre stands on the corner of Balcarce and Aniceto Latorre, in Salta. Paseo Balcarce, the Portal Salta shopping center, and the Materno Infantil Hospital are all within a short walk.",
@@ -240,20 +270,20 @@
       "tipo.cuspide.desc": "One bedroom with en-suite bathroom, 55 m². First to sixth floors, unit B, South Tower.",
       "tipo.cuspide.amb": "Kitchen, living-dining room, en-suite bedroom, two balconies",
       "vida.rotulo": "Living here",
-      "vida.titulo": "The way home",
+      "vida.titulo": "Elevate your life, one floor at a time.",
       "vida.texto": "A walk through the building, stop by stop: the arrival, the garage, the plant-lined walkways, and the terrace.",
       "vida.llegada.t": "Arriving",
-      "vida.llegada.p": "You arrive at the corner of Balcarce and Aniceto Latorre. Exposed brick, black frames and timber sunscreens: you can pick the building out from half a block away.",
+      "vida.llegada.p": "You come in from Aniceto Latorre. At night the hall greets you with lit columns, brick and plants.",
       "vida.cochera.t": "Parking",
-      "vida.cochera.p": "The garage is on the ground floor, with its entrance on Aniceto Latorre. Drive in, park, and head up.",
+      "vida.cochera.p": "Six parking spaces on the ground floor, steps from the lift. A 4.5 m turntable lets you drive in and out facing forward.",
       "vida.ascenso.t": "Going up",
-      "vida.ascenso.p": "Green walls run along the shared walkways, floor after floor. The way to your door is lined with plants.",
+      "vida.ascenso.p": "The ground-floor walkway: a green wall on one side, glazing on the other, and the lift with its concrete stair in the core.",
       "vida.terraza.t": "The terrace",
-      "vida.terraza.p": "Open sky at the end of the climb. The Evolución studio, on the fifth floor of the North Tower, has a terrace of its own.",
-      "desdeArriba.rotulo": "From above",
-      "desdeArriba.titulo": "Two towers, one corner",
-      "desdeArriba.norte": "North Tower · A units",
-      "desdeArriba.sur": "South Tower · B units",
+      "vida.terraza.p": "The private terrace on the 5th floor of the North Tower, where the volume steps back, with the hills of Salta behind.",
+      "desdeArriba.rotulo": "The elevations",
+      "desdeArriba.titulo": "Two towers, two elevations",
+      "desdeArriba.norte": "On Aniceto Latorre. Four floors with balconies and, above them, two floors set back about four metres: that is why the 5th has a private terrace over the setback and the 6th is the smallest studio.",
+      "desdeArriba.sur": "At the back of the lot. Six identical floors, one one-bedroom unit each, every one with its balcony and slatted sunscreen.",
       "plan.rotulo": "Payment plan",
       "plan.titulo": "Buy while it is being built",
       "plan.texto": "La Torre is sold off-plan. A down payment when the purchase agreement is signed, installments while the building is under construction, and possession when it is finished. There is one price list, and it is the same for every buyer. Ask Francisco for the current terms.",
@@ -309,10 +339,10 @@
       "hero.bajada": "Twelve homes across North and South Tower, on Balcarce and Aniceto Latorre.",
       "hero.pista": "Scroll to see the building",
       "intro.datos": "12 units · 6 floors per tower · 37 to 55 m² · ground-floor parking",
-      "diseno.m1": "Exposed concrete slabs and portico",
-      "diseno.m2": "Exposed brick piers",
-      "diseno.m3": "Timber-slat sunscreens",
-      "diseno.m4": "Green walls along the walkways",
+      "diseno.m1": "Exposed concrete slabs and sunscreens",
+      "diseno.m2": "Exposed brick on the corner piers",
+      "diseno.m3": "Black aluminium, 6+6 glass",
+      "diseno.m4": "Timber slats and green walls",
       "tipo.horizonte.ubic": "Unit 6A · North Tower",
       "tipo.evolucion.ubic": "Unit 5A · North Tower",
       "tipo.esencia.ubic": "Units 1A to 4A · North Tower",
@@ -326,13 +356,13 @@
       "torre.norte": "North Tower",
       "torre.sur": "South Tower",
       "piso": "Floor",
-      "vida.cocina.t": "The kitchen",
-      "vida.cocina.p": "Fitted and open to the living room: where the day starts.",
+      "vida.cocina.t": "The dining room",
+      "vida.cocina.p": "The kitchen opens onto the dining area: where the day starts.",
       "vida.suite.t": "The suite",
       "vida.suite.p": "An en-suite bedroom with two private balconies.",
       "tresD.rotulo": "The building in 3D",
       "tresD.peso": "Loads about 300 KB",
-      "desdeArriba.texto": "The section of the whole: North Tower on the street, South Tower at the back of the lot, and the stair and lift core between them.",
+      "desdeArriba.texto": "The project elevations as they appear on the drawings: the front on Aniceto Latorre is the North Tower, the rear is the South Tower. Pick a tower to see its elevation.",
       "ubicacion.maps": "Open in Google Maps",
       "contacto.sinUnidad": "Not sure yet",
       "pie.bajada": "Twelve off-plan homes across North and South Tower, on Balcarce and Aniceto Latorre, Salta, Argentina.",
@@ -341,6 +371,36 @@
       "pie.quien": "Who sells it",
       "wa.hola": "Hi Francisco, I'm writing about Edificio La Torre.",
       "wa.unidad": "Hi Francisco, I'm writing about unit {u} at Edificio La Torre.",
+      "nav.galeria": "From the street",
+      "galeria.rotulo": "Gallery",
+      "galeria.titulo": "La Torre from the street",
+      "galeria.texto": "Six views of the building: head-on from Aniceto Latorre, from the pavement, from the far corner and from the car park. Tap one to see it full size.",
+      "galeria.f1": "The front, on Aniceto Latorre",
+      "galeria.f2": "The block, from across the street",
+      "galeria.f3": "The North Tower balconies, up close",
+      "galeria.f4": "The long side, with the brick and the machine room",
+      "galeria.f5": "Between the treetops",
+      "galeria.f6": "South Tower from the car park, with the turntable",
+      "galeria.a1": "Render of Edificio La Torre seen head-on from Aniceto Latorre: four floors with timber-slat balconies, exposed brick at the corners and two set-back floors on top",
+      "galeria.a2": "Render of Edificio La Torre from across the street, with the block and a parked pickup",
+      "galeria.a3": "Render of Edificio La Torre seen up close from the street, with the balconies and the slatted sunscreen",
+      "galeria.a4": "Render of the side of Edificio La Torre from the far corner, with the exposed brick and the rooftop machine room",
+      "galeria.a5": "Render of Edificio La Torre between the treetops",
+      "galeria.a6": "Render of the South Tower seen from the car park, with six slatted balconies and the turntable on the ground",
+      "visor.titulo": "Photos of the building",
+      "visor.cerrar": "Close the viewer",
+      "visor.anterior": "Previous photo",
+      "visor.siguiente": "Next photo",
+      "cocheras.i4": "Steps from the lift",
+      "adentro.balcon.t": "The balcony",
+      "adentro.balcon.p": "Straight off the living room. Black railing, the city in front.",
+      "adentro.cocina.t": "The kitchen",
+      "adentro.cocina.p": "Fitted, and part of the living-dining room.",
+      "adentro.dormitorio.t": "The bedroom",
+      "adentro.dormitorio.p": "En suite in the one-bedroom units.",
+      "desdeArriba.altNorte": "Front elevation of Edificio La Torre on Aniceto Latorre: four floors with balconies and two set-back floors above",
+      "desdeArriba.altSur": "Rear elevation of Edificio La Torre: six identical floors with a balcony and slatted sunscreen",
+      "pie.hacen": "The people behind La Torre",
     },
     pt: {
       "contacto.t1": "Consulte",
@@ -357,22 +417,22 @@
       "cta.consultarCorto": "Consultar",
       "espacios.rotulo": "Os espaços",
       "espacios.titulo": "O que se compartilha, e o que é só seu",
-      "espacios.i1": "Acesso pela Aniceto Latorre, iluminado e com verde",
-      "espacios.i2": "Circulações com paredes verdes que sobem andar por andar",
-      "espacios.i3": "Terraço próprio no 5.º da Torre Norte, pelo recuo do volume",
-      "espacios.i4": "Sacadas em todas as unidades, duas na Torre Sul",
+      "espacios.i1": "Pátio de ar e luz de 16 m² entre as duas torres, aberto para o céu",
+      "espacios.i2": "Elevador e escada de concreto no núcleo, entre a Torre Norte e a Torre Sul",
+      "espacios.i3": "Duas sacadas em cada unidade de um dormitório",
+      "espacios.i4": "Hall e depósito no térreo, com jardim no acesso de pedestres",
       "espacios.palabra": "Espaços",
       "cocheras.rotulo": "A garagem",
       "cocheras.titulo": "Você chega de carro e já está em casa",
-      "cocheras.i1": "Vagas no térreo",
-      "cocheras.i2": "Entrada de veículos pela Aniceto Latorre",
-      "cocheras.i3": "A poucos metros do elevador",
+      "cocheras.i1": "Seis vagas no térreo",
+      "cocheras.i2": "Prato giratório de 4,5 m para entrar e sair de frente, sem dar ré",
+      "cocheras.i3": "Portão de veículos pela Aniceto Latorre",
       "cocheras.palabra": "Garagem",
       "adentro.rotulo": "Por dentro",
-      "adentro.titulo": "Assim se vive no La Torre",
-      "adentro.texto": "Os renders dos interiores, ambiente por ambiente. Quando houver vídeo da obra, entra aqui mesmo.",
+      "adentro.titulo": "Aqui você não só vive: você se transforma.",
+      "adentro.texto": "Os renders dos interiores das unidades de um dormitório: a sala, a sacada, a cozinha e o quarto. Quando houver vídeo da obra, entra aqui mesmo.",
       "adentro.estar.t": "A sala",
-      "adentro.estar.p": "Aberta à cozinha e à sacada.",
+      "adentro.estar.p": "Aberta para a sacada, com a mesa de jantar e o painel da TV no mesmo ambiente.",
       "ficha.render": "Render",
       "ficha.lamina": "Planta",
       "ficha.tipologia": "Tipologia",
@@ -391,7 +451,7 @@
       "intro.texto": "O Edifício La Torre fica em Salta, entre as ruas Balcarce e Aniceto Latorre. Torre Norte e Torre Sul, seis andares cada uma, apartamentos de 37 a 55 m² e vagas de garagem no térreo. A venda é na planta: entrada na assinatura do contrato e parcelas durante a obra. Uma só tabela de preços, a mesma para todos.",
       "diseno.rotulo": "Arquitetura",
       "diseno.titulo": "Concreto, tijolo e madeira, sem disfarce.",
-      "diseno.texto": "Concreto aparente, tijolo à vista e esquadrias pretas. Brises de ripas de madeira filtram a luz nas fachadas. Nas circulações, jardins verticais acompanham a subida, andar por andar. As vagas de garagem ficam no térreo, com acesso pela Aniceto Latorre.",
+      "diseno.texto": "Duas torres sobre um mesmo acesso, o núcleo de escada e elevador no meio e uma unidade por torre em cada andar. Os materiais ficam à vista: lajes e brises de concreto, tijolo nos pilares de canto, esquadrias de alumínio preto com vidro 6+6 e ripas de madeira nas sacadas. Por dentro, piso de porcelanato e forro rebaixado.",
       "ubicacion.rotulo": "O bairro",
       "ubicacion.titulo": "Na Balcarce, perto do que a cidade usa todo dia.",
       "ubicacion.texto": "O Paseo Balcarce, o Portal Salta Shopping e o Hospital Materno Infantil ficam a menos de um quilômetro do edifício. Dá para ir a pé.",
@@ -417,17 +477,17 @@
       "vida.titulo": "Eleve a sua vida, um andar por vez.",
       "vida.texto": "Percorra o edifício como se já morasse aqui: a chegada, a vaga, a subida e o terraço.",
       "vida.llegada.t": "A chegada",
-      "vida.llegada.p": "Você entra pela Balcarce. A entrada de pedestres, com verde nas paredes, recebe você todos os dias.",
+      "vida.llegada.p": "Você entra pela Aniceto Latorre. À noite, o hall recebe você com os pilares iluminados, o tijolo e as plantas.",
       "vida.cochera.t": "A sua vaga",
-      "vida.cochera.p": "No térreo, com entrada pela Aniceto Latorre. Você estaciona e já está em casa.",
+      "vida.cochera.p": "Seis vagas no térreo, a poucos metros do elevador. Um prato giratório de 4,5 m deixa você entrar e sair de frente.",
       "vida.ascenso.t": "A subida",
-      "vida.ascenso.p": "Nas circulações, jardins verticais sobem com você, andar por andar.",
+      "vida.ascenso.p": "A circulação do térreo: parede verde de um lado, vidro do outro, e o elevador com a escada de concreto no núcleo.",
       "vida.terraza.t": "O terraço",
-      "vida.terraza.p": "O céu de Salta do seu próprio terraço, sem dividir com ninguém.",
-      "desdeArriba.rotulo": "Vista aérea",
-      "desdeArriba.titulo": "As duas torres, vistas de cima.",
-      "desdeArriba.norte": "Torre Norte · 6 andares · Horizonte, Evolución e Esencia",
-      "desdeArriba.sur": "Torre Sul · 6 andares · Cúspide",
+      "vida.terraza.p": "O terraço próprio do 5.º andar da Torre Norte, sobre o recuo do volume, com os morros de Salta ao fundo.",
+      "desdeArriba.rotulo": "As fachadas",
+      "desdeArriba.titulo": "Duas torres, duas fachadas",
+      "desdeArriba.norte": "Pela Aniceto Latorre. Quatro andares com sacadas e, acima, dois andares que recuam a frente uns quatro metros: por isso o 5.º tem terraço próprio sobre o recuo e o 6.º é o estúdio menor.",
+      "desdeArriba.sur": "No fundo do lote. Seis andares iguais, uma unidade de um dormitório por andar, cada uma com a sua sacada e o seu brise de ripas.",
       "plan.rotulo": "Plano de pagamento",
       "plan.titulo": "Comprar na planta, pagar durante a obra.",
       "plan.texto": "Uma só tabela de preços, a mesma para todos. Os valores não estão no site: o Francisco passa a tabela numa conversa e explica cada etapa.",
@@ -483,10 +543,10 @@
       "hero.bajada": "Doze unidades entre a Torre Norte e a Torre Sul, na Balcarce com Aniceto Latorre.",
       "hero.pista": "Role para ver o edifício",
       "intro.datos": "12 unidades · 6 andares por torre · 37 a 55 m² · garagem no térreo",
-      "diseno.m1": "Lajes e pórtico em concreto aparente",
-      "diseno.m2": "Pilares em tijolo aparente",
-      "diseno.m3": "Brises de ripas de madeira",
-      "diseno.m4": "Paredes verdes nas circulações",
+      "diseno.m1": "Lajes e brises em concreto aparente",
+      "diseno.m2": "Tijolo aparente nos pilares de canto",
+      "diseno.m3": "Alumínio preto com vidro 6+6",
+      "diseno.m4": "Ripas de madeira e paredes verdes",
       "tipo.horizonte.ubic": "Unidade 6A · Torre Norte",
       "tipo.evolucion.ubic": "Unidade 5A · Torre Norte",
       "tipo.esencia.ubic": "Unidades 1A a 4A · Torre Norte",
@@ -500,13 +560,13 @@
       "torre.norte": "Torre Norte",
       "torre.sur": "Torre Sul",
       "piso": "Andar",
-      "vida.cocina.t": "A cozinha",
-      "vida.cocina.p": "Equipada e aberta para a sala: onde o dia começa.",
+      "vida.cocina.t": "A sala de jantar",
+      "vida.cocina.p": "A cozinha integrada à sala de jantar: onde o dia começa.",
       "vida.suite.t": "A suíte",
       "vida.suite.p": "Quarto com suíte e duas varandas próprias.",
       "tresD.rotulo": "O edifício em 3D",
       "tresD.peso": "Carrega cerca de 300 KB",
-      "desdeArriba.texto": "O corte do conjunto: Torre Norte na rua, Torre Sul no fundo do lote, e o núcleo de escada e elevador entre as duas.",
+      "desdeArriba.texto": "As fachadas do projeto, como estão nos desenhos: a frente pela Aniceto Latorre é a Torre Norte e os fundos são a Torre Sul. Escolha uma torre para ver a sua fachada.",
       "ubicacion.maps": "Abrir no Google Maps",
       "contacto.sinUnidad": "Ainda não sei",
       "pie.bajada": "Doze unidades na planta entre a Torre Norte e a Torre Sul, na Balcarce com Aniceto Latorre, Salta, Argentina.",
@@ -515,6 +575,36 @@
       "pie.quien": "Quem vende",
       "wa.hola": "Olá Francisco, escrevo sobre o Edifício La Torre.",
       "wa.unidad": "Olá Francisco, escrevo sobre a unidade {u} do Edifício La Torre.",
+      "nav.galeria": "Da rua",
+      "galeria.rotulo": "A galeria",
+      "galeria.titulo": "La Torre vista da rua",
+      "galeria.texto": "Seis vistas do edifício: de frente pela Aniceto Latorre, da calçada, da esquina oposta e da garagem. Toque em uma para ver em tamanho grande.",
+      "galeria.f1": "A frente, na Aniceto Latorre",
+      "galeria.f2": "A quadra, vista da calçada em frente",
+      "galeria.f3": "As sacadas da Torre Norte, de perto",
+      "galeria.f4": "A lateral longa, com o tijolo e a casa de máquinas",
+      "galeria.f5": "Entre as copas das árvores",
+      "galeria.f6": "Torre Sul vista da garagem, com o prato giratório",
+      "galeria.a1": "Render do Edifício La Torre visto de frente pela Aniceto Latorre: quatro andares com sacadas de ripas de madeira, tijolo aparente nos cantos e dois andares recuados no alto",
+      "galeria.a2": "Render do Edifício La Torre visto da calçada em frente, com a quadra e uma caminhonete estacionada",
+      "galeria.a3": "Render do Edifício La Torre visto de perto, da rua, com as sacadas e o brise de ripas",
+      "galeria.a4": "Render da lateral do Edifício La Torre desde a esquina oposta, com o tijolo aparente e a casa de máquinas na cobertura",
+      "galeria.a5": "Render do Edifício La Torre entre as copas das árvores",
+      "galeria.a6": "Render da Torre Sul vista da garagem, com seis sacadas de ripas e o prato giratório no piso",
+      "visor.titulo": "Fotos do edifício",
+      "visor.cerrar": "Fechar o visor",
+      "visor.anterior": "Foto anterior",
+      "visor.siguiente": "Próxima foto",
+      "cocheras.i4": "A poucos metros do elevador",
+      "adentro.balcon.t": "A sacada",
+      "adentro.balcon.p": "Sai direto da sala. Guarda-corpo preto e a cidade em frente.",
+      "adentro.cocina.t": "A cozinha",
+      "adentro.cocina.p": "Equipada e integrada à sala de estar e jantar.",
+      "adentro.dormitorio.t": "O quarto",
+      "adentro.dormitorio.p": "Suíte nas unidades de um dormitório.",
+      "desdeArriba.altNorte": "Fachada frontal do Edifício La Torre pela Aniceto Latorre: quatro andares com sacadas e dois andares recuados no alto",
+      "desdeArriba.altSur": "Fachada dos fundos do Edifício La Torre: seis andares iguais com sacada e brise de ripas",
+      "pie.hacen": "Quem faz o La Torre",
     },
   };
 
@@ -528,6 +618,8 @@
   function pintarIdioma() {
     $$("[data-t]").forEach((el) => { el.textContent = t(el.dataset.t); });
     $$("[data-t-html]").forEach((el) => { el.innerHTML = t(el.dataset.tHtml); });
+    $$("[data-t-alt]").forEach((el) => { el.alt = t(el.dataset.tAlt); });
+    rotularVisor();
     document.documentElement.lang = idioma;
     document.body.dataset.idioma = idioma;
     $$("[data-idioma-btn]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.idiomaBtn === idioma ? "true" : "false"));
@@ -882,7 +974,7 @@
     gc.drawImage(silC, 0, 0, W, H);
     gc.globalCompositeOperation = "source-over";
     const papel = lienzo(W, H); const gp = papel.getContext("2d");
-    gp.fillStyle = "#F3EADA"; gp.fillRect(0, 0, W, H);
+    gp.fillStyle = "#F5F3DE"; gp.fillRect(0, 0, W, H);
     const dpp = gp.getImageData(0, 0, W, H);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const n = (hash2(x, y) * 9 | 0) - 4, k = (y * W + x) * 4; dpp.data[k] += n; dpp.data[k + 1] += n; dpp.data[k + 2] += n; }
     gp.putImageData(dpp, 0, 0);
@@ -915,7 +1007,7 @@
     if (n < 2) return;
     const e = escena, k = e.W / 1400;
     // fino y parejo, como una 0.3: el grosor no varía, el tono sí
-    ctx.strokeStyle = t.parasol ? "rgba(41,33,26,0.5)" : t.dentro ? `rgba(41,33,26,${0.55 + 0.4 * t.fuerza})` : "rgba(41,33,26,0.28)";
+    ctx.strokeStyle = t.parasol ? "rgba(35,35,35,0.5)" : t.dentro ? `rgba(35,35,35,${0.55 + 0.4 * t.fuerza})` : "rgba(35,35,35,0.28)";
     ctx.lineWidth = (t.dentro ? 1.1 : 0.9) * k;
     ctx.beginPath(); ctx.moveTo(p[0], p[1]);
     const fe = f >= 1 ? 1 : 1 - (1 - f) * (1 - f) * (1 - f * 0.4);   // arranca rápido, frena al llegar
@@ -928,9 +1020,9 @@
 
   function cotas(o, W, H, p, idiomaActual, sobreRender) {
     if (p <= 0) return;
-    o.save(); o.globalAlpha = p * (sobreRender > 0 ? 0.55 + 0.4 * sobreRender : 0.42); o.strokeStyle = "#3a2d22"; o.fillStyle = "#3a2d22"; o.lineWidth = W / 1400;
-    if (sobreRender > 0) { o.shadowColor = "rgba(243,234,218,0.95)"; o.shadowBlur = (W / 400) * sobreRender; }   // halo claro para leerse sobre el color
-    o.font = `${Math.round(W * 0.0105)}px Archivo, sans-serif`;
+    o.save(); o.globalAlpha = p * (sobreRender > 0 ? 0.55 + 0.4 * sobreRender : 0.42); o.strokeStyle = "#232323"; o.fillStyle = "#232323"; o.lineWidth = W / 1400;
+    if (sobreRender > 0) { o.shadowColor = "rgba(245,243,222,0.95)"; o.shadowBlur = (W / 400) * sobreRender; }   // halo claro para leerse sobre el color
+    o.font = `${Math.round(W * 0.0105)}px Barlow, sans-serif`;
     const tick = (x, y, v) => { o.beginPath(); if (v) { o.moveTo(x - 5, y); o.lineTo(x + 5, y); } else { o.moveTo(x, y - 5); o.lineTo(x, y + 5); } o.stroke(); };
     const xA = W * 0.62, y0 = H * 0.07, y1 = H * 0.9;
     o.beginPath(); o.moveTo(xA, y0); o.lineTo(xA, y0 + (y1 - y0) * p); o.stroke(); tick(xA, y0, true); if (p > 0.95) tick(xA, y1, true);
@@ -939,7 +1031,7 @@
     const xs0 = W * 0.31, xs1 = W * 0.56, ys = H * 0.035;
     o.beginPath(); o.moveTo(xs0, ys); o.lineTo(xs0 + (xs1 - xs0) * p, ys); o.stroke(); tick(xs0, ys, false); if (p > 0.95) tick(xs1, ys, false);
     o.textAlign = "center"; o.fillText("37 – 55 m²", (xs0 + xs1) / 2, ys - 6);
-    o.font = `${Math.round(W * 0.015)}px Archivo, sans-serif`;
+    o.font = `${Math.round(W * 0.015)}px Barlow, sans-serif`;
     o.textAlign = "left"; o.fillText("Aniceto Latorre", W * 0.08, H * 0.955);
     o.beginPath(); o.moveTo(W * 0.08, H * 0.968); o.lineTo(W * 0.08 + W * 0.3 * p, H * 0.968); o.stroke();
     o.restore();
@@ -1002,8 +1094,8 @@
     const pCierre = fase(t, "cierre");
     const vivas = 1 - pCierre;
     if (vivas > 0 && t > INICIO.cotas) {
-      o.save(); o.strokeStyle = pA > 0 ? "rgba(41,33,26,0.5)" : "rgba(41,33,26,0.22)"; o.lineWidth = e.esc * 0.9; o.setLineDash([5 * e.esc, 7 * e.esc]); o.lineCap = "butt";
-      if (pA > 0) { o.shadowColor = "rgba(243,234,218,0.9)"; o.shadowBlur = 4 * e.esc; }
+      o.save(); o.strokeStyle = pA > 0 ? "rgba(35,35,35,0.5)" : "rgba(35,35,35,0.22)"; o.lineWidth = e.esc * 0.9; o.setLineDash([5 * e.esc, 7 * e.esc]); o.lineCap = "butt";
+      if (pA > 0) { o.shadowColor = "rgba(245,243,222,0.9)"; o.shadowBlur = 4 * e.esc; }
       e.guias.forEach((g) => {
         const p = clamp01((t - g.fin) / 0.9); if (p <= 0) return;
         o.globalAlpha = vivas * p;
@@ -1206,7 +1298,7 @@
       if (el.closest(".hero, .cab, .ficha, .intro, .cookies")) return;
       gsap.fromTo(el, { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
     });
-    const FOTOS = ".blob img, .partida-foto img, .bloque-media img, .visita-panel img, .contacto-foto img, .res-foto";
+    const FOTOS = ".blob img, .partida-foto img, .alzados, .visita-panel img, .contacto-foto img, .res-foto";
     $$(FOTOS).forEach((el, i) => {
       gsap.fromTo(el, { scale: 1.14, xPercent: i % 2 ? 6 : -6, opacity: 0 }, { scale: 1, xPercent: 0, opacity: 1, duration: 1.4, ease: "power3.out", scrollTrigger: { trigger: el.parentElement, start: "top 85%", once: true } });
     });
@@ -1215,6 +1307,10 @@
     const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .contacto-sobre, .form, .visita-cab, .pie-grid";
     $$(BLOQUES).forEach((el) => {
       gsap.fromTo(el, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 84%", once: true } });
+    });
+    // la galería: cada foto sube, escalonada según su columna
+    $$(".galeria-grid figure").forEach((el, i) => {
+      gsap.fromTo(el, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out", delay: (i % 3) * 0.1, scrollTrigger: { trigger: el, start: "top 90%", once: true } });
     });
     // las palabras grandes derivan de a poco con el scroll
     $$(".partida-palabra, .res-palabra").forEach((el) => {
@@ -1338,7 +1434,7 @@
   const marcoAd = $("#adentro-marco");
   if (marcoAd) {
     const imgs = $$(".adentro-img", marcoAd), puntos = $("#adentro-puntos");
-    const PIES = ["adentro.estar", "vida.cocina", "vida.suite", "vida.terraza"];
+    const PIES = ["adentro.estar", "adentro.balcon", "adentro.cocina", "adentro.dormitorio"];
     let ai = 0, timer = null;
     const irAImagen = (i) => {
       ai = i; imgs.forEach((im, k) => im.classList.toggle("activa", k === i));
@@ -1352,6 +1448,66 @@
     document.addEventListener("idioma-pintado", () => irAImagen(ai));
   }
 
+
+  /* la galería: al tocar una figura se abre el visor, un riel con scroll-snap y
+     una foto por pantalla. Deslizado nativo, flechas en escritorio, teclado,
+     Lenis frenado mientras está abierto y el foco de vuelta al cerrar. */
+  const galeria = $("#galeria-grid"), visor = $("#visor");
+  let visorIdx = 0, visorFoco = null;
+  function rotularVisor() {
+    if (!visor) return;
+    visor.setAttribute("aria-label", t("visor.titulo"));
+    $("#visor-cerrar").setAttribute("aria-label", t("visor.cerrar"));
+    $("#visor-prev").setAttribute("aria-label", t("visor.anterior"));
+    $("#visor-next").setAttribute("aria-label", t("visor.siguiente"));
+  }
+  if (galeria && visor) {
+    const figs = $$("figure", galeria), riel = $("#visor-riel");
+    figs.forEach((f, i) => {
+      const img = $("img", f), pie = $("figcaption", f);
+      const fig = document.createElement("figure"); fig.className = "visor-foto";
+      const im = document.createElement("img");
+      im.src = img.src; im.srcset = img.srcset; im.sizes = "100vw"; im.alt = ""; im.dataset.tAlt = img.dataset.tAlt; im.loading = "lazy"; im.decoding = "async";
+      const cap = document.createElement("figcaption"); cap.dataset.t = pie.dataset.t;
+      fig.append(im, cap); riel.appendChild(fig);
+      f.setAttribute("role", "button"); f.setAttribute("tabindex", "0");
+      f.addEventListener("click", () => abrirVisor(i));
+      f.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrirVisor(i); } });
+    });
+    const pintarContador = () => {
+      $("#visor-contador").textContent = (visorIdx + 1) + " / " + figs.length;
+      $("#visor-prev").disabled = visorIdx === 0; $("#visor-next").disabled = visorIdx === figs.length - 1;
+    };
+    const irAFoto = (i, ya) => {
+      visorIdx = Math.max(0, Math.min(figs.length - 1, i));
+      riel.scrollTo({ left: visorIdx * riel.clientWidth, behavior: ya || reduce ? "instant" : "smooth" });
+      pintarContador();
+    };
+    function abrirVisor(i) {
+      visorFoco = document.activeElement;
+      visor.hidden = false; void visor.offsetWidth; visor.classList.add("visible");
+      irAFoto(i, true);
+      document.body.classList.add("con-visor"); if (lenis) lenis.stop();
+      $("#visor-cerrar").focus();
+    }
+    function cerrarVisor() {
+      visor.classList.remove("visible"); document.body.classList.remove("con-visor"); if (lenis) lenis.start();
+      setTimeout(() => { visor.hidden = true; }, reduce ? 0 : 300);
+      if (visorFoco && visorFoco.focus) visorFoco.focus();
+    }
+    // el índice sigue al deslizado: así el contador y las flechas van con el dedo
+    riel.addEventListener("scroll", () => { const i = Math.round(riel.scrollLeft / riel.clientWidth); if (i !== visorIdx) { visorIdx = i; pintarContador(); } }, { passive: true });
+    addEventListener("resize", () => { if (!visor.hidden) irAFoto(visorIdx, true); });
+    $("#visor-cerrar").addEventListener("click", cerrarVisor);
+    $("#visor-prev").addEventListener("click", () => irAFoto(visorIdx - 1));
+    $("#visor-next").addEventListener("click", () => irAFoto(visorIdx + 1));
+    document.addEventListener("keydown", (e) => {
+      if (visor.hidden) return;
+      if (e.key === "Escape") cerrarVisor();
+      else if (e.key === "ArrowRight") irAFoto(visorIdx + 1);
+      else if (e.key === "ArrowLeft") irAFoto(visorIdx - 1);
+    });
+  }
 
   /* ── ubicación: el render entero con su texto; apretar un punto lo marca, el mapa no se mueve ── */
   const escenaMapa = $("#mapa-escena");
@@ -1411,6 +1567,7 @@
     abActivo = cual;
     $$(".ab-btn").forEach((b) => b.setAttribute("aria-pressed", b.dataset.ab === cual ? "true" : "false"));
     $("#ab-texto").textContent = t("desdeArriba." + cual);
+    $$("#alzados img").forEach((im, k) => im.classList.toggle("activa", (k === 0) === (cual === "norte")));
   }
   $$(".ab-btn").forEach((b) => b.addEventListener("click", () => pintarAB(b.dataset.ab)));
 

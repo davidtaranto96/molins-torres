@@ -7,6 +7,9 @@
 # `git add` las ignora sin decir nada y el sitio queda con dos imágenes rotas
 # en producción: pasó el 2/9.
 !img/logo-*.png
+# los logos de los socios del brochure y los alzados del arquitecto, también chicos
+!img/socio-*.png
+!img/alzado-*.png
 # y los iconos del sitio, que también son PNG chicos
 !favicon-32.png
 !apple-touch-icon.png
@@ -22,3 +25,7 @@ Rediseño con datos pendientes/
 
 # Grabaciones de pantalla que David deja acá para que las analice: no se versionan.
 *.mov
+
+# El brochure completo del desarrollador (800 MB de renders y PDFs). Es la FUENTE
+# del material; lo que el sitio usa ya está convertido en img/. No se versiona.
+Broshure completo Latorre/

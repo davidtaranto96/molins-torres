@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Edificio La Torre — Balcarce y Aniceto Latorre, Salta</title>
-<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
-<link rel="icon" href="/favicon-32.png?v=2" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png?v=3" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3">
 <link rel="canonical" href="https://edificiolatorre.com/">
 <meta name="description" content="Doce unidades en pozo entre Torre Norte y Torre Sur, sobre Balcarce y Aniceto Latorre, Salta Capital. De 37 a 55 m², con cocheras en planta baja.">
-<meta name="theme-color" content="#9C3A20">
+<meta name="theme-color" content="#802E1B">
 <!-- La tarjeta que arman WhatsApp, Instagram y Facebook cuando alguien pega el
      link. La imagen tiene que ser ABSOLUTA y liviana: WhatsApp no sigue rutas
      relativas y descarta la vista previa arriba de ~600 KB. -->
@@ -39,14 +39,14 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilos.css?v=202609031801">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css?v=202609031945">
 </head>
 <body data-idioma="es">
 
 <div id="intro" aria-hidden="true">
   <div class="intro-num"><span id="intro-pct">0</span>%</div>
-  <div class="intro-marca">LA TORRE</div>
+  <div class="intro-marca"><div class="logotipo" role="img" aria-label="La Torre"></div></div>
 </div>
 
 <div class="cab-fondo" id="cab-fondo"></div>
@@ -66,6 +66,7 @@
         <nav class="cab-lista" aria-label="Secciones">
           <a href="#inicio" data-t="nav.inicio"></a>
           <a href="#diseno" data-t="nav.diseno"></a>
+          <a href="#galeria" data-t="nav.galeria"></a>
           <a href="#tipologias" data-t="nav.tipologias"></a>
           <a href="#unidades" data-t="nav.unidades"></a>
           <a href="#espacios" data-t="nav.espacios"></a>
@@ -124,9 +125,27 @@
         <a href="#tresd" class="boton boton-claro" data-t="diseno.cta"></a>
       </div>
       <div class="diseno-fotos">
-        <figure class="blob blob-1 parallax-lento"><img src="img/render-interior.jpg" alt="" loading="lazy"></figure>
-        <figure class="blob blob-2 parallax"><img src="img/area-estar.jpg" alt="" loading="lazy"></figure>
+        <figure class="blob blob-1 parallax-lento"><img src="img/detalle-balcones.jpg" srcset="img/detalle-balcones-m.jpg 900w, img/detalle-balcones.jpg 1600w" sizes="(min-width:900px) 42vw, 72vw" alt="" loading="lazy"></figure>
+        <figure class="blob blob-2 parallax"><img src="img/detalle-retiro.jpg" srcset="img/detalle-retiro-m.jpg 900w, img/detalle-retiro.jpg 1600w" sizes="(min-width:900px) 30vw, 52vw" alt="" loading="lazy"></figure>
       </div>
+    </div>
+  </section>
+
+  <!-- ══ GALERÍA: la torre desde la calle. Seis vistas; al tocar una se abre el
+       visor a pantalla completa (el markup del visor está al pie, junto a la ficha). ══ -->
+  <section id="galeria" class="bloque galeria" data-screen-label="Desde la calle">
+    <div class="centrado">
+      <p class="rotulo" data-t="galeria.rotulo"></p>
+      <h2 class="titulo partir" data-t="galeria.titulo"></h2>
+      <p class="parrafo" data-t="galeria.texto"></p>
+    </div>
+    <div class="galeria-grid" id="galeria-grid">
+      <figure class="gal-frente vertical"><img src="img/torre-frente.jpg" srcset="img/torre-frente-m.jpg 900w, img/torre-frente.jpg 1600w" sizes="(min-width:900px) 400px, (min-width:760px) 50vw, 100vw" alt="" data-t-alt="galeria.a1" loading="lazy" width="1600" height="2133"><figcaption data-t="galeria.f1"></figcaption></figure>
+      <figure class="gal-calle"><img src="img/torre-calle.jpg" srcset="img/torre-calle-m.jpg 1000w, img/torre-calle.jpg 2000w" sizes="(min-width:900px) 400px, (min-width:760px) 50vw, 100vw" alt="" data-t-alt="galeria.a2" loading="lazy" width="2000" height="1714"><figcaption data-t="galeria.f2"></figcaption></figure>
+      <figure class="gal-vereda"><img src="img/torre-vereda.jpg" srcset="img/torre-vereda-m.jpg 1000w, img/torre-vereda.jpg 2000w" sizes="(min-width:900px) 400px, (min-width:760px) 50vw, 100vw" alt="" data-t-alt="galeria.a3" loading="lazy" width="2000" height="1485"><figcaption data-t="galeria.f3"></figcaption></figure>
+      <figure class="gal-lateral"><img src="img/torre-lateral.jpg" srcset="img/torre-lateral-m.jpg 1000w, img/torre-lateral.jpg 2000w" sizes="(min-width:900px) 400px, (min-width:760px) 50vw, 100vw" alt="" data-t-alt="galeria.a4" loading="lazy" width="2000" height="1659"><figcaption data-t="galeria.f4"></figcaption></figure>
+      <figure class="gal-arboles"><img src="img/torre-arboles.jpg" srcset="img/torre-arboles-m.jpg 1000w, img/torre-arboles.jpg 2000w" sizes="(min-width:900px) 400px, (min-width:760px) 50vw, 100vw" alt="" data-t-alt="galeria.a5" loading="lazy" width="2000" height="1529"><figcaption data-t="galeria.f5"></figcaption></figure>
+      <figure class="gal-fondo vertical"><img src="img/torre-fondo.jpg" srcset="img/torre-fondo-m.jpg 900w, img/torre-fondo.jpg 1600w" sizes="(min-width:900px) 400px, (min-width:760px) 50vw, 100vw" alt="" data-t-alt="galeria.a6" loading="lazy" width="1600" height="1939"><figcaption data-t="galeria.f6"></figcaption></figure>
     </div>
   </section>
 
@@ -191,12 +210,12 @@
       <p class="parrafo" data-t="vida.texto"></p>
     </div>
     <div class="visita-riel" id="visita-riel">
-      <article class="visita-panel"><img src="img/render-nocturno.jpg" alt="" loading="lazy"><div><span>01</span><h3 data-t="vida.llegada.t"></h3><p data-t="vida.llegada.p"></p></div></article>
-      <article class="visita-panel"><img src="img/cochera-bloque.jpg" alt="" loading="lazy"><div><span>02</span><h3 data-t="vida.cochera.t"></h3><p data-t="vida.cochera.p"></p></div></article>
-      <article class="visita-panel"><img src="img/pasillo-verde.jpg" alt="" loading="lazy"><div><span>03</span><h3 data-t="vida.ascenso.t"></h3><p data-t="vida.ascenso.p"></p></div></article>
-      <article class="visita-panel"><img src="img/area-cocina.jpg" alt="" loading="lazy"><div><span>04</span><h3 data-t="vida.cocina.t"></h3><p data-t="vida.cocina.p"></p></div></article>
+      <article class="visita-panel"><img src="img/hall-noche.jpg" srcset="img/hall-noche-m.jpg 1000w, img/hall-noche.jpg 2000w" sizes="(max-width:640px) 84vw, min(78vw, 860px)" alt="" loading="lazy"><div><span>01</span><h3 data-t="vida.llegada.t"></h3><p data-t="vida.llegada.p"></p></div></article>
+      <article class="visita-panel"><img src="img/cochera-dia.jpg" srcset="img/cochera-dia-m.jpg 1000w, img/cochera-dia.jpg 2000w" sizes="(max-width:640px) 84vw, min(78vw, 860px)" alt="" loading="lazy"><div><span>02</span><h3 data-t="vida.cochera.t"></h3><p data-t="vida.cochera.p"></p></div></article>
+      <article class="visita-panel"><img src="img/pasillo-vidriado.jpg" srcset="img/pasillo-vidriado-m.jpg 1000w, img/pasillo-vidriado.jpg 2000w" sizes="(max-width:640px) 84vw, min(78vw, 860px)" alt="" loading="lazy"><div><span>03</span><h3 data-t="vida.ascenso.t"></h3><p data-t="vida.ascenso.p"></p></div></article>
+      <article class="visita-panel"><img src="img/interior-comedor.jpg" srcset="img/interior-comedor-m.jpg 1000w, img/interior-comedor.jpg 1920w" sizes="(max-width:640px) 84vw, min(78vw, 860px)" alt="" loading="lazy"><div><span>04</span><h3 data-t="vida.cocina.t"></h3><p data-t="vida.cocina.p"></p></div></article>
       <article class="visita-panel"><img src="img/area-suite.jpg" alt="" loading="lazy"><div><span>05</span><h3 data-t="vida.suite.t"></h3><p data-t="vida.suite.p"></p></div></article>
-      <article class="visita-panel"><img src="img/area-terraza.jpg" alt="" loading="lazy"><div><span>06</span><h3 data-t="vida.terraza.t"></h3><p data-t="vida.terraza.p"></p></div></article>
+      <article class="visita-panel"><img src="img/terraza-vista.jpg" srcset="img/terraza-vista-m.jpg 1000w, img/terraza-vista.jpg 2000w" sizes="(max-width:640px) 84vw, min(78vw, 860px)" alt="" loading="lazy"><div><span>06</span><h3 data-t="vida.terraza.t"></h3><p data-t="vida.terraza.p"></p></div></article>
     </div>
   </section>
 
@@ -214,13 +233,13 @@
   </section>
 
   <!-- ══ COCHERAS: partida invertida, panel crema ══ -->
-  <section id="cocheras" class="partida partida-ancha" data-screen-label="Cocheras">
-    <div class="partida-foto"><img src="img/cochera-bloque.jpg" alt="" loading="lazy"></div>
+  <section id="cocheras" class="partida invertida" data-screen-label="Cocheras">
+    <div class="partida-foto"><img class="parallax" src="img/cochera-tarde.jpg" srcset="img/cochera-tarde-m.jpg 1000w, img/cochera-tarde.jpg 2000w" sizes="(min-width:900px) 50vw, 100vw" alt="" loading="lazy"></div>
     <div class="partida-panel partida-crema">
       <p class="rotulo" data-t="cocheras.rotulo"></p>
       <h2 class="partida-titulo partir" data-t="cocheras.titulo"></h2>
       <ul class="partida-lista">
-        <li data-t="cocheras.i1"></li><li data-t="cocheras.i2"></li><li data-t="cocheras.i3"></li>
+        <li data-t="cocheras.i1"></li><li data-t="cocheras.i2"></li><li data-t="cocheras.i3"></li><li data-t="cocheras.i4"></li>
       </ul>
       <div class="partida-palabra" data-t="cocheras.palabra" aria-hidden="true"></div>
     </div>
@@ -235,10 +254,10 @@
       <p class="parrafo" data-t="adentro.texto"></p>
     </div>
     <div class="adentro-marco" id="adentro-marco">
-      <img class="adentro-img" src="img/area-estar.jpg" alt="" loading="lazy">
+      <img class="adentro-img" src="img/interior-estar.jpg" srcset="img/interior-estar-m.jpg 1000w, img/interior-estar.jpg 1920w" sizes="min(100vw, 1280px)" alt="" loading="lazy">
+      <img class="adentro-img" src="img/interior-balcon.jpg" srcset="img/interior-balcon-m.jpg 1000w, img/interior-balcon.jpg 1920w" sizes="min(100vw, 1280px)" alt="" loading="lazy">
       <img class="adentro-img" src="img/area-cocina.jpg" alt="" loading="lazy">
-      <img class="adentro-img" src="img/area-suite.jpg" alt="" loading="lazy">
-      <img class="adentro-img" src="img/area-terraza.jpg" alt="" loading="lazy">
+      <img class="adentro-img" src="img/area-dormitorio.jpg" alt="" loading="lazy">
       <div class="adentro-pie">
         <div><h3 id="adentro-t"></h3><p id="adentro-p"></p></div>
         <div class="adentro-puntos" id="adentro-puntos" role="tablist"></div>
@@ -259,9 +278,13 @@
     </div>
   </section>
 
-  <!-- ══ DESDE ARRIBA ══ -->
-  <section id="arriba" class="bloque bloque-dos invertido" data-screen-label="Desde arriba">
-    <div class="bloque-media"><img src="img/esquema-torres.jpg" alt="" loading="lazy" class="corte"></div>
+  <!-- ══ LOS ALZADOS: el frente (Torre Norte) y el contrafrente (Torre Sur) según los
+       planos; el botón A/B funde uno con el otro ══ -->
+  <section id="arriba" class="bloque bloque-dos invertido" data-screen-label="Los alzados">
+    <div class="alzados" id="alzados">
+      <img src="img/alzado-frente.png" alt="" data-t-alt="desdeArriba.altNorte" loading="lazy" width="687" height="1600" class="activa">
+      <img src="img/alzado-fondo.png" alt="" data-t-alt="desdeArriba.altSur" loading="lazy" width="524" height="1600">
+    </div>
     <div class="bloque-texto">
       <p class="rotulo" data-t="desdeArriba.rotulo"></p>
       <h2 class="titulo partir" data-t="desdeArriba.titulo"></h2>
@@ -314,7 +337,7 @@
   <!-- ══ CONTACTO: media pantalla foto con el título, media pantalla el formulario ══ -->
   <section id="contacto" class="contacto" data-screen-label="Contacto">
     <div class="contacto-foto">
-      <img src="img/render-interior.jpg" alt="" loading="lazy">
+      <img src="img/llegada-noche.jpg" srcset="img/llegada-noche-m.jpg 1000w, img/llegada-noche.jpg 2000w" sizes="(min-width:900px) 50vw, 100vw" alt="" loading="lazy">
       <div class="contacto-sobre">
         <h2 class="contacto-titulo"><span class="partir" data-t="contacto.t1"></span><span class="partir" data-t="contacto.t2"></span></h2>
         <p class="contacto-texto" data-t="contacto.texto"></p>
@@ -340,7 +363,7 @@
         <p class="form-aviso" id="form-aviso" hidden></p>
         <p class="form-pie" data-t="contacto.pie"></p>
         <div class="firma">
-          <img src="img/logo-molins.png" alt="" width="48" height="48" loading="lazy">
+          <div class="logotipo" role="img" aria-label="La Torre"></div>
           <div><b>Francisco Molins</b><span data-t="pie.comercializa"></span><span>CUCIS 251 · 387 415 3669</span></div>
         </div>
       </form>
@@ -352,15 +375,24 @@
 <footer class="pie">
   <div class="pie-grid">
     <div class="pie-marca">
-      <div class="marca">LA TORRE</div>
+      <div class="marca logotipo" role="img" aria-label="La Torre"></div>
       <p data-t="pie.bajada"></p>
       <a target="_blank" rel="noreferrer" id="wa-pie" href="#" class="pie-wa"><span data-t="cta.whatsapp"></span></a>
     </div>
-    <nav class="pie-col"><h4 data-t="pie.edificio"></h4><a href="#diseno" data-t="nav.diseno"></a><a href="#tipologias" data-t="nav.tipologias"></a><a href="#unidades" data-t="nav.unidades"></a><a href="#avance" data-t="nav.avance"></a></nav>
+    <nav class="pie-col"><h4 data-t="pie.edificio"></h4><a href="#diseno" data-t="nav.diseno"></a><a href="#galeria" data-t="nav.galeria"></a><a href="#tipologias" data-t="nav.tipologias"></a><a href="#unidades" data-t="nav.unidades"></a><a href="#avance" data-t="nav.avance"></a></nav>
     <nav class="pie-col"><h4 data-t="pie.donde"></h4><a href="#ubicacion" data-t="nav.ubicacion"></a><a target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Aniceto+Latorre+y+Balcarce,+Salta,+Argentina" data-t="ubicacion.maps"></a></nav>
     <div class="pie-col"><h4 data-t="pie.quien"></h4>
       <div class="pie-firma"><span>Francisco Molins<small>Molins Negocios Inmobiliarios · CUCIS 251</small></span></div>
       <span class="pie-lpz"><small data-t="pie.comercializa"></small><img src="img/logo-lpz.png" alt="Grupo LPZ-Molins · CUCIS 251" width="86" height="106" loading="lazy"></span>
+    </div>
+  </div>
+  <div class="pie-hacen">
+    <span data-t="pie.hacen"></span>
+    <div class="pie-logos">
+      <img src="img/socio-grupo-cb.png" alt="Grupo CB" height="44" loading="lazy">
+      <img src="img/socio-cb-arquitectura.png" alt="CB Arquitectura" height="44" loading="lazy">
+      <img src="img/socio-baux.png" alt="BAUX, aberturas de aluminio" height="44" loading="lazy">
+      <img src="img/socio-carma.png" alt="Carma S.R.L., construcciones y servicios" height="44" loading="lazy">
     </div>
   </div>
   <div class="pie-abajo"><span>© 2026 Edificio La Torre · Salta Capital</span><span data-t="pie.aviso"></span></div>
@@ -396,6 +428,15 @@
   </div>
 </aside>
 
+<!-- el visor de la galería: app.js lo llena con las seis fotos; un riel con
+     scroll-snap, una por pantalla. Los rótulos accesibles salen del diccionario. -->
+<div class="visor" id="visor" role="dialog" aria-modal="true" hidden>
+  <div class="visor-barra"><span class="visor-contador" id="visor-contador"></span><button type="button" class="visor-cerrar" id="visor-cerrar">✕</button></div>
+  <div class="visor-riel" id="visor-riel" data-lenis-prevent></div>
+  <button type="button" class="visor-flecha visor-prev" id="visor-prev">←</button>
+  <button type="button" class="visor-flecha visor-next" id="visor-next">→</button>
+</div>
+
 <div class="cookies" id="cookies" role="region" aria-label="Aviso de cookies" hidden>
   <p data-t-html="cookies.texto"></p>
   <button type="button" id="cookies-ok" data-t="cookies.boton"></button>
@@ -404,6 +445,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
-<script src="app.js?v=202609031801"></script>
+<script src="app.js?v=202609031945"></script>
 </body>
 </html>
