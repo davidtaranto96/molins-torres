@@ -1019,7 +1019,7 @@
     // el 36 % del cuadro). Lo que sobra alrededor se rellena con el propio
     // cuadro espejado y muy desenfocado, con una pluma en la costura.
     const ANCHO_TORRE = 0.36;
-    const esc = Math.min(ph / e.H, (pw * 0.96) / (ANCHO_TORRE * e.W));
+    const esc = Math.min(ph / e.H, pw / (ANCHO_TORRE * e.W));
     const dw = e.W * esc, dh = e.H * esc;
     const dx = dw <= pw ? (pw - dw) / 2 : Math.max(pw - dw, Math.min(0, pw / 2 - EJE.x * dw));
     const dy = dh <= ph ? (ph - dh) * 0.42 : 0;
@@ -1038,13 +1038,14 @@
     };
     const izq = Math.max(0, Math.round(dx)), der = Math.max(0, Math.round(pw - dw - dx));
     const arr = Math.max(0, Math.round(dy)), aba = Math.max(0, Math.round(ph - dy - dh));
+    const relleno = Math.min(1, (e.fundido || 0) * 1.4);   // el relleno espejado aparece con el render; antes, papel liso
+    g.globalAlpha = relleno;
     const sV = Math.min(e.H, Math.round(e.H * 0.06));
     if (arr > 0) espejo(g, Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sV, 0, 0, pw, arr + 1, false, true);            // arriba: el cielo
     if (aba > 0) espejo(g, 0, e.H - sV, e.W, sV, 0, dy + dh - 1, pw, aba + 1, false, true);                                    // abajo: la vereda
     if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(g, 0, 0, sw, e.H, 0, dy, izq + 1, dh, true, false); }
     if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(g, e.W - sw, 0, sw, e.H, dx + dw - 1, dy, der + 1, dh, true, false); }
-    const velo = 0.14 * (e.fundido || 0);
-    if (velo > 0) { g.fillStyle = `rgba(18,12,9,${velo.toFixed(3)})`; if (arr > 0) g.fillRect(0, 0, pw, arr); if (aba > 0) g.fillRect(0, dy + dh, pw, aba + 1); if (izq > 0) g.fillRect(0, 0, izq, ph); if (der > 0) g.fillRect(dx + dw, 0, der + 1, ph); }
+    g.globalAlpha = 1;
     g.drawImage(e.out, dx, dy, dw, dh);
     // la pluma: el borde del cuadro se desenfoca hacia adentro, y la costura con el relleno desaparece
     const pluma = Math.round(Math.min(90, Math.max(pw, ph) * 0.06));
@@ -1061,10 +1062,12 @@
       g.drawImage(pc, tx, ty);
     };
     const sPl = Math.ceil(pluma / esc);
+    g.globalAlpha = relleno;
     if (izq > 0) plumar(0, 0, sPl, e.H, dx, dy, pluma, dh, true, false);
     if (der > 0) plumar(e.W - sPl, 0, sPl, e.H, dx + dw - pluma, dy, pluma, dh, true, true);
     if (arr > 0) plumar(0, 0, e.W, sPl, dx, dy, dw, pluma, false, false);
     if (aba > 0) plumar(0, e.H - sPl, e.W, sPl, dx, dy + dh - pluma, dw, pluma, false, true);
+    g.globalAlpha = 1;
 
   }
 
