@@ -40,7 +40,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilos.css?v=202609031710">
+<link rel="stylesheet" href="estilos.css?v=202609031801">
 </head>
 <body data-idioma="es">
 
@@ -276,25 +276,14 @@
 
   <!-- ══ UBICACIÓN: el mapa del render, con sus puntos vivos ══ -->
   <section id="ubicacion" class="ubicacion" data-screen-label="Ubicación">
-    <div class="mapa-escena" id="mapa-escena" aria-hidden="true">
+    <div class="mapa-escena" id="mapa-escena">
       <div class="mapa-zoom" id="mapa-zoom">
-        <img class="mapa-img" src="img/render-ascenso.jpg" alt="" loading="lazy">
+        <img class="mapa-img" src="img/render-ascenso.jpg" alt="El entorno de La Torre visto desde arriba: Balcarce, Aniceto Latorre, el Portal, el Paseo Balcarce y el Hospital Materno Infantil" loading="lazy">
         <button type="button" class="punto punto-torre" data-poi="torre" style="--x:53%;--y:40%" aria-label="La Torre"><i></i></button>
         <button type="button" class="punto" data-poi="hospital" style="--x:7.4%;--y:19.6%" aria-label="Hospital Materno Infantil"><i></i></button>
         <button type="button" class="punto" data-poi="portal" style="--x:23.3%;--y:19.3%" aria-label="Portal Salta Shopping"><i></i></button>
         <button type="button" class="punto" data-poi="paseo" style="--x:35.8%;--y:96%" aria-label="Paseo Balcarce"><i></i></button>
       </div>
-    </div>
-    <div class="ubicacion-texto">
-      <p class="rotulo rotulo-claro" data-t="ubicacion.rotulo"></p>
-      <h2 class="titulo partir" data-t="ubicacion.titulo"></h2>
-      <p class="parrafo" data-t="ubicacion.texto"></p>
-      <ul class="cerca">
-        <li data-poi="portal"><b>600 m</b><span data-t="ubicacion.shopping"></span></li>
-        <li data-poi="paseo"><b>700 m</b><span data-t="ubicacion.paseo"></span></li>
-        <li data-poi="hospital"><b>700 m</b><span data-t="ubicacion.hospital"></span></li>
-      </ul>
-      <a class="boton boton-linea boton-claro" target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Aniceto+Latorre+y+Balcarce,+Salta,+Argentina" data-t="ubicacion.maps"></a>
     </div>
   </section>
 
@@ -305,10 +294,10 @@
       <h2 class="titulo partir" data-t="plan.titulo"></h2>
       <p class="parrafo" data-t="plan.texto"></p>
     </div>
-    <ol class="pasos">
-      <li><span>01</span><h3 data-t="plan.anticipo.t"></h3><p data-t="plan.anticipo.p"></p></li>
-      <li><span>02</span><h3 data-t="plan.cuotas.t"></h3><p data-t="plan.cuotas.p"></p></li>
-      <li><span>03</span><h3 data-t="plan.posesion.t"></h3><p data-t="plan.posesion.p"></p></li>
+    <ol class="pasos" id="pasos">
+      <li class="paso"><i class="paso-llenado"></i><div class="paso-cuerpo"><span class="paso-num">01</span><p class="paso-cuando" data-t="plan.anticipo.cuando"></p><h3 data-t="plan.anticipo.t"></h3><p class="paso-texto" data-t="plan.anticipo.p"></p></div></li>
+      <li class="paso"><i class="paso-llenado"></i><div class="paso-cuerpo"><span class="paso-num">02</span><p class="paso-cuando" data-t="plan.cuotas.cuando"></p><h3 data-t="plan.cuotas.t"></h3><p class="paso-texto" data-t="plan.cuotas.p"></p></div></li>
+      <li class="paso"><i class="paso-llenado"></i><div class="paso-cuerpo"><span class="paso-num">03</span><p class="paso-cuando" data-t="plan.posesion.cuando"></p><h3 data-t="plan.posesion.t"></h3><p class="paso-texto" data-t="plan.posesion.p"></p></div></li>
     </ol>
   </section>
 
@@ -415,6 +404,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
-<script src="app.js?v=202609031710"></script>
+<script src="app.js?v=202609031801"></script>
 </body>
 </html>

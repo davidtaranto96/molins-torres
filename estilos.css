@@ -320,43 +320,39 @@ body.con-ficha{overflow:hidden}
 
 /* ── ubicación ── */
 /* ── ubicación: el mapa del render (con sus rótulos), que se acerca al punto que se elige ── */
-.ubicacion{position:relative;overflow:hidden;background:var(--tinta-oscura);color:var(--crema);min-height:92svh;display:flex;align-items:center}
-.mapa-escena{position:absolute;top:50%;left:0;height:92svh;width:auto;aspect-ratio:2200/1237;transform:translateY(-50%);pointer-events:none}
-.mapa-zoom{position:absolute;inset:0;transform-origin:var(--ox,50%) var(--oy,50%);transition:transform 1.4s var(--curva);will-change:transform;pointer-events:auto}
-.mapa-escena.cerca-de .mapa-zoom{transform:scale(1.32)}
-.mapa-zoom::after{content:"";position:absolute;inset:0;background:rgba(18,12,9,0);transition:background .8s ease;pointer-events:none}
-.mapa-escena.cerca-de .mapa-zoom::after{background:rgba(18,12,9,.22)}
-.punto{z-index:2}
-.cerca li::after{content:"";margin-left:auto;width:8px;height:8px;border-radius:50%;background:rgba(243,234,218,.35);align-self:center;transition:background .3s,transform .3s}
-.cerca li.activo::after{background:var(--terracota-claro);transform:scale(1.4)}
-.mapa-img{position:absolute;inset:0;width:100%;height:100%;display:block}
-.punto{position:absolute;left:var(--x);top:var(--y);width:44px;height:44px;margin:-22px 0 0 -22px;background:none;border:0;padding:0;cursor:pointer}
-.punto i{position:absolute;inset:15px;border-radius:50%;background:var(--crema);box-shadow:0 0 0 0 rgba(243,234,218,.55);animation:pulso 2.6s ease-out infinite;transition:transform .35s var(--curva),background .3s}
-.punto-torre i{inset:12px;background:var(--terracota-claro);box-shadow:0 0 0 0 rgba(217,139,111,.6)}
-.punto.activo i{transform:scale(1.5);background:var(--terracota-claro)}
-@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(243,234,218,.55)}70%{box-shadow:0 0 0 18px rgba(243,234,218,0)}100%{box-shadow:0 0 0 0 rgba(243,234,218,0)}}
-.ubicacion-texto{position:relative;z-index:1;width:100%;max-width:500px;margin-left:auto;padding:clamp(48px,8vh,96px) var(--lado) clamp(48px,8vh,96px) calc(var(--lado) + 48px);background:linear-gradient(90deg,rgba(18,12,9,0) 0%,rgba(18,12,9,.94) 14%,rgba(18,12,9,1) 26%,rgba(18,12,9,1) 100%)}
-.ubicacion .titulo{color:var(--crema);font-size:clamp(30px,3.1vw,42px)}
-.ubicacion .parrafo{color:rgba(243,234,218,.8);font-size:14px}
-.cerca{list-style:none;padding:0;margin:30px 0 26px;display:grid;gap:0;max-width:520px}
-.cerca li{display:flex;gap:16px;align-items:baseline;border-top:1px solid rgba(243,234,218,.2);padding:12px 8px 12px 0;cursor:pointer;transition:background .2s,padding-left .3s var(--curva)}
-.cerca li:hover,.cerca li.activo{padding-left:10px;background:rgba(243,234,218,.05)}
-.cerca b{font-family:var(--serif);font-weight:400;font-size:22px;min-width:74px;font-variant-numeric:tabular-nums;flex:0 0 auto}
-.cerca span{font-size:14px;color:rgba(243,234,218,.85);white-space:nowrap}
-.ubicacion-texto .boton{align-self:flex-start}
-@media (max-width:899px){.ubicacion{display:block;min-height:0}.mapa-escena{position:relative;top:auto;left:auto;transform:none;width:100%;height:auto;aspect-ratio:2200/1237;overflow:hidden}.mapa-zoom{width:100%;height:100%;left:0;transform:none}.mapa-escena.cerca-de .mapa-zoom{transform:none}.mapa-escena.cerca-de .mapa-zoom::after{background:rgba(18,12,9,0)}.mapa-img{object-fit:cover}.punto{width:40px;height:40px;margin:-20px 0 0 -20px}.punto i{inset:14px}.ubicacion-texto{max-width:none;margin:0;background:none;padding:30px var(--lado) 52px}.ubicacion .titulo{font-size:clamp(30px,8vw,40px)}}
-@media (prefers-reduced-motion:reduce){.punto i{animation:none}.mapa-zoom{transition:none}}
+/* el render de ubicación entero, con su texto quemado: los puntos se aprietan y marcan, el mapa no se mueve */
+.ubicacion{position:relative;background:var(--tinta-oscura)}
+.mapa-escena{position:relative;width:100%;aspect-ratio:2200/1237;overflow:hidden}
+.mapa-zoom{position:absolute;inset:0}
+.mapa-img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.punto{position:absolute;z-index:2;left:var(--x);top:var(--y);width:48px;height:48px;margin:-24px 0 0 -24px;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.punto i{position:absolute;inset:17px;border-radius:50%;background:var(--crema);box-shadow:0 0 0 0 rgba(243,234,218,.55);animation:pulso 2.6s ease-out infinite;transition:transform .35s var(--curva),background .3s}
+.punto::before,.punto::after{content:"";position:absolute;inset:50%;border-radius:50%;border:1px solid var(--terracota-claro);opacity:0;pointer-events:none}
+.punto-torre i{inset:14px;background:var(--terracota-claro);box-shadow:0 0 0 0 rgba(217,139,111,.6)}
+.punto:hover i{transform:scale(1.35)}
+.punto.activo i{transform:scale(1.7);background:var(--terracota-claro);animation:none;box-shadow:0 0 0 4px rgba(18,12,9,.35)}
+.punto.activo::before{animation:onda 1.1s var(--curva) forwards}
+.punto.activo::after{animation:onda 1.1s .25s var(--curva) forwards}
+.mapa-escena.cerca-de .punto:not(.activo) i{opacity:.55}
+@keyframes onda{0%{inset:50%;opacity:.9}100%{inset:-26px;opacity:0}}
+@media (max-width:899px){.punto{width:40px;height:40px;margin:-20px 0 0 -20px}.punto i{inset:14px}}
+@media (prefers-reduced-motion:reduce){.punto i{animation:none}.punto::before,.punto::after{animation:none}}
 
 /* ── plan ── */
 .plan{background:var(--crema)}
-.pasos{list-style:none;margin:44px auto 0;padding:0;display:grid;gap:0;max-width:1100px;position:relative}
-.pasos li{position:relative;padding:26px 0 30px 34px;border-left:1px solid rgba(41,33,26,.2)}
-.pasos li::before{content:"";position:absolute;left:-6px;top:38px;width:11px;height:11px;border-radius:50%;background:var(--terracota);box-shadow:0 0 0 5px var(--crema)}
-.pasos span{display:block;font-family:var(--serif);font-weight:300;font-size:clamp(56px,7vw,96px);line-height:.9;color:var(--terracota-claro);letter-spacing:-.02em}
-.pasos h3{margin:14px 0 0;font-family:var(--serif);font-weight:300;font-size:clamp(24px,2.4vw,32px);line-height:1.1}
-.pasos p{margin:10px 0 0;font-size:15px;color:var(--tinta-suave);line-height:1.6;max-width:36ch}
-@media (min-width:860px){.pasos{grid-template-columns:1fr 1fr 1fr;gap:0 34px}.pasos li{padding:34px 0 0;border-left:0;border-top:1px solid rgba(41,33,26,.2)}.pasos li::before{left:0;top:-6px}}
-@media (min-width:760px){.pasos{grid-template-columns:repeat(3,1fr)}}
+/* las fichas del plan se van llenando de un paso al otro al ritmo del scroll (--llenado y --progreso los mueve GSAP) */
+.pasos{list-style:none;margin:48px auto 0;padding:0;display:grid;gap:14px;max-width:1100px;position:relative;--progreso:0}
+.pasos::before{content:"";position:absolute;left:0;right:0;top:-22px;height:1px;background:rgba(41,33,26,.16)}
+.pasos::after{content:"";position:absolute;left:0;top:-22px;height:1px;width:100%;background:var(--terracota);transform-origin:left;transform:scaleX(var(--progreso))}
+.paso{position:relative;overflow:hidden;border:1px solid rgba(41,33,26,.16);border-radius:18px;background:var(--crema-claro);--llenado:0;min-height:300px}
+.paso-llenado{position:absolute;inset:0;background:var(--tinta);transform-origin:bottom;transform:scaleY(var(--llenado));pointer-events:none}
+.paso-cuerpo{position:relative;padding:28px 28px 32px;display:flex;flex-direction:column;height:100%}
+.paso-num{display:block;font-family:var(--serif);font-weight:300;font-size:clamp(56px,6.4vw,88px);line-height:.9;letter-spacing:-.02em;color:var(--terracota-claro)}
+.paso-cuando{margin:18px 0 0;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#c4bdb4;mix-blend-mode:difference}
+/* el texto en blanco con `difference`: se lee oscuro sobre la ficha vacía y claro cuando la tinta lo cubre, sin saltos */
+.paso h3{margin:8px 0 0;font-family:var(--serif);font-weight:300;font-size:clamp(24px,2.3vw,31px);line-height:1.1;color:#fff;mix-blend-mode:difference}
+.paso-texto{margin:12px 0 0;font-size:15px;color:#f2f2f2;line-height:1.6;max-width:34ch;mix-blend-mode:difference}
+@media (min-width:760px){.pasos{grid-template-columns:repeat(3,1fr);gap:18px}}
 
 /* ── contacto: foto con el título enorme a la izquierda, el formulario de líneas a la derecha ── */
 .contacto{display:grid;background:var(--tinta-oscura);color:var(--crema)}

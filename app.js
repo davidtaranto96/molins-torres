@@ -145,9 +145,9 @@
       "ubicacion.maps": "Abrir en Google Maps",
       "plan.rotulo": "El plan de pago", "plan.titulo": "Se compra en pozo, en tres momentos",
       "plan.texto": "Un solo cuadro de precios, el mismo para todos. Los valores se confirman al consultar.",
-      "plan.anticipo.t": "Anticipo al boleto", "plan.anticipo.p": "Se firma el boleto y se aparta la unidad con el anticipo.",
-      "plan.cuotas.t": "Cuotas durante la obra", "plan.cuotas.p": "El saldo se paga en cuotas mientras la obra avanza.",
-      "plan.posesion.t": "Posesión", "plan.posesion.p": "Con la obra terminada, se escritura y se entregan las llaves.",
+      "plan.anticipo.cuando": "Al firmar", "plan.anticipo.t": "Anticipo al boleto", "plan.anticipo.p": "Se firma el boleto de compraventa y se paga el anticipo. La unidad queda reservada a tu nombre.",
+      "plan.cuotas.cuando": "Durante la obra", "plan.cuotas.t": "Cuotas durante la obra", "plan.cuotas.p": "El saldo se paga en cuotas mensuales mientras la obra avanza, hasta la entrega.",
+      "plan.posesion.cuando": "Al terminar", "plan.posesion.t": "Posesión", "plan.posesion.p": "Con la obra terminada se escritura y recibís las llaves de tu unidad.",
       "avance.rotulo": "La obra", "avance.titulo": "Avance de obra",
       "avance.texto": "Una foto fechada por cada certificación de obra. Sin porcentajes que después no se puedan sostener.",
       "avance.sinFotos": "Todavía no hay fotos de obra cargadas. Cada certificación suma acá su foto con fecha.",
@@ -257,11 +257,11 @@
       "plan.rotulo": "Payment plan",
       "plan.titulo": "Buy while it is being built",
       "plan.texto": "La Torre is sold off-plan. A down payment when the purchase agreement is signed, installments while the building is under construction, and possession when it is finished. There is one price list, and it is the same for every buyer. Ask Francisco for the current terms.",
-      "plan.anticipo.t": "Down payment",
+      "plan.anticipo.cuando": "At signing", "plan.anticipo.t": "Down payment",
       "plan.anticipo.p": "Paid when the purchase agreement is signed. It secures your unit.",
-      "plan.cuotas.t": "Installments",
+      "plan.cuotas.cuando": "During construction", "plan.cuotas.t": "Installments",
       "plan.cuotas.p": "Spread across the construction period, as the building goes up.",
-      "plan.posesion.t": "Possession",
+      "plan.posesion.cuando": "On completion", "plan.posesion.t": "Possession",
       "plan.posesion.p": "Once construction is finished, the unit is handed over to you.",
       "avance.rotulo": "Construction progress",
       "avance.titulo": "Stage by stage",
@@ -431,11 +431,11 @@
       "plan.rotulo": "Plano de pagamento",
       "plan.titulo": "Comprar na planta, pagar durante a obra.",
       "plan.texto": "Uma só tabela de preços, a mesma para todos. Os valores não estão no site: o Francisco passa a tabela numa conversa e explica cada etapa.",
-      "plan.anticipo.t": "Entrada",
+      "plan.anticipo.cuando": "Na assinatura", "plan.anticipo.t": "Entrada",
       "plan.anticipo.p": "Na assinatura do contrato de compra e venda.",
-      "plan.cuotas.t": "Parcelas",
+      "plan.cuotas.cuando": "Durante a obra", "plan.cuotas.t": "Parcelas",
       "plan.cuotas.p": "Durante a obra, até a entrega.",
-      "plan.posesion.t": "Entrega das chaves",
+      "plan.posesion.cuando": "Na conclusão", "plan.posesion.t": "Entrega das chaves",
       "plan.posesion.p": "Com a obra concluída, você recebe o seu apartamento.",
       "avance.rotulo": "Andamento da obra",
       "avance.titulo": "A obra, medição por medição.",
@@ -1201,7 +1201,7 @@
       const ws = partirPalabras(el); if (!ws.length) return;
       gsap.fromTo(ws, { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: .7, ease: "power2.out", stagger: 0.014, delay: .15, scrollTrigger: { trigger: el, start: "top 86%", once: true } });
     });
-    const SUBEN = ".rotulo, .boton, .lista-materiales li, .form-modos, .form label, .boton-pildora, .form-pie, .firma, .unidad, .leyenda, .nota, .pasos li, .cerca li, .ab, .visita-panel h3, .res-ficha, .res-pie, .adentro-marco .adentro-pie";
+    const SUBEN = ".rotulo, .boton, .lista-materiales li, .form-modos, .form label, .boton-pildora, .form-pie, .firma, .unidad, .leyenda, .nota, .ab, .visita-panel h3, .res-ficha, .res-pie, .adentro-marco .adentro-pie";
     $$(SUBEN).forEach((el) => {
       if (el.closest(".hero, .cab, .ficha, .intro, .cookies")) return;
       gsap.fromTo(el, { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
@@ -1212,7 +1212,7 @@
     });
     // cada bloque de contenido llega entero, subiendo, y recién adentro el
     // texto se arma por palabras (la demo: nada está quieto cuando aparece)
-    const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .ubicacion-texto, .pasos, .contacto-sobre, .form, .visita-cab, .pie-grid";
+    const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .contacto-sobre, .form, .visita-cab, .pie-grid";
     $$(BLOQUES).forEach((el) => {
       gsap.fromTo(el, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 84%", once: true } });
     });
@@ -1353,23 +1353,37 @@
   }
 
 
-  /* ── ubicación: el mapa del render se acerca al punto que se elige con un clic ── */
-  const escenaMapa = $("#mapa-escena"), zoomMapa = $("#mapa-zoom");
+  /* ── ubicación: el render entero con su texto; apretar un punto lo marca, el mapa no se mueve ── */
+  const escenaMapa = $("#mapa-escena");
   if (escenaMapa) {
-    const puntos = $$(".punto", escenaMapa), filas = $$(".cerca li[data-poi]");
+    const puntos = $$(".punto", escenaMapa);
     let activo = null;
     const activar = (k) => {
       activo = k;
       puntos.forEach((p) => p.classList.toggle("activo", p.dataset.poi === k));
-      filas.forEach((f) => f.classList.toggle("activo", f.dataset.poi === k));
-      const p = puntos.find((x) => x.dataset.poi === k);
-      if (p) { zoomMapa.style.setProperty("--ox", p.style.getPropertyValue("--x")); zoomMapa.style.setProperty("--oy", p.style.getPropertyValue("--y")); escenaMapa.classList.add("cerca-de"); }
-      else escenaMapa.classList.remove("cerca-de");
+      escenaMapa.classList.toggle("cerca-de", !!k);
     };
-    // se elige con un clic (en la lista o en el punto); el hover sólo marca la fila
-    filas.forEach((f) => f.addEventListener("click", () => activar(activo === f.dataset.poi ? null : f.dataset.poi)));
-    $("#ubicacion").addEventListener("keydown", (ev) => { if (ev.key === "Escape") activar(null); });
     puntos.forEach((p) => p.addEventListener("click", () => activar(activo === p.dataset.poi ? null : p.dataset.poi)));
+    $("#ubicacion").addEventListener("keydown", (ev) => { if (ev.key === "Escape") activar(null); });
+  }
+
+  /* ── plan de pago: las fichas se llenan una tras otra al ritmo del scroll ── */
+  const pasos = $("#pasos");
+  if (pasos) {
+    const fichas = $$(".paso", pasos);
+    const marcar = () => fichas.forEach((f) => f.classList.toggle("lleno", parseFloat(getComputedStyle(f).getPropertyValue("--llenado")) > 0.55));
+    if (reduce || !window.gsap || !window.ScrollTrigger) {
+      fichas.forEach((f) => { f.style.setProperty("--llenado", 1); f.classList.add("lleno"); }); pasos.style.setProperty("--progreso", 1);
+    } else {
+      const ancho = matchMedia("(min-width:760px)").matches;
+      const tl = gsap.timeline({ scrollTrigger: ancho
+        ? { trigger: "#plan", start: () => $("#plan").offsetHeight > innerHeight ? "bottom bottom" : "center center", end: "+=160%", pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true, onUpdate: marcar }
+        : { trigger: pasos, start: "top 78%", end: "bottom 45%", scrub: 0.6, onUpdate: marcar } });
+      fichas.forEach((f, i) => {
+        tl.to(pasos, { "--progreso": (i + 1) / fichas.length, duration: 0.55, ease: "none" }, i)
+          .to(f, { "--llenado": 1, duration: 0.7, ease: "power2.inOut" }, i + 0.1);
+      });
+    }
   }
 
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
