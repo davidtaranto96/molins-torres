@@ -233,15 +233,14 @@ const M = {
   retiro6: 2.6,   // 6,6 × 5,75 ≈ 38 m²
   balcon: 1.15,
   losa: 0.26,
-  /* EL RUMBO ESTÁ POR CONFIRMAR y no es un detalle estético: define qué
-     unidades tienen sol. Es el ángulo, en grados, que gira el conjunto
-     respecto del norte. La rosa de los vientos de la lámina lo tiene, pero es
-     chica y no da para leerla con precisión: hay que sacarlo del plano.
-     Con 0 la calle da al SUR y el frente queda a contraluz todo el día, que
-     es como salió la primera prueba. Queda en 152 grados —frente al
-     nornoroeste, la orientación buena en el hemisferio sur— y se corrige acá
-     cuando Francisco confirme. */
-  rumbo: 152,
+  /* EL RUMBO. La rosa de los vientos de la lámina de tipología pone el norte
+     a la IZQUIERDA, que es el lado donde la planta escribe «Calle: Aniceto
+     Latorre». O sea: el frente da al norte —la orientación buena en el
+     hemisferio sur— y Torre Norte es la que está sobre la calle. Es coherente
+     con el hero, que muestra el frente a pleno sol. La grilla de Salta está
+     girada unos grados respecto del norte exacto; eso se afina cuando haya
+     plano con norte cotado. Con 0 la calle daría al sur. */
+  rumbo: 180,
 };
 const LARGO_TOTAL = M.largoTorre * 2 + M.largoNucleo;   // ≈ 20,3 m · proporción 3,08:1
 const ALTO_TOTAL = M.altoPB + M.niveles * M.altoPiso;
@@ -317,12 +316,13 @@ uCielo.mieDirectionalG.value = 0.82;
 
 const sol = new THREE.DirectionalLight(0xffffff, 3);
 sol.castShadow = true;
-sol.shadow.mapSize.set(2048, 2048);
 sol.shadow.camera.near = 1;
 sol.shadow.camera.far = 120;
 const d = 26;
 Object.assign(sol.shadow.camera, { left:-d, right:d, top:d, bottom:-d });
-sol.shadow.bias = -0.0006;
+sol.shadow.bias = -0.0002;
+sol.shadow.normalBias = 0.14;   // sin esto las caras verticales al sol salen punteadas
+sol.shadow.mapSize.set(4096, 4096);
 escena.add(sol);
 
 const AMB_DIA = new THREE.Color(0xbfd4e8), AMB_NOCHE = new THREE.Color(0x2f4468);
@@ -438,14 +438,21 @@ function prenderVentanas() {
    salen de los tokens del sitio.
    ══════════════════════════════════════════════════════════════════════════ */
 const mat = {
-  hormigon: new THREE.MeshStandardMaterial({ color:0xbdb4a8, roughness:0.86, metalness:0 }),
-  losa:     new THREE.MeshStandardMaterial({ color:0xd6cfc4, roughness:0.8 }),
-  ladrillo: new THREE.MeshStandardMaterial({ color:0x9C3A20, roughness:0.94 }),
-  nucleo:   new THREE.MeshStandardMaterial({ color:0x8a8076, roughness:0.72 }),
-  parasol:  new THREE.MeshStandardMaterial({ color:0x7a6553, roughness:0.6 }),
+  // Leídos del render de portada: hormigón visto gris, ladrillo terracota
+  // apagado, metal negro, listones oscuros, revoque crema en la cara larga.
+  hormigon: new THREE.MeshStandardMaterial({ color:0xa9a49c, roughness:0.9 }),
+  losa:     new THREE.MeshStandardMaterial({ color:0x9a958e, roughness:0.88 }),
+  ladrillo: new THREE.MeshStandardMaterial({ color:0xa5563c, roughness:0.95 }),
+  revoque:  new THREE.MeshStandardMaterial({ color:0xcbc4b6, roughness:0.92 }),
+  nucleo:   new THREE.MeshStandardMaterial({ color:0x9d9891, roughness:0.85 }),
+  metal:    new THREE.MeshStandardMaterial({ color:0x2b2926, roughness:0.5, metalness:0.35 }),
+  liston:   new THREE.MeshStandardMaterial({ color:0x3a332c, roughness:0.62 }),
+  madera:   new THREE.MeshStandardMaterial({ color:0x8a5a34, roughness:0.7 }),
+  planta:   new THREE.MeshStandardMaterial({ color:0x4f7a3a, roughness:1 }),
+  sombraPB: new THREE.MeshStandardMaterial({ color:0x1c1815, roughness:1 }),
   vidrio:   new THREE.MeshStandardMaterial({ color:0x8aa3b2, roughness:0.07, metalness:0.25,
               transparent:true, opacity:0.9 }),
-  carpinteria: new THREE.MeshStandardMaterial({ color:0x2e2822, roughness:0.55 }),
+  carpinteria: new THREE.MeshStandardMaterial({ color:0x2b2926, roughness:0.55 }),
   medianera:new THREE.MeshStandardMaterial({ color:0xcfc9c0, roughness:0.95 }),
   suelo:    new THREE.MeshStandardMaterial({ color:0x8a857c, roughness:0.98 }),
   vereda:   new THREE.MeshStandardMaterial({ color:0xa8a29a, roughness:0.95 }),
@@ -526,101 +533,133 @@ edificio.add(caja(30, 0.14, 7, mat.vereda, 0, 0.001, -(LARGO_TOTAL / 2 + 3.5), f
 });
 edificio.add(caja(M.frente + 4, 3.1, 6, mat.medianera, 0, 0, LARGO_TOTAL / 2 + 3));
 
-/* ── planta baja: acceso y cocheras ── */
+/* ── planta baja: el acceso en sombra, con la puerta de madera y las plantas ── */
 edificio.add(caja(M.frente, M.altoPB, LARGO_TOTAL, mat.hormigon, 0, 0, 0));
-// El hueco del acceso sobre la calle, que en el corte tiene la gente y los árboles.
-edificio.add(caja(M.frente * 0.52, M.altoPB * 0.82, 0.3, mat.vidrio,
-  -M.frente * 0.2, 0.05, -(LARGO_TOTAL / 2 + 0.02)));
+{
+  // el frente de la planta baja va retirado y oscuro, como en el hero: un
+  // hueco en sombra con la puerta pivotante de madera y verde a los costados
+  const zF = -(LARGO_TOTAL / 2);
+  edificio.add(caja(M.frente - 0.4, M.altoPB - 0.3, 0.06, mat.sombraPB, 0, 0, zF - 0.02, false));
+  edificio.add(caja(1.05, 2.3, 0.1, mat.madera, 0.9, 0.02, zF - 0.06, false));
+  edificio.add(caja(1.6, 2.3, 0.1, mat.vidrio, -0.8, 0.02, zF - 0.06, false));
+  [-2.3, 2.3].forEach((x) => {
+    edificio.add(caja(0.9, 0.5, 0.6, mat.hormigon, x, 0, zF - 0.55, false));
+    edificio.add(caja(0.8, 0.7, 0.5, mat.planta, x, 0.5, zF - 0.55, false));
+  });
+}
 
 /* ── el núcleo de circulación, que sobresale ── */
 const altoNucleo = ALTO_TOTAL + M.sobreNucleo;
 edificio.add(caja(M.frente * 0.82, altoNucleo, M.largoNucleo, mat.nucleo, 0, 0, 0));
-// La sala de máquinas arriba, como la dibuja el corte.
 edificio.add(caja(M.frente * 0.44, 1.1, M.largoNucleo * 0.62, mat.hormigon, 0, altoNucleo, 0));
 
-/* ── las columnas de ladrillo visto en las esquinas verticales ── */
-[-1, 1].forEach((sx) => {
-  [zNorte - M.largoTorre / 2, zSur + M.largoTorre / 2].forEach((z) => {
-    edificio.add(caja(0.52, ALTO_TOTAL, 0.52, mat.ladrillo, sx * (M.frente / 2 - 0.1), 0, z));
-  });
+/* ── los pilares de ladrillo visto: anchos, en las esquinas, y suben más que el techo ── */
+const PILAR = 0.95;
+[[-1, zNorte - M.largoTorre / 2 + PILAR / 2], [1, zNorte - M.largoTorre / 2 + PILAR / 2],
+ [-1, zSur + M.largoTorre / 2 - PILAR / 2],  [1, zSur + M.largoTorre / 2 - PILAR / 2]].forEach(([sx, z]) => {
+  // El pilar sobresale 8 cm de la línea de las losas. No es sólo por fidelidad
+  // al hero, donde los pilares se leen como verticales fuertes: con las caras
+  // coplanares, losa y pilar peleaban por el mismo píxel y salía un punteado
+  // que parecía acné de sombra y no lo era.
+  edificio.add(caja(PILAR, ALTO_TOTAL + 0.9, PILAR, mat.ladrillo, sx * (M.frente / 2 - PILAR / 2 + 0.08), 0, z));
 });
+
+/* ── el brise-soleil: la banda de listones verticales que corre entera de arriba abajo,
+      delante de los balcones de Torre Norte. Es lo más reconocible del hero. ── */
+{
+  // Separados 22 cm: más juntos, desde cualquier ángulo se funden en una
+  // tabla y se pierde justamente lo que los hace listones.
+  const zB = zNorte - M.largoTorre / 2 - M.balcon - 0.08;
+  const x0 = -M.frente / 2 + PILAR + 0.55;
+  for (let k = 0; k < 7; k++) {
+    edificio.add(caja(0.05, ALTO_TOTAL - M.altoPB + 0.6, 0.16, mat.liston, x0 + k * 0.22, M.altoPB - 0.2, zB, true));
+  }
+  // y el travesaño que los sostiene arriba, para que no floten
+  edificio.add(caja(7 * 0.22 + 0.1, 0.08, 0.2, mat.liston, x0 + 3 * 0.22, ALTO_TOTAL + 0.35, zB, false));
+}
 
 /* ── los niveles ── */
 UNIDADES.forEach((u) => {
   const norte = u.torre === 'Norte';
   const y = M.altoPB + (u.piso - 1) * M.altoPiso;
-  // El retiro de los niveles altos de Torre Norte. Sale de las superficies.
   const retiro = norte ? (u.piso === 6 ? M.retiro6 : u.piso === 5 ? M.retiro5 : 0) : 0;
   const largo = M.largoTorre - retiro;
   const zBase = norte ? zNorte : zSur;
-  // El retiro se come el frente sobre la calle, que es lo que crea la terraza.
   const z = norte ? zBase + retiro / 2 : zBase;
+  const dir = norte ? -1 : 1;                      // hacia dónde mira el frente de la unidad
+  const anchoLibre = M.frente - 2 * PILAR;         // el vano entre los dos pilares de ladrillo
 
-  /* el cuerpo de la unidad, que es lo que se selecciona */
-  const cuerpo = new THREE.Mesh(
-    new THREE.BoxGeometry(M.frente, M.altoPiso - M.losa, largo),
-    mat.hormigon.clone()
-  );
+  /* el cuerpo de la unidad — la cara larga va revocada en crema, como en el hero */
+  const cuerpo = new THREE.Mesh(new THREE.BoxGeometry(M.frente, M.altoPiso - M.losa, largo), mat.revoque.clone());
   cuerpo.position.set(0, y + (M.altoPiso - M.losa) / 2, z);
   cuerpo.castShadow = true; cuerpo.receiveShadow = true;
   cuerpo.userData = { unidad:u, base:cuerpo.material.color.clone() };
   edificio.add(cuerpo);
   seleccionables.push(cuerpo);
 
-  /* la losa entre pisos, que es la línea horizontal que le da escala */
-  edificio.add(caja(M.frente + 0.12, M.losa, largo + 0.1, mat.losa, 0, y + M.altoPiso - M.losa, z));
+  /* la losa de hormigón, gruesa, que sale como balcón por el frente */
+  const zFrente = z + dir * largo / 2;
+  edificio.add(caja(M.frente + 0.1, M.losa, largo + M.balcon, mat.losa, 0, y + M.altoPiso - M.losa, z + dir * M.balcon / 2));
+  edificio.add(caja(anchoLibre, 0.18, M.balcon, mat.losa, 0, y, zFrente + dir * M.balcon / 2));
 
-  /* el paño de vidrio hacia la calle o hacia el fondo, con su material propio
-     para poder prenderlo escalonado a la noche */
+  /* la puerta-ventana de piso a techo, con carpintería negra, detrás del balcón */
   const mv = materialVentana();
-  const zPano = norte ? z - largo / 2 - 0.02 : z + largo / 2 + 0.02;
-  const anchoPano = M.frente * 0.78, altoPano = (M.altoPiso - M.losa) * 0.68;
-  const pano = new THREE.Mesh(new THREE.BoxGeometry(anchoPano, altoPano, 0.12), mv);
-  pano.position.set(0, y + (M.altoPiso - M.losa) * 0.52, zPano);
+  const altoPano = M.altoPiso - M.losa - 0.1;
+  const pano = new THREE.Mesh(new THREE.BoxGeometry(anchoLibre - 0.2, altoPano, 0.1), mv);
+  pano.position.set(0, y + altoPano / 2 + 0.02, zFrente + dir * 0.03);
   edificio.add(pano);
-  // dos parteluces: un paño de vidrio sin carpintería se lee como una plancha
-  [-1, 1].forEach((sx) => {
-    edificio.add(caja(0.07, altoPano, 0.15, mat.carpinteria,
-      sx * anchoPano / 6, y + (M.altoPiso - M.losa) * 0.52 - altoPano / 2, zPano, false));
-  });
   ventanas.push({ mat:mv, orden:(u.piso - 1) * 2 + (norte ? 0 : 1), brillo:brilloDeVentana(ventanas.length) });
+  [-1, 0, 1].forEach((k) => {
+    edificio.add(caja(0.07, altoPano, 0.14, mat.carpinteria, k * (anchoLibre - 0.2) / 2 * 0.98, y + 0.02, zFrente + dir * 0.03, false));
+  });
+  edificio.add(caja(anchoLibre - 0.2, 0.07, 0.14, mat.carpinteria, 0, y + altoPano, zFrente + dir * 0.03, false));
 
-  /* y una ventana lateral, para que la caja no tenga una sola cara viva */
-  const mv2 = materialVentana();
-  const lat = new THREE.Mesh(new THREE.BoxGeometry(0.12, (M.altoPiso - M.losa) * 0.5, largo * 0.42), mv2);
-  lat.position.set((norte ? -1 : 1) * (M.frente / 2 + 0.02), y + (M.altoPiso - M.losa) * 0.5, z);
-  edificio.add(lat);
-  ventanas.push({ mat:mv2, orden:(u.piso - 1) * 2 + (norte ? 0 : 1) + 0.4, brillo:brilloDeVentana(ventanas.length) });
-
-  /* el balcón en voladizo, y los parasoles de listones que se ven en el hero */
-  const zBal = norte ? zPano - M.balcon / 2 : zPano + M.balcon / 2;
-  edificio.add(caja(M.frente, 0.16, M.balcon, mat.losa, 0, y, zBal));
-  // La baranda de listones horizontales del hero. Con los listones sueltos se
-  // leía como un puñado de antenas: van con sus dos parantes en los extremos,
-  // que es lo que la vuelve una baranda.
-  const zBar = norte ? zBal - M.balcon / 2 : zBal + M.balcon / 2;
-  for (let k = 0; k < 5; k++) {
-    edificio.add(caja(M.frente - 0.1, 0.055, 0.11, mat.parasol, 0, y + 0.2 + k * 0.21, zBar, false));
+  /* la baranda: barras finas de metal negro, con parantes */
+  const zBar = zFrente + dir * (M.balcon - 0.06);
+  for (let k = 0; k < 4; k++) {
+    edificio.add(caja(anchoLibre - 0.1, 0.03, 0.04, mat.metal, 0, y + 0.32 + k * 0.24, zBar, false));
   }
+  [-1, 1].forEach((sx) => edificio.add(caja(0.04, 1.05, 0.04, mat.metal, sx * (anchoLibre / 2 - 0.07), y + 0.18, zBar, false)));
+
+  /* las plantas: una maceta en el balcón, y en pisos alternos una colgante */
+  edificio.add(caja(0.55, 0.32, 0.3, mat.planta, dir * -1 * (anchoLibre / 2 - 0.45), y + 0.18, zFrente + dir * (M.balcon * 0.55), false));
+  if (u.piso % 2 === 1) edificio.add(caja(0.5, 0.55, 0.18, mat.planta, (anchoLibre / 2 - 0.6) * (norte ? 1 : -1), y - 0.5, zBar + dir * 0.06, false));
+
+  /* las ventanas chicas de la cara larga, en grilla, como en el hero */
   [-1, 1].forEach((sx) => {
-    edificio.add(caja(0.09, 1.12, 0.13, mat.parasol, sx * (M.frente / 2 - 0.06), y + 0.12, zBar, false));
+    const mv2 = materialVentana();
+    const w = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.15, 0.9), mv2);
+    w.position.set(sx * (M.frente / 2 + 0.02), y + 1.35, z + dir * -1 * (largo * 0.18));
+    edificio.add(w);
+    ventanas.push({ mat:mv2, orden:(u.piso - 1) * 2 + (norte ? 0 : 1) + 0.4, brillo:brilloDeVentana(ventanas.length) });
+    edificio.add(caja(0.12, 1.19, 0.06, mat.carpinteria, sx * (M.frente / 2 + 0.03), y + 0.76, z + dir * -1 * (largo * 0.18) - 0.45, false));
+    edificio.add(caja(0.12, 1.19, 0.06, mat.carpinteria, sx * (M.frente / 2 + 0.03), y + 0.76, z + dir * -1 * (largo * 0.18) + 0.45, false));
   });
 
-  /* la terraza del retiro: la que la ficha del 5.º A promete */
+  /* la terraza del retiro, que es la que promete la ficha del 5.º A */
   if (retiro > 0) {
-    edificio.add(caja(M.frente, 0.14, retiro, mat.losa, 0, y, zBase - M.largoTorre / 2 + retiro / 2));
+    edificio.add(caja(M.frente, 0.16, retiro, mat.losa, 0, y, zBase - M.largoTorre / 2 + retiro / 2));
+    for (let k = 0; k < 4; k++) {
+      edificio.add(caja(anchoLibre, 0.03, 0.04, mat.metal, 0, y + 0.32 + k * 0.24, zBase - M.largoTorre / 2 + 0.05, false));
+    }
   }
 });
 
-/* la azotea */
+/* la azotea, y el pórtico de hormigón que remata el frente en el hero */
 edificio.add(caja(M.frente + 0.2, 0.3, LARGO_TOTAL, mat.losa, 0, ALTO_TOTAL, 0));
+{
+  const zP = zNorte - M.largoTorre / 2 + M.retiro6 - 0.2;
+  [-1, 1].forEach((sx) => edificio.add(caja(0.32, 2.3, 0.32, mat.hormigon, sx * (M.frente / 2 - 0.5), ALTO_TOTAL + 0.3, zP)));
+  edificio.add(caja(M.frente - 0.4, 0.32, 0.4, mat.hormigon, 0, ALTO_TOTAL + 2.6, zP));
+  edificio.add(caja(M.frente - 0.4, 0.32, 0.4, mat.hormigon, 0, ALTO_TOTAL + 2.6, zP + 2.2));
+}
 
 /* pinta cada unidad con el color de su estado, mezclado con el hormigón para
    que se lea como un edificio teñido y no como un semáforo */
 function pintarEstados() {
   seleccionables.forEach((m) => {
     const c = new THREE.Color(COLOR_ESTADO[m.userData.unidad.estado]);
-    m.material.color.copy(mat.hormigon.color).lerp(c, m.userData.unidad.estado === 'libre' ? 0.2 : 0.4);
+    m.material.color.copy(mat.revoque.color).lerp(c, m.userData.unidad.estado === 'libre' ? 0.14 : 0.38);
     m.userData.base = m.material.color.clone();
   });
 }
@@ -710,11 +749,12 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarFicha(); });
    no un video que haya que renderizar. Y la vista de arriba es una de ellas.
    ══════════════════════════════════════════════════════════════════════════ */
 const CAMARAS = [
-  { n:'De frente',      pos:[2, ALTO_TOTAL * 0.62, -46],  mira:[0, ALTO_TOTAL * 0.5, 0] },
-  { n:'Desde la calle', pos:[-19, 6, -34],                mira:[0, ALTO_TOTAL * 0.4, -4] },
-  { n:'Las dos torres', pos:[46, ALTO_TOTAL * 0.78, -8],  mira:[0, ALTO_TOTAL * 0.5, 0] },
+  { n:'Como el render', pos:[-24, 16, 40],                mira:[0, 10, 0] },
+  { n:'De frente',      pos:[2, ALTO_TOTAL * 0.62, 46],   mira:[0, ALTO_TOTAL * 0.5, 0] },
+  { n:'Desde la calle', pos:[-19, 6, 34],                 mira:[0, ALTO_TOTAL * 0.4, 4] },
+  { n:'Las dos torres', pos:[46, ALTO_TOTAL * 0.78, 8],   mira:[0, ALTO_TOTAL * 0.5, 0] },
   { n:'Desde arriba',   pos:[0.1, 58, 0.1],               mira:[0, 2, 0] },
-  { n:'Las cocheras',   pos:[-15, 3.4, -22],              mira:[0, 2.2, -7] },
+  { n:'Las cocheras',   pos:[-15, 3.4, 22],               mira:[0, 2.2, 7] },
 ];
 let animCam = null;
 function irA(c) {
