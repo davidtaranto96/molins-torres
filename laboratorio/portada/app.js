@@ -463,8 +463,10 @@
   const heroTexto = $(".hero-texto");
   const LOGO = { la: { x0: 0.42, x1: 0.545, y0: 0.325, y1: 0.45 }, torre: { x0: 0.405, x1: 0.595, y0: 0.44, y1: 0.675 } };
   const EJE = { x: 0.43, y: 0.5 };
-  const DUR = { lineas: 5.2, cotas: 1.6, arcilla: 1.3, materiales: 2.8, cierre: 0.6 };
-  const INICIO = { lineas: 0, cotas: 3.0, arcilla: 5.1, materiales: 6.2, cierre: 9.1 };
+  // el dibujo termina a los 4,8 s y se SOSTIENE hasta los 5,7: en el video el
+  // boceto completo se ve entero un momento antes de volverse arcilla
+  const DUR = { lineas: 4.8, cotas: 1.5, arcilla: 1.2, materiales: 2.8, cierre: 0.6 };
+  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.7, materiales: 6.8, cierre: 9.6 };
   const TOTAL = INICIO.cierre + DUR.cierre;
   const esCelular = Math.min(screen.width, screen.height) < 700;
   let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
@@ -477,6 +479,7 @@
 
   function prepararHero() {
     if (preparando || heroListo) return; preparando = true;
+    const tPrep = performance.now();
     // Sin límite de peso, por pedido de David: en escritorio se trabaja a la
     // resolución nativa del render y el canvas va a la densidad de la pantalla.
     const W = Math.min(esCelular ? 1200 : 2400, heroImg.naturalWidth), H = Math.round(W * heroImg.naturalHeight / heroImg.naturalWidth);
@@ -532,6 +535,10 @@
     //    entran líneas largas y rectas (las medianeras, la vereda), muy suaves.
     //    Los árboles no se dibujan: en el video el entorno apenas se sugiere. ──
     const EDIF = { x0: 0.285, x1: 0.615, y0: 0.0, y1: 1.0 };
+    // la banda del parasol de listones: ahí un dibujante pone cuatro líneas,
+    // no la trama. Sólo entran verticales largas.
+    const PARASOL = { x0: 0.352, x1: 0.40, y0: 0.05, y1: 0.97 };
+    const enParasol = (x, y) => { const fx = x / W, fy = y / H; return fx > PARASOL.x0 && fx < PARASOL.x1 && fy > PARASOL.y0 && fy < PARASOL.y1; };
     const enEdificio = (x, y) => { const fx = x / W, fy = y / H; return fx > EDIF.x0 && fx < EDIF.x1 && fy > EDIF.y0 && fy < EDIF.y1; };
 
     // ── la cresta de cada borde ──
@@ -636,6 +643,11 @@
         t.dentro = enEdificio(cx, cy);
         // adentro: trazos de 14 px o más; afuera: sólo líneas largas (medianeras, vereda)
         if (t.dentro ? n < 14 * esc : n < 90 * esc) continue;
+        if (enParasol(cx, cy)) {
+          const x0 = t.pts[0], y0 = t.pts[1], x1 = t.pts[t.pts.length - 2], y1 = t.pts[t.pts.length - 1];
+          if (n < 55 * esc || Math.abs(x1 - x0) > 0.22 * Math.abs(y1 - y0)) continue;   // corta o no vertical: afuera
+          t.parasol = true;
+        }
         const simp = simplificar(t.pts, t.dentro ? 1.1 * esc : 2.2 * esc);
         // afuera además tienen que ser casi rectas: nada de garabatos
         if (!t.dentro && simp.length / 2 > 6) continue;
@@ -680,6 +692,17 @@
     const escalaT = (TD * 0.98) / finTotal;
     trazos.forEach((t) => { t.ini *= escalaT; t.dur *= escalaT; t.fin = t.ini + t.dur; });
     const porFin = trazos.slice().sort((a, b) => a.fin - b.fin);
+    // las guías: las seis horizontales más largas del edificio se prolongan
+    // a los costados en línea de puntos, como las líneas de nivel de un plano
+    const guias = trazos.filter((t) => {
+      if (!t.dentro) return false;
+      const x0 = t.p[0], y0 = t.p[1], x1 = t.p[t.p.length - 2], y1 = t.p[t.p.length - 1];
+      return Math.abs(y1 - y0) < 0.2 * Math.abs(x1 - x0) && t.largo > 90 * esc;
+    }).sort((a, b) => b.largo - a.largo).slice(0, 6).map((t) => {
+      const x0 = t.p[0], y0 = t.p[1], x1 = t.p[t.p.length - 2], y1 = t.p[t.p.length - 1];
+      const m = (y1 - y0) / ((x1 - x0) || 1);
+      return { fin: t.fin, xa: Math.min(x0, x1), xb: Math.max(x0, x1), ya: y0, m, base: x0 };
+    });
 
     // ── la arcilla, el cielo, el papel, el ruido ──
     const arcilla = lienzo(W, H);
@@ -690,6 +713,27 @@
     gc.drawImage(sinLetras, 0, 0); gc.globalCompositeOperation = "destination-in";
     const grad = gc.createLinearGradient(0, H * 0.2, 0, H * 0.5); grad.addColorStop(0, "rgba(0,0,0,1)"); grad.addColorStop(1, "rgba(0,0,0,0)");
     gc.fillStyle = grad; gc.fillRect(0, 0, W, H);
+    // el edificio NO deja pasar el cielo: en la etapa de arcilla la torre es
+    // blanca y el cielo aparece sólo alrededor (visto en captura: el ladrillo
+    // y los listones asomaban en color antes de tiempo)
+    // Se recorta la SILUETA de la torre, no una caja: el frente va entero de
+    // arriba abajo y el volumen lateral arranca más abajo. Con la caja entera
+    // quedaba una franja pálida en el cielo, a los costados (visto en captura).
+    gc.globalCompositeOperation = "destination-out";
+    const pluma = W * 0.018;
+    const recorte = (fx0, fx1, fy0) => {
+      const x0 = W * fx0, x1 = W * fx1, y0 = H * fy0;
+      const gh = gc.createLinearGradient(x0 - pluma, 0, x1 + pluma, 0);
+      const f = pluma / (x1 - x0 + 2 * pluma);
+      gh.addColorStop(0, "rgba(0,0,0,0)"); gh.addColorStop(f, "rgba(0,0,0,1)"); gh.addColorStop(1 - f, "rgba(0,0,0,1)"); gh.addColorStop(1, "rgba(0,0,0,0)");
+      gc.fillStyle = gh; gc.fillRect(x0 - pluma, y0, x1 - x0 + 2 * pluma, H - y0);
+      const gv = gc.createLinearGradient(0, y0 - pluma, 0, y0 + pluma);
+      gv.addColorStop(0, "rgba(0,0,0,0)"); gv.addColorStop(1, "rgba(0,0,0,1)");
+      gc.fillStyle = gv; gc.fillRect(x0, y0 - pluma, x1 - x0, 2 * pluma);
+    };
+    recorte(0.33, 0.52, 0.0);        // el frente y el núcleo que sobresale, hasta arriba
+    recorte(0.51, 0.60, 0.10);       // el volumen lateral, más bajo
+    gc.globalCompositeOperation = "source-over";
     const papel = lienzo(W, H); const gp = papel.getContext("2d");
     gp.fillStyle = "#F3EADA"; gp.fillRect(0, 0, W, H);
     const dpp = gp.getImageData(0, 0, W, H);
@@ -706,7 +750,7 @@
     let mn = 1, mx = 0; ruido.forEach((v) => { if (v < mn) mn = v; if (v > mx) mx = v; });
     ruido = ruido.map((v) => (v - mn) / (mx - mn || 1));
 
-    escena = { W, H, base: sinLetras, trazos, porFin, arcilla, cielo, papel, ruido, NW, NH,
+    escena = { W, H, base: sinLetras, trazos, porFin, guias, esc, arcilla, cielo, papel, ruido, NW, NH, prepMs: Math.round(performance.now() - tPrep),
       hecho: lienzo(W, H), hechoHasta: 0, ultimoT: -1,
       mascara: lienzo(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
     heroListo = true;
@@ -718,10 +762,11 @@
     if (n < 2) return;
     const e = escena, k = e.W / 1400;
     // fino y parejo, como una 0.3: el grosor no varía, el tono sí
-    ctx.strokeStyle = t.dentro ? `rgba(41,33,26,${0.55 + 0.4 * t.fuerza})` : "rgba(41,33,26,0.28)";
+    ctx.strokeStyle = t.parasol ? "rgba(41,33,26,0.5)" : t.dentro ? `rgba(41,33,26,${0.55 + 0.4 * t.fuerza})` : "rgba(41,33,26,0.28)";
     ctx.lineWidth = (t.dentro ? 1.1 : 0.9) * k;
     ctx.beginPath(); ctx.moveTo(p[0], p[1]);
-    const hasta = f >= 1 ? n - 1 : (n - 1) * f;
+    const fe = f >= 1 ? 1 : 1 - (1 - f) * (1 - f) * (1 - f * 0.4);   // arranca rápido, frena al llegar
+    const hasta = f >= 1 ? n - 1 : (n - 1) * fe;
     const ent = Math.floor(hasta);
     for (let k = 1; k <= ent; k++) ctx.lineTo(p[k * 2], p[k * 2 + 1]);
     if (f < 1 && ent < n - 1) { const fr = hasta - ent; ctx.lineTo(p[ent * 2] + (p[ent * 2 + 2] - p[ent * 2]) * fr, p[ent * 2 + 1] + (p[ent * 2 + 3] - p[ent * 2 + 1]) * fr); }
@@ -779,6 +824,20 @@
       const f = (t - tr.ini) / tr.dur; if (f <= 0) continue;
       trazar(o, tr, Math.min(1, f)); enCurso++;
       if (enCurso > 1200) break;                 // tope de seguridad por cuadro
+    }
+    // las guías se extienden cuando su losa termina, y se van con la arcilla
+    const vivas = 1 - fase(t, "arcilla");
+    if (vivas > 0) {
+      o.save(); o.strokeStyle = "rgba(41,33,26,0.22)"; o.lineWidth = e.esc * 0.9; o.setLineDash([5 * e.esc, 7 * e.esc]); o.lineCap = "butt";
+      e.guias.forEach((g) => {
+        const p = clamp01((t - g.fin) / 0.9); if (p <= 0) return;
+        o.globalAlpha = vivas * p;
+        const ext = W * 0.34 * p;
+        const y = (x) => g.ya + (x - g.base) * g.m;
+        o.beginPath(); o.moveTo(g.xa, y(g.xa)); o.lineTo(g.xa - ext, y(g.xa - ext)); o.stroke();
+        o.beginPath(); o.moveTo(g.xb, y(g.xb)); o.lineTo(g.xb + ext, y(g.xb + ext)); o.stroke();
+      });
+      o.restore(); o.globalAlpha = 1;
     }
     const pC = fase(t, "cotas") * (1 - fase(t, "arcilla"));
     cotas(o, W, H, pC, idioma);
@@ -845,7 +904,8 @@
     boceto.addEventListener("click", apurarYa, { once: true });
     requestAnimationFrame(bucleHero);
   }
-  if (!reduce) { if (heroImg.complete && heroImg.naturalWidth) setTimeout(prepararHero, 0); else heroImg.addEventListener("load", () => setTimeout(prepararHero, 0)); }
+  const sinPreparar = /[?&]sinpreparar/.test(location.search);   // sólo para medir el cálculo desde la consola
+  if (!reduce && !sinPreparar) { if (heroImg.complete && heroImg.naturalWidth) setTimeout(prepararHero, 0); else heroImg.addEventListener("load", () => setTimeout(prepararHero, 0)); }
   addEventListener("resize", () => { if (heroListo) presentar(); });
   document.addEventListener("visibilitychange", () => { if (heroListo && !document.hidden) presentar(); });
 
