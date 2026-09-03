@@ -732,6 +732,9 @@
 
   function presentar() {
     const e = escena, vw = boceto.clientWidth, vh = boceto.clientHeight;
+    // con la pestaña oculta el canvas puede medir 0×0: no se toca, y cuando
+    // vuelva a verse se repinta (resize / visibilitychange)
+    if (!vw || !vh) return;
     if (boceto.width !== vw || boceto.height !== vh) { boceto.width = vw; boceto.height = vh; }
     const esc = Math.max(vw / e.W, vh / e.H), dw = e.W * esc, dh = e.H * esc, dx = (vw - dw) / 2, dy = (vh - dh) * 0.30;
     const g = boceto.getContext("2d"); g.clearRect(0, 0, vw, vh); g.drawImage(e.out, dx, dy, dw, dh);
@@ -776,6 +779,7 @@
   }
   if (!reduce) { if (heroImg.complete && heroImg.naturalWidth) setTimeout(prepararHero, 0); else heroImg.addEventListener("load", () => setTimeout(prepararHero, 0)); }
   addEventListener("resize", () => { if (heroListo) presentar(); });
+  document.addEventListener("visibilitychange", () => { if (heroListo && !document.hidden) presentar(); });
 
   /* ── 6 · scroll suave, títulos partidos, parallax ──────────────────────── */
   let lenis = null;
