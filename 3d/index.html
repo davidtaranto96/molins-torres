@@ -95,16 +95,18 @@
   #camaras button[aria-pressed=true]{background:var(--terracota);border-color:var(--terracota);color:var(--crema-claro)}
 
   /* ── el sol ── */
-  #reloj{bottom:0;left:50%;transform:translateX(-50%);padding:0 0 22px;width:min(420px,calc(100vw - 48px))}
-  #reloj .caja{background:rgba(33,23,17,0.58);border:1px solid rgba(243,234,218,0.18);border-radius:8px;
-    padding:13px 16px 15px;backdrop-filter:blur(8px)}
-  #reloj .fila{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px}
-  #reloj .hora{font-family:var(--serif);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
-  #reloj .momento{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(243,234,218,0.55)}
-  #reloj input[type=range]{width:100%;accent-color:var(--terracota-claro);height:26px;margin:0}
-  #reloj .pie{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:11px;color:rgba(243,234,218,0.5)}
-  #reloj button{min-height:32px;padding:0 11px;background:none;border:1px solid rgba(243,234,218,0.24);
-    border-radius:4px;color:rgba(243,234,218,0.8);font:inherit;font-size:11.5px;cursor:pointer}
+  /* compacto: una fila con la hora, el momento y el botón, y el deslizador abajo */
+  #reloj{bottom:0;left:50%;transform:translateX(-50%);padding:0 0 18px;width:min(360px,calc(100vw - 48px))}
+  #reloj .caja{background:rgba(33,23,17,0.58);border:1px solid rgba(243,234,218,0.18);border-radius:100px;
+    padding:8px 14px 8px 16px;backdrop-filter:blur(8px);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 10px}
+  #reloj .fila{display:contents}
+  #reloj .hora{font-family:var(--serif);font-size:18px;line-height:1;font-variant-numeric:tabular-nums}
+  #reloj .momento{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(243,234,218,0.55);white-space:nowrap}
+  #reloj input[type=range]{width:100%;accent-color:var(--terracota-claro);height:22px;margin:0;grid-column:1 / 3}
+  #reloj .pie{display:contents;font-size:11px;color:rgba(243,234,218,0.5)}
+  #reloj .pie > span{display:none}
+  #reloj button{min-height:30px;padding:0 11px;background:none;border:1px solid rgba(243,234,218,0.24);
+    border-radius:100px;color:rgba(243,234,218,0.8);font:inherit;font-size:11px;cursor:pointer;grid-column:3;grid-row:1 / 3;white-space:nowrap}
   #reloj button[aria-pressed=true]{background:var(--terracota);border-color:var(--terracota);color:var(--crema-claro)}
 
   /* ── ficha de unidad ── */
@@ -146,7 +148,7 @@
     #leyenda{font-size:10.5px;gap:11px;padding-top:14px}
     #camaras{flex-direction:row;flex-wrap:wrap;padding:0 16px 12px;max-width:64vw}
     #camaras .tit{display:none}
-    #reloj{width:calc(100vw - 32px);padding-bottom:78px}
+    #reloj{width:calc(100vw - 32px);padding-bottom:72px}
     #ficha{width:100vw;padding:0;align-items:flex-end}
     #ficha .caja{border-radius:10px 10px 0 0;max-height:66vh;transform:translateY(20px)}
     #pista{display:none}
@@ -155,20 +157,18 @@
   @media (max-width:520px), (max-height:640px){
     #rotulo{display:none}
     #leyenda{display:none}
-    #reloj{width:calc(100vw - 24px);padding-bottom:60px}
-    #reloj .caja{padding:10px 12px}
-    #reloj .hora{font-size:18px}
-    #reloj .fila{margin-bottom:5px}
-    #reloj .pie{margin-top:3px}
-    #reloj .pie > span{display:none}
-    #reloj button{min-height:30px;font-size:11px}
+    #reloj{width:calc(100vw - 24px);padding-bottom:56px}
+    #reloj .caja{padding:6px 10px 6px 14px}
+    #reloj .hora{font-size:16px}
+    #reloj button{min-height:28px;font-size:10.5px}
     #camaras{padding:0 12px 10px;max-width:none;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
     #camaras button{min-height:32px;padding:0 10px;font-size:11px;white-space:nowrap;flex:0 0 auto}
   }
   /* ── piso por piso ── */
   #pisos{left:0;right:0;bottom:0;padding:0;display:none}
   body.modo-pisos #pisos{display:block}
-  body.modo-pisos #camaras,body.modo-pisos #pista{display:none}
+  body.modo-pisos #camaras,body.modo-pisos #pista,body.modo-pisos #reloj{display:none}
+  body.embebido #pisos{padding-top:84px}
   #pisos .caja{background:rgba(33,23,17,0.86);border:1px solid rgba(243,234,218,0.18);border-bottom:0;border-radius:12px 12px 0 0;
     backdrop-filter:blur(10px);max-height:58vh;display:flex;flex-direction:column;
     transform:translateY(16px);opacity:0;transition:opacity 260ms ease,transform 320ms cubic-bezier(0.22,1,0.36,1)}
@@ -1491,11 +1491,11 @@ const PLANTAS = {
           ['cocheras',50.9,20.4], ['plato',60.6,54.2], ['pasillo',33,74.5], ['jardin',24.9,92.1], ['acceso',70.4,94.8]] },
   tipo: { src:'../img/plantas/tipo.webp', aspecto:0.2957, puntos:[
           ['balcon-fondo',68.4,6.1], ['dormitorio-fondo',26.2,16.4], ['estar-fondo',68.4,15.9], ['cocina-fondo',68.4,31.6],
-          ['cocina-frente',68.4,67.4], ['comedor-frente',68.4,80.4], ['dormitorio-frente',26.2,83.1], ['balcon-frente',68.4,94.4]] },
+          ['cocina-frente',68.4,67.4], ['comedor-frente',68.4,80.4], ['balcon-frente',68.4,94.4]] },
   p5:   { src:'../img/plantas/p5.webp',   aspecto:0.3261, puntos:[
-          ['dormitorio-fondo',26.6,16.6], ['estar-fondo',66.6,16.6], ['cocina-fondo',66.6,33.1], ['kitchenette',30.1,78.5], ['dormitorio-mono',70.1,73.3]] },
+          ['dormitorio-fondo',26.6,16.6], ['estar-fondo',66.6,16.6], ['cocina-fondo',66.6,33.1], ['kitchenette',30.1,78.5]] },
   p6:   { src:'../img/plantas/p6.webp',   aspecto:0.3502, puntos:[
-          ['dormitorio-fondo',27.1,18.2], ['estar-fondo',67.7,18.2], ['cocina-fondo',67.7,36.1], ['kitchenette',28.9,85.6], ['dormitorio-mono',71.3,80]] },
+          ['dormitorio-fondo',27.1,18.2], ['estar-fondo',67.7,18.2], ['cocina-fondo',67.7,36.1], ['kitchenette',28.9,85.6]] },
 };
 /* Los renders que ya usa la portada. Son ilustrativos del proyecto, no de
    la unidad exacta: se rotulan así. La terraza del 5.º no lleva punto porque
@@ -1507,15 +1507,13 @@ const AMBIENTES = {
   jardin:{ n:'El jardín del acceso', img:'../img/hall-noche.jpg' },
   acceso:{ n:'La llegada', img:'../img/llegada-noche.jpg' },
   'balcon-fondo':{ n:'Balcón', img:'../img/interior-balcon.jpg' },
-  'dormitorio-fondo':{ n:'Dormitorio en suite', img:'../img/area-dormitorio.jpg' },
+  'dormitorio-fondo':{ n:'Dormitorio en suite', img:'../img/area-suite.jpg' },
   'estar-fondo':{ n:'Estar', img:'../img/interior-estar.jpg' },
-  'cocina-fondo':{ n:'Cocina', img:'../img/area-cocina.jpg' },
-  'cocina-frente':{ n:'Cocina', img:'../img/area-cocina.jpg' },
-  'comedor-frente':{ n:'Comedor', img:'../img/interior-comedor.jpg' },
-  'dormitorio-frente':{ n:'Dormitorio en suite', img:'../img/area-suite.jpg' },
+  'cocina-fondo':{ n:'Cocina', img:'../img/interior-comedor.jpg' },
+  'cocina-frente':{ n:'Cocina', img:'../img/area-dormitorio.jpg' },
+  'comedor-frente':{ n:'Comedor', img:'../img/area-estar.jpg' },
   'balcon-frente':{ n:'Balcón sobre Aniceto Latorre', img:'../img/detalle-balcones.jpg' },
-  kitchenette:{ n:'Kitchenette', img:'../img/area-cocina.jpg' },
-  'dormitorio-mono':{ n:'Dormitorio', img:'../img/area-dormitorio.jpg' },
+  kitchenette:{ n:'Kitchenette', img:'../img/area-dormitorio.jpg' },
 };
 const NIVELES = [
   { k:0, n:'Planta baja', plano:'pb', desc:'Acceso, palier, seis cocheras y el plato giratorio' },
@@ -1575,10 +1573,39 @@ const pisos3d = NIVELES.map((nv) => {
     nuc.position.set(M.patioAncho / 2, altoN / 2, (zN0 + zN1) / 2); g.add(nuc); fantasmas.push(nuc);
   }
   g.userData.fantasmas = fantasmas; g.userData.plano = plano; g.userData.losa = losa;
+  g.userData.largo = largo; g.userData.zc = zc;
   g.position.y = y0;
   grupoPisos.add(g);
   return g;
 });
+/* Los muros salen del propio plano: en el dibujo los muros son las líneas
+   gruesas, y una apertura morfológica (scripts en el scratchpad de la sesión
+   del 6/9) las separa de muebles, cotas y barandas y las descompone en
+   rectángulos, en porcentaje del plano. Acá se extruyen a la altura del piso
+   con el revoque del edificio. No hay muebles en 3D: los que se ven son los
+   del plano, sobre el piso. */
+const matMuro = new THREE.MeshStandardMaterial({ map:conRepeticion(texRevoque, 2, 1), color:0xefeae0, roughness:0.92 });
+fetch('muros.json').then((r) => r.ok ? r.json() : null).then((muros) => {
+  if (!muros) return;
+  pisos3d.forEach((g) => {
+    const nv = g.userData.nivel, rects = muros[nv.plano];
+    if (!rects) return;
+    const largo = g.userData.largo, zTope = g.userData.zc + largo / 2;
+    const alto = nv.k === 0 ? M.altoPB - M.losa : M.altoPiso - M.losa;
+    const geos = [];
+    rects.forEach(([x0, y0, x1, y1]) => {
+      // la izquierda del plano cae en +X y el borde de arriba del dibujo en +Z
+      const X1 = M.frente / 2 - x0 / 100 * M.frente, X0 = M.frente / 2 - x1 / 100 * M.frente;
+      const Z1 = zTope - y0 / 100 * largo, Z0 = zTope - y1 / 100 * largo;
+      const geo = new THREE.BoxGeometry(X1 - X0, alto, Z1 - Z0);
+      geo.translate((X0 + X1) / 2, 0.16 + alto / 2, (Z0 + Z1) / 2);
+      geos.push(geo);
+    });
+    const m = new THREE.Mesh(mergeGeometries(geos, false), matMuro);
+    m.castShadow = true; m.receiveShadow = true;
+    g.add(m); g.userData.muros = m;
+  });
+}).catch(() => {});
 function pintarFantasmas() {
   pisos3d.forEach((g) => g.userData.fantasmas.forEach((f) => {
     if (!f.userData.unidad) return;
@@ -1592,7 +1619,7 @@ const verTodo = new URLSearchParams(location.search).get('ver') === 'todo';   //
 const CAM_PISOS = () => (vertical ? { pos:[-30, 66, 82], mira:[0, 5, -2] } : { pos:[-44, 46, 46], mira:[0, 17, -2] });
 function camaraDePiso(i) {
   const y = pisos3d[i].position.y;
-  return vertical ? { pos:[-20, y + 26, 54], mira:[0, y - 3, -1] } : { pos:[-26, y + 19, 27], mira:[0, y + 1, -1] };
+  return vertical ? { pos:[-20, y + 26, 54], mira:[0, y - 3, -1] } : { pos:[-32, y + 24, 32], mira:[0, y - 3, -1] };
 }
 function acomodarPisos() {
   pisos3d.forEach((g, i) => {
@@ -1601,7 +1628,8 @@ function acomodarPisos() {
     const propio = pisoElegido === null || pisoElegido === i;
     g.userData.plano.material.opacity = propio ? 1 : 0.2;
     g.userData.losa.material.opacity = propio ? 0.95 : 0.22;
-    g.userData.fantasmas.forEach((f) => { f.material.opacity = pisoElegido === null ? 0.24 : (propio ? 0.42 : 0.08); });
+    g.userData.fantasmas.forEach((f) => { f.material.opacity = pisoElegido === null ? 0.14 : (propio ? 0.22 : 0.05); });
+    if (g.userData.muros) g.userData.muros.visible = propio || pisoElegido === null;
   });
 }
 function entrarPisos(i = null) {
@@ -1725,6 +1753,7 @@ function detectarPiso(ev) {
 }
 {
   const q = new URLSearchParams(location.search);
+  if (window.self !== window.top) document.body.classList.add('embebido');
   if (q.get('modo') === 'pisos') {
     const p = q.get('piso');
     entrarPisos(p !== null && NIVELES[+p] ? +p : null);
