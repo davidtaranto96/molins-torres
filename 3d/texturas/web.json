@@ -1,0 +1,16 @@
+{
+  "oak_veneer_01": {
+    "diff": "oak_veneer_01_diff.webp",
+    "nor_gl": "oak_veneer_01_nor_gl.webp",
+    "rough": "oak_veneer_01_rough.webp"
+  },
+  "fabric_pattern_07": {
+    "nor_gl": "fabric_pattern_07_nor_gl.webp",
+    "rough": "fabric_pattern_07_rough.webp"
+  },
+  "painted_plaster_wall": {
+    "diff": "painted_plaster_wall_diff.webp",
+    "nor_gl": "painted_plaster_wall_nor_gl.webp",
+    "rough": "painted_plaster_wall_rough.webp"
+  }
+}

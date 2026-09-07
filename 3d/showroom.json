@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "fuente": "CB Arquitectura · img/plantas/{tipo,p5,p6}.webp. Huellas estimadas por lectura proporcional; alturas y detalles de mobiliario estimados. Materiales de interior-estar.jpg y area-suite.jpg.",
+  "niveles": [
+    {
+      "nivel": 0,
+      "objeto": "Nivel 0 raiz",
+      "muros": "Muros 0",
+      "unidades": [],
+      "camaras": []
+    },
+    {
+      "nivel": 1,
+      "objeto": "Nivel 1 raiz",
+      "muros": "Muros 1",
+      "unidades": [
+        "1A",
+        "1B"
+      ],
+      "camaras": [
+        "Cam 1B estar",
+        "Cam 1A estar"
+      ]
+    },
+    {
+      "nivel": 2,
+      "objeto": "Nivel 2 raiz",
+      "muros": "Muros 2",
+      "unidades": [
+        "2A",
+        "2B"
+      ],
+      "camaras": [
+        "Cam 2B estar",
+        "Cam 2A estar"
+      ]
+    },
+    {
+      "nivel": 3,
+      "objeto": "Nivel 3 raiz",
+      "muros": "Muros 3",
+      "unidades": [
+        "3A",
+        "3B"
+      ],
+      "camaras": [
+        "Cam 3B estar",
+        "Cam 3A estar"
+      ]
+    },
+    {
+      "nivel": 4,
+      "objeto": "Nivel 4 raiz",
+      "muros": "Muros 4",
+      "unidades": [
+        "4A",
+        "4B"
+      ],
+      "camaras": [
+        "Cam 4B estar",
+        "Cam 4A estar"
+      ]
+    },
+    {
+      "nivel": 5,
+      "objeto": "Nivel 5 raiz",
+      "muros": "Muros 5",
+      "unidades": [
+        "5A",
+        "5B"
+      ],
+      "camaras": [
+        "Cam 5B estar",
+        "Cam 5A estar"
+      ]
+    },
+    {
+      "nivel": 6,
+      "objeto": "Nivel 6 raiz",
+      "muros": "Muros 6",
+      "unidades": [
+        "6A",
+        "6B"
+      ],
+      "camaras": [
+        "Cam 6B estar",
+        "Cam 6A estar"
+      ]
+    }
+  ],
+  "advertencias": [
+    "Alturas y detalles de muebles estimados; huellas proporcionales de los planos.",
+    "Terraza del 5A no accesible según plano: sin muebles ni cámara.",
+    "Fondo PB derivado del aspecto del plano: 33.61 m."
+  ],
+  "bytes_glb": 930884
+}

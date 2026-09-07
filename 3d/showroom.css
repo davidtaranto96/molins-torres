@@ -1,0 +1,12 @@
+#showroom{display:none;position:fixed;z-index:12;bottom:0;left:0;right:0;padding:12px 14px max(12px,env(safe-area-inset-bottom));background:var(--tinta-oscura);color:var(--crema);border-top:1px solid var(--gris-calido);max-height:48dvh;overflow:auto;font-size:13px}
+.showroom-activo #showroom{display:block}.showroom-activo #pisos,.showroom-activo #rotulo,.showroom-activo #leyenda{display:none!important}
+#showroom .s-fila{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:8px}#showroom .s-fila strong{font-family:var(--serif);font-weight:400;font-size:21px;flex:1}
+#showroom button,#showroom select,#showroom summary{min-height:44px;border:1px solid var(--gris-calido);background:var(--tinta);color:var(--crema-claro);border-radius:5px;padding:8px 10px;font:inherit;cursor:pointer}
+#showroom button:hover,#showroom button[aria-pressed=true]{background:var(--terracota)}#showroom button:disabled{opacity:.4;cursor:default}#showroom :focus-visible{outline:2px solid var(--terracota-claro);outline-offset:2px}
+#showroom label{display:flex;align-items:center;gap:6px}#showroom select{max-width:180px}#showroom summary{margin-bottom:8px}#showroom small{display:block;color:var(--crema);opacity:.7;line-height:1.45;font-size:11px}#s-estado{margin:7px 0;line-height:1.45}#showroom [hidden]{display:none!important}
+@media(min-width:900px){#showroom{top:20px;right:20px;left:auto;bottom:auto;width:350px;border:1px solid var(--gris-calido);border-radius:8px;max-height:calc(100dvh - 40px);padding:18px}#showroom .s-fila strong{flex-basis:100%;font-size:25px}#showroom #s-estado{margin:14px 0}}
+@media(prefers-reduced-motion:reduce){#showroom *{scroll-behavior:auto}}
+/* Capa propia: el panel fijo con overflow no debe contaminar la superficie WebGL. */
+#showroom{isolation:isolate;transform:translateZ(0)}
+#showroom{overflow:visible;max-height:none}#s-editor[open]{max-height:180px;overflow:auto}
+@media(max-width:899px){#showroom{background:transparent;padding:0 10px 10px;transform:none;isolation:auto;border:0}#showroom>.s-fila,#showroom>details,#showroom>p,#showroom>small{background:var(--tinta-oscura);margin:0;padding:8px 10px}#showroom>.s-fila:first-child{border-radius:8px 8px 0 0}#showroom>small{border-radius:0 0 8px 8px}}

@@ -233,6 +233,7 @@
     #ficha .caja{transition:opacity 200ms ease,visibility 200ms}
   }
 </style>
+<link rel="stylesheet" href="showroom.css?v=1">
 </head>
 <body>
 
@@ -320,6 +321,9 @@
 
 <script type="module">
 import * as THREE from 'three';
+import { mejorarExterior } from './exterior.js?v=1';
+import { iniciarShowroom } from './showroom.js?v=1';
+let showroom = null;
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -485,11 +489,9 @@ const pmrem = new THREE.PMREMGenerator(render);
 const escenaCielo = new THREE.Scene();
 let entornoRT = null;
 function actualizarEntorno() {
-  escenaCielo.add(cielo);
-  if (entornoRT) entornoRT.dispose();
-  entornoRT = pmrem.fromScene(escenaCielo, 0.04);
-  escena.add(cielo);
-  escena.environment = entornoRT.texture;
+  // Iluminación directa estable: el PMREM del cielo generaba píxeles no finitos al mediodía.
+  if (entornoRT) { entornoRT.dispose(); entornoRT = null; }
+  escena.environment = null;
 }
 
 /* ── Las estrellas. Sky.js devuelve negro con el sol bajo el horizonte, así
@@ -998,10 +1000,15 @@ function arbol(x, z, alto) {
   const g = new THREE.Group();
   const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.16, alto, 7), mat.liston);
   tronco.position.y = alto / 2; tronco.castShadow = true; g.add(tronco);
-  [[0, alto, 1.35], [0.6, alto - 0.4, 0.95], [-0.55, alto - 0.3, 0.9], [0.1, alto + 0.7, 0.85]].forEach(([dx, dy, r]) => {
-    const c = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 1), new THREE.MeshStandardMaterial({ color:0x4b7a35, roughness:1, flatShading:true }));
-    c.position.set(dx, dy, dx * 0.4); c.castShadow = true; g.add(c);
-  });
+  const hoja = new THREE.Shape(); hoja.moveTo(0,-1); hoja.quadraticCurveTo(.65,0,0,1); hoja.quadraticCurveTo(-.65,0,0,-1);
+  const hojas = new THREE.InstancedMesh(new THREE.ShapeGeometry(hoja, 3), new THREE.MeshStandardMaterial({color:0x658249, roughness:.8, side:THREE.DoubleSide}), 1800);
+  const transform = new THREE.Object3D();
+  for (let i=0;i<1800;i++) {
+    const a=i*2.399963, v=Math.sin(i*17.37), r=1.45*Math.cbrt((Math.sin(i*73.17)+1)/2);
+    transform.position.set(Math.cos(a)*r*Math.sqrt(1-v*v), alto+v*r*.85, Math.sin(a)*r*Math.sqrt(1-v*v));
+    transform.rotation.set(i*.37,a,i*.71);transform.scale.set(.07,.16,1);transform.updateMatrix();hojas.setMatrixAt(i,transform.matrix);
+  }
+  hojas.castShadow=true;g.add(hojas);
   g.position.set(x, 0, z);
   return g;
 }
@@ -1339,6 +1346,7 @@ render.domElement.addEventListener('pointerup', (ev) => {
   const movio = Math.hypot(ev.clientX - abajo.x, ev.clientY - abajo.y) > 7;
   abajo = null;
   if (movio) return;
+  if (showroom?.activo) { showroom.click(ev); return; }
   if (modoPisos) { const i = detectarPiso(ev); if (i !== null) elegirPiso(i); return; }
   const m = detectar(ev);
   if (m) abrirFicha(m); else cerrarFicha();
@@ -1384,13 +1392,14 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarFicha(); });
 // queda cortado en el borde derecho.
 const vertical = innerWidth < innerHeight;
 const CAMARAS = [
-  { n:'Como el render',  pos:vertical ? [-13, 16, 52] : [-25, 14, 40], mira:vertical ? [0, 9.5, 2] : [-2, 9.5, 4] },
+  { n:'Como el render',  pos:vertical ? [-13, 16, 52] : [-28, 16, 48], mira:vertical ? [0, 9.5, 2] : [-2, 9.5, 4] },
   { n:'De frente',       pos:[-0.5, ALTO_TOTAL * 0.6, 52], mira:[0, ALTO_TOTAL * 0.5, 0] },
   { n:'Desde la calle',  pos:[-16, 5, 30],                 mira:[0, 8, 2] },
   { n:'La cara larga',   pos:[-54, 22, 6],                 mira:[0, 9, -2] },
   { n:'El contrafrente', pos:[17, 21, -54],                mira:[0, 9, -6] },
   { n:'Las cocheras',    pos:[2.4, 8.5, -31.6],            mira:[0, 3.5, -12] },
   { n:'Desde arriba',    pos:[0.1, 66, -6],                mira:[0, 2, -6] },
+  { n:'Vista aérea', pos:vertical ? [-32,48,48] : [-32,38,40], mira:[0,9,-5] },
 ];
 let animCam = null;
 function irA(c) {
@@ -1408,7 +1417,7 @@ CAMARAS.forEach((c, i) => {
   });
   cont.appendChild(b);
 });
-// ?cam=N arranca en esa cámara (0 a 6). Sirve para las capturas y para
+// ?cam=N arranca en esa cámara (0 a 7). Sirve para las capturas y para
 // mandar un enlace que abra en las cocheras o desde arriba.
 const camPedida = CAMARAS[+(new URLSearchParams(location.search).get('cam') ?? -1)] ? +new URLSearchParams(location.search).get('cam') : 0;
 camara.position.set(...CAMARAS[camPedida].pos);
@@ -1804,12 +1813,13 @@ function bucle() {
     acomodarPisos();
     if (apertura === 0 && !modoPisos) grupoPisos.visible = false;
   }
-  controles.update();
+  if (!showroom?.recorriendo) controles.update();
+  showroom?.actualizar();
   if (entornoPendiente) { actualizarEntorno(); entornoPendiente = false; }
   // Sólo de noche cerrada: al atardecer el revoque todavía es claro y el
   // bloom lo hacía brillar como si el edificio fuera una lámpara.
   bloom.strength = 0.65 * THREE.MathUtils.smoothstep(ventanasEncendidas, 0.55, 0.92);
-  composer.render();
+  render.render(escena, camara);
   requestAnimationFrame(bucle);
 }
 
@@ -1826,8 +1836,13 @@ bucle();
 requestAnimationFrame(() => $('cargando').classList.add('listo'));
 setTimeout(() => { $('pista').style.opacity = 0; }, 7000);
 
+const exteriorListo=mejorarExterior({edificio,mat,M,zLM,zLF,yNivel}).catch(err=>console.warn(err));
+const btnShowroom = document.createElement('button');
+btnShowroom.textContent = 'Abrir showroom';btnShowroom.disabled=true;cont.appendChild(btnShowroom);
+iniciarShowroom({pisos:pisos3d,camara,controles,render,grupo:grupoPisos,M,escena,entrar:entrarPisos,salir:salirPisos,hora:ponerHora,detenerCamara(){animCam=null;apertura=1;aperturaObjetivo=1;}}).then(s=>{showroom=s;btnShowroom.disabled=false;btnShowroom.onclick=()=>s.abrir();window.TORRE.showroom=s;const q=new URLSearchParams(location.search);if(q.get('modo')==='showroom')s.abrir(Math.max(1,Math.min(6,Number(q.get('piso'))||3)));}).catch(err=>{btnShowroom.textContent='Showroom no disponible';console.error(err);});
+
 // Para poder trastear las medidas desde la consola sin recompilar nada.
-window.TORRE = { M, UNIDADES, irA, entrarPisos, salirPisos, elegirPiso, ponerHora, camara, escena, relleno, render, composer, cielo, actualizarEntorno, ventanas, lucesNoche };
+window.TORRE = { exteriorListo, M, UNIDADES, irA, entrarPisos, salirPisos, elegirPiso, ponerHora, camara, escena, relleno, render, composer, cielo, actualizarEntorno, ventanas, lucesNoche };
 </script>
 </body>
 </html>

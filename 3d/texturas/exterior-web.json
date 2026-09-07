@@ -1,0 +1,12 @@
+{
+  "red_brick": {
+    "diff": "red_brick_diff.webp",
+    "nor_gl": "red_brick_nor_gl.webp",
+    "rough": "red_brick_rough.webp"
+  },
+  "wood_inlaid_concrete_wall": {
+    "diff": "wood_inlaid_concrete_wall_diff.webp",
+    "nor_gl": "wood_inlaid_concrete_wall_nor_gl.webp",
+    "rough": "wood_inlaid_concrete_wall_rough.webp"
+  }
+}
