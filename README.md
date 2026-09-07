@@ -59,6 +59,7 @@ con ella, `e950698`.
 | `estilos.css` | Tokens en `:root`, mobile first. |
 | `app.js` | Diccionario, el hero (boceto → arcilla → render, calculado en la página a partir de `img/hero-cover.jpg`), Lenis y GSAP, tipologías, unidades y la ficha, las partidas, el marco de ambientes, el 3D, el CRM y las cookies. |
 | `3d/index.html` | El volumen del edificio en three.js, con el recorrido del sol en Salta y la transición día/noche. Se carga sólo cuando se pide. |
+| `3d/index.html?modo=pisos` | **Piso por piso** (6/9): el edificio se parte en sus siete niveles y cada losa lleva su planta (`img/plantas/`, recortadas del PDF «La Torre Plantas»); tocar un piso lo elige, y sobre el plano los ambientes con render se tocan. `&piso=N` abre un nivel (0 es PB). Todavía sin enlazar desde la portada. Pendiente con Fran: el plano rotula la terraza del 5.º como «no accesible» y el sitio la vende como terraza propia. |
 | `sellar.sh` | Versiona el CSS y el JS en el HTML. **Correrlo antes de cada commit que los toque**, o el navegador sirve el CSS viejo con el HTML nuevo. |
 | `laboratorio/` | Sólo redirecciones: las URL donde vivió el prototipo mandan a `/` y a `/3d/`. |
 | `img/` | Los renders en JPG que el sitio usa. |

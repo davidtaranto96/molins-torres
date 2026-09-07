@@ -165,6 +165,70 @@
     #camaras{padding:0 12px 10px;max-width:none;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
     #camaras button{min-height:32px;padding:0 10px;font-size:11px;white-space:nowrap;flex:0 0 auto}
   }
+  /* ── piso por piso ── */
+  #pisos{left:0;right:0;bottom:0;padding:0;display:none}
+  body.modo-pisos #pisos{display:block}
+  body.modo-pisos #camaras,body.modo-pisos #pista{display:none}
+  #pisos .caja{background:rgba(33,23,17,0.86);border:1px solid rgba(243,234,218,0.18);border-bottom:0;border-radius:12px 12px 0 0;
+    backdrop-filter:blur(10px);max-height:58vh;display:flex;flex-direction:column;
+    transform:translateY(16px);opacity:0;transition:opacity 260ms ease,transform 320ms cubic-bezier(0.22,1,0.36,1)}
+  body.modo-pisos #pisos .caja{transform:none;opacity:1}
+  #pisos .cab{display:flex;align-items:center;gap:8px;padding:10px 12px 8px;flex:none}
+  #pisos .cab .tit{flex:1;min-width:0}
+  #pisos h2{margin:0;font-family:var(--serif);font-weight:400;font-size:19px;line-height:1.1}
+  #pisos .sub{margin-top:3px;font-size:11px;color:rgba(243,234,218,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pisos .flecha,#pisos .cerrar{flex:none;width:36px;height:36px;border-radius:50%;background:rgba(243,234,218,0.08);
+    border:1px solid rgba(243,234,218,0.2);color:var(--crema);cursor:pointer;font-size:17px;line-height:1;padding:0;font-family:inherit}
+  #pisos .flecha:disabled{opacity:0.3;cursor:default}
+  #pisos .niveles{display:flex;gap:5px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none;flex:none;-webkit-overflow-scrolling:touch}
+  #pisos .niveles::-webkit-scrollbar{display:none}
+  #pisos .niveles button{flex:0 0 auto;min-width:40px;height:32px;padding:0 10px;border-radius:100px;background:none;
+    border:1px solid rgba(243,234,218,0.22);color:rgba(243,234,218,0.8);font:inherit;font-size:12px;cursor:pointer}
+  #pisos .niveles button[aria-pressed=true]{background:var(--terracota);border-color:var(--terracota);color:var(--crema-claro)}
+  #pisos .cuerpo{overflow-y:auto;padding:0 12px 14px;min-height:0}
+  #pisos .fila{display:flex;gap:12px;align-items:flex-start}
+  #pisos .plano{flex:none}
+  #pisos .plano button.abrir{display:block;background:none;border:0;padding:0;cursor:zoom-in}
+  .marco{position:relative;display:inline-block;line-height:0}
+  .marco img{display:block;background:#fff;border-radius:5px;height:var(--alto,38vh);width:auto}
+  .marco .punto{position:absolute;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;
+    background:var(--terracota);color:var(--crema-claro);border:2px solid var(--crema-claro);font:600 11px/1 inherit;font-family:inherit;
+    cursor:pointer;padding:0;box-shadow:0 1px 6px rgba(0,0,0,0.35)}
+  .marco .punto::before{content:'';position:absolute;inset:-9px;border-radius:50%}
+  #pisos .lista{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+  #pisos .unidad{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(243,234,218,0.16);border-radius:6px;font-size:12.5px}
+  #pisos .unidad i{width:8px;height:8px;border-radius:50%;flex:none}
+  #pisos .unidad b{font-weight:600;font-family:var(--serif);font-size:15px}
+  #pisos .unidad span{color:rgba(243,234,218,0.62)}
+  #pisos .ambientes{display:flex;flex-wrap:wrap;gap:5px}
+  #pisos .ambientes button{height:30px;padding:0 9px 0 6px;border-radius:100px;background:none;border:1px solid rgba(243,234,218,0.2);
+    color:rgba(243,234,218,0.85);font:inherit;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  #pisos .ambientes button i{width:18px;height:18px;border-radius:50%;background:var(--terracota);color:var(--crema-claro);
+    display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:600}
+  #pisos .ayuda{margin:8px 0 0;font-size:11px;color:rgba(243,234,218,0.45)}
+  #p-visor{position:fixed;inset:0;z-index:30;background:rgba(33,23,17,0.94);display:none;flex-direction:column}
+  #p-visor.abierto{display:flex}
+  #p-visor .barra{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;flex:none}
+  #p-visor .barra div{font-size:13px}
+  #p-visor .barra small{display:block;font-size:11px;color:rgba(243,234,218,0.5);margin-top:2px}
+  #p-visor .cerrar{width:36px;height:36px;border-radius:50%;background:rgba(243,234,218,0.1);border:1px solid rgba(243,234,218,0.2);color:var(--crema);cursor:pointer;font-size:16px;padding:0}
+  #p-visor .lienzo{flex:1;min-height:0;overflow:auto;display:grid;place-items:start center;padding:0 12px 20px}
+  #p-visor .lienzo > img{max-width:100%;max-height:100%;object-fit:contain;place-self:center;border-radius:6px}
+  #p-visor .lienzo .marco{--alto:auto}
+  #p-visor .lienzo .marco img{width:min(100%,520px);height:auto}
+  @media (max-width:899px){
+    body.modo-pisos #reloj,body.modo-pisos #leyenda{display:none}
+    #pisos .fila{flex-direction:row}
+  }
+  @media (min-width:900px){
+    #pisos{left:auto;top:0;right:0;bottom:auto;height:100%;width:min(420px,42vw);padding:20px 20px 20px 0;display:none;align-items:flex-start}
+    body.modo-pisos #pisos{display:flex}
+    #pisos .caja{width:100%;max-height:calc(100vh - 40px);border-radius:8px;border-bottom:1px solid rgba(243,234,218,0.18);transform:translateX(14px)}
+    #pisos .cab{padding:14px 16px 10px}
+    #pisos .niveles{padding:0 16px 10px}
+    #pisos .cuerpo{padding:0 16px 16px}
+    .marco img{--alto:min(56vh,640px)}
+  }
   @media (prefers-reduced-motion: reduce){
     #ficha .caja{transition:opacity 200ms ease,visibility 200ms}
   }
@@ -226,6 +290,32 @@
       <div class="pastilla" id="f-estado"><i></i><span></span></div>
     </div>
   </div>
+</div>
+
+<div class="capa" id="pisos" aria-label="El edificio piso por piso">
+  <div class="caja">
+    <div class="cab">
+      <button class="flecha" id="p-ant" type="button" aria-label="Piso anterior">‹</button>
+      <div class="tit"><h2 id="p-tit">—</h2><div class="sub" id="p-sub"></div></div>
+      <button class="flecha" id="p-sig" type="button" aria-label="Piso siguiente">›</button>
+      <button class="cerrar" id="p-cerrar" type="button" aria-label="Volver al edificio entero">✕</button>
+    </div>
+    <div class="niveles" id="p-niveles"></div>
+    <div class="cuerpo">
+      <div class="fila">
+        <div class="plano" id="p-plano"></div>
+        <div class="lista">
+          <div id="p-unidades"></div>
+          <div class="ambientes" id="p-ambientes"></div>
+          <p class="ayuda">Tocá un ambiente para ver el render, o el plano para verlo grande.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="p-visor" role="dialog" aria-modal="true">
+  <div class="barra"><div><span id="v-tit"></span><small id="v-sub"></small></div><button class="cerrar" id="v-cerrar" type="button" aria-label="Cerrar">✕</button></div>
+  <div class="lienzo" id="v-lienzo"></div>
 </div>
 
 <script type="module">
@@ -1198,7 +1288,7 @@ fetch('https://crm.franciscomolins.com/api/publico/propiedades?cartera=torre', {
       const estado = p.estado === 'VENDIDA' ? 'vendida' : p.estado === 'RESERVADA' ? 'reservada' : 'libre';
       if (u.estado !== estado) { u.estado = estado; cambio = true; }
     });
-    if (cambio) pintarEstados();
+    if (cambio) { pintarEstados(); pintarFantasmas(); }
   }).catch(() => {});
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1231,6 +1321,7 @@ function detectar(ev) {
 // «el dedo se fue».
 if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
   render.domElement.addEventListener('pointermove', (ev) => {
+    if (modoPisos) { render.domElement.style.cursor = detectarPiso(ev) !== null ? 'pointer' : ''; return; }
     const m = detectar(ev);
     if (m === encima) return;
     if (encima && encima !== elegida) resaltar(encima, false);
@@ -1248,6 +1339,7 @@ render.domElement.addEventListener('pointerup', (ev) => {
   const movio = Math.hypot(ev.clientX - abajo.x, ev.clientY - abajo.y) > 7;
   abajo = null;
   if (movio) return;
+  if (modoPisos) { const i = detectarPiso(ev); if (i !== null) elegirPiso(i); return; }
   const m = detectar(ev);
   if (m) abrirFicha(m); else cerrarFicha();
 });
@@ -1379,6 +1471,267 @@ composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
 /* ══════════════════════════════════════════════════════════════════════════
+   11 · PISO POR PISO
+
+   El edificio se parte en sus siete niveles y cada losa muestra su planta:
+   la de CB Arquitectura, recortada del PDF «La Torre Plantas» (planta baja,
+   planta tipo del 1.º al 4.º, planta 5 y planta 6). Sobre cada plano, los
+   ambientes que tienen render se tocan y lo abren. No hay geometría nueva:
+   los cuerpos de las unidades se clonan en vidrio y se apilan con su estado.
+
+   Las plantas van ancladas al balcón del fondo, que es común a todas, y la
+   planta baja a la línea municipal; el largo sale de la proporción del
+   dibujo (el PDF no trae cotas horizontales), por eso el frente del plano
+   tipo asoma medio metro más que el volumen. Es un esquema, como todo acá.
+
+   ?modo=pisos abre el modo al cargar y ?piso=N elige un nivel (0 es PB).
+   ══════════════════════════════════════════════════════════════════════════ */
+const PLANTAS = {
+  pb:   { src:'../img/plantas/pb.webp',   aspecto:0.2083, puntos:[
+          ['cocheras',50.9,20.4], ['plato',60.6,54.2], ['pasillo',33,74.5], ['jardin',24.9,92.1], ['acceso',70.4,94.8]] },
+  tipo: { src:'../img/plantas/tipo.webp', aspecto:0.2957, puntos:[
+          ['balcon-fondo',68.4,6.1], ['dormitorio-fondo',26.2,16.4], ['estar-fondo',68.4,15.9], ['cocina-fondo',68.4,31.6],
+          ['cocina-frente',68.4,67.4], ['comedor-frente',68.4,80.4], ['dormitorio-frente',26.2,83.1], ['balcon-frente',68.4,94.4]] },
+  p5:   { src:'../img/plantas/p5.webp',   aspecto:0.3261, puntos:[
+          ['dormitorio-fondo',26.6,16.6], ['estar-fondo',66.6,16.6], ['cocina-fondo',66.6,33.1], ['kitchenette',30.1,78.5], ['dormitorio-mono',70.1,73.3]] },
+  p6:   { src:'../img/plantas/p6.webp',   aspecto:0.3502, puntos:[
+          ['dormitorio-fondo',27.1,18.2], ['estar-fondo',67.7,18.2], ['cocina-fondo',67.7,36.1], ['kitchenette',28.9,85.6], ['dormitorio-mono',71.3,80]] },
+};
+/* Los renders que ya usa la portada. Son ilustrativos del proyecto, no de
+   la unidad exacta: se rotulan así. La terraza del 5.º no lleva punto porque
+   el plano la rotula «no accesible» y eso está pendiente de aclarar. */
+const AMBIENTES = {
+  cocheras:{ n:'Las cocheras', img:'../img/cochera-dia.jpg' },
+  plato:{ n:'El plato giratorio', img:'../img/cochera-tarde.jpg' },
+  pasillo:{ n:'El pasillo de planta baja', img:'../img/pasillo-verde.jpg' },
+  jardin:{ n:'El jardín del acceso', img:'../img/hall-noche.jpg' },
+  acceso:{ n:'La llegada', img:'../img/llegada-noche.jpg' },
+  'balcon-fondo':{ n:'Balcón', img:'../img/interior-balcon.jpg' },
+  'dormitorio-fondo':{ n:'Dormitorio en suite', img:'../img/area-dormitorio.jpg' },
+  'estar-fondo':{ n:'Estar', img:'../img/interior-estar.jpg' },
+  'cocina-fondo':{ n:'Cocina', img:'../img/area-cocina.jpg' },
+  'cocina-frente':{ n:'Cocina', img:'../img/area-cocina.jpg' },
+  'comedor-frente':{ n:'Comedor', img:'../img/interior-comedor.jpg' },
+  'dormitorio-frente':{ n:'Dormitorio en suite', img:'../img/area-suite.jpg' },
+  'balcon-frente':{ n:'Balcón sobre Aniceto Latorre', img:'../img/detalle-balcones.jpg' },
+  kitchenette:{ n:'Kitchenette', img:'../img/area-cocina.jpg' },
+  'dormitorio-mono':{ n:'Dormitorio', img:'../img/area-dormitorio.jpg' },
+};
+const NIVELES = [
+  { k:0, n:'Planta baja', plano:'pb', desc:'Acceso, palier, seis cocheras y el plato giratorio' },
+  { k:1, n:'Planta 1', plano:'tipo' }, { k:2, n:'Planta 2', plano:'tipo' },
+  { k:3, n:'Planta 3', plano:'tipo' }, { k:4, n:'Planta 4', plano:'tipo' },
+  { k:5, n:'Planta 5', plano:'p5' }, { k:6, n:'Planta 6', plano:'p6' },
+];
+const SEPARACION = 3.4;        // metros de aire entre losas cuando el edificio está abierto
+
+const grupoPisos = new THREE.Group();
+grupoPisos.rotation.y = edificio.rotation.y;
+grupoPisos.visible = false;
+escena.add(grupoPisos);
+
+const cargadorTex = new THREE.TextureLoader();
+const texPlantas = {};
+function texturaPlanta(clave) {
+  if (!texPlantas[clave]) {
+    const t = cargadorTex.load(PLANTAS[clave].src);
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+    texPlantas[clave] = t;
+  }
+  return texPlantas[clave];
+}
+const matLosaPiso = new THREE.MeshStandardMaterial({ color:0xe9e2d4, roughness:0.9, transparent:true, opacity:0.95 });
+const losasPiso = [];   // seleccionables del modo
+const pisos3d = NIVELES.map((nv) => {
+  const g = new THREE.Group();
+  const y0 = nv.k === 0 ? 0 : yNivel(nv.k);
+  g.userData = { y0, nivel:nv };
+  const pl = PLANTAS[nv.plano];
+  const largo = M.frente / pl.aspecto;
+  const zc = nv.k === 0 ? zLM + largo / 2 : zLF - largo / 2;
+  const losa = new THREE.Mesh(new THREE.BoxGeometry(M.frente + 0.1, 0.16, largo + 0.1), matLosaPiso.clone());
+  losa.position.set(0, 0.08, zc); losa.castShadow = true; losa.receiveShadow = true;
+  losa.userData.piso = g; g.add(losa); losasPiso.push(losa);
+  // el plano encima de la losa: sin luz, para que se lea igual de noche.
+  // El dibujo tiene la calle abajo y la izquierda del plano cae en +X, por eso
+  // se da vuelta en los dos ejes (ver el comentario del bloque 1).
+  const plano = new THREE.Mesh(new THREE.PlaneGeometry(M.frente, largo),
+    new THREE.MeshBasicMaterial({ map:texturaPlanta(nv.plano), transparent:true, side:THREE.DoubleSide, toneMapped:false, depthWrite:false }));
+  plano.rotation.x = -Math.PI / 2; plano.scale.set(-1, -1, 1); plano.position.set(0, 0.17, zc);
+  g.add(plano);
+  // los cuerpos de las unidades, en vidrio y teñidos con su estado
+  const fantasmas = [];
+  if (nv.k === 0) {
+    const f = new THREE.Mesh(new THREE.BoxGeometry(M.frente, M.altoPB - M.losa, LARGO_CUERPO), new THREE.MeshStandardMaterial({ color:0xd9d4cc, transparent:true, opacity:0.18, roughness:0.6, depthWrite:false }));
+    f.position.set(0, (M.altoPB - M.losa) / 2, 0); g.add(f); fantasmas.push(f);
+  } else {
+    seleccionables.filter((m) => m.userData.unidad.piso === nv.k).forEach((m) => {
+      const f = new THREE.Mesh(m.geometry, new THREE.MeshStandardMaterial({ color:0xffffff, transparent:true, opacity:0.24, roughness:0.4, depthWrite:false }));
+      f.position.copy(m.position); f.position.y -= y0; f.userData.unidad = m.userData.unidad;
+      g.add(f); fantasmas.push(f);
+    });
+    const anchoN = M.frente - M.patioAncho, altoN = M.altoPiso - M.losa;
+    const nuc = new THREE.Mesh(new THREE.BoxGeometry(anchoN, altoN, M.nucleo), new THREE.MeshStandardMaterial({ color:0xd9d4cc, transparent:true, opacity:0.14, roughness:0.6, depthWrite:false }));
+    nuc.position.set(M.patioAncho / 2, altoN / 2, (zN0 + zN1) / 2); g.add(nuc); fantasmas.push(nuc);
+  }
+  g.userData.fantasmas = fantasmas; g.userData.plano = plano; g.userData.losa = losa;
+  g.position.y = y0;
+  grupoPisos.add(g);
+  return g;
+});
+function pintarFantasmas() {
+  pisos3d.forEach((g) => g.userData.fantasmas.forEach((f) => {
+    if (!f.userData.unidad) return;
+    f.material.color.set(COLOR_ESTADO[f.userData.unidad.estado]).lerp(new THREE.Color(0xffffff), 0.35);
+  }));
+}
+pintarFantasmas();
+
+let modoPisos = false, pisoElegido = null, apertura = 0, aperturaObjetivo = 0;
+const verTodo = new URLSearchParams(location.search).get('ver') === 'todo';   // deja el edificio a la vista, para calibrar
+const CAM_PISOS = () => (vertical ? { pos:[-30, 66, 82], mira:[0, 5, -2] } : { pos:[-44, 46, 46], mira:[0, 17, -2] });
+function camaraDePiso(i) {
+  const y = pisos3d[i].position.y;
+  return vertical ? { pos:[-20, y + 26, 54], mira:[0, y - 3, -1] } : { pos:[-26, y + 19, 27], mira:[0, y + 1, -1] };
+}
+function acomodarPisos() {
+  pisos3d.forEach((g, i) => {
+    // los pisos de arriba del elegido se levantan un poco más, para despejar la vista
+    g.position.y = g.userData.y0 + apertura * SEPARACION * i + (pisoElegido !== null && i > pisoElegido ? apertura * 5 : 0);
+    const propio = pisoElegido === null || pisoElegido === i;
+    g.userData.plano.material.opacity = propio ? 1 : 0.2;
+    g.userData.losa.material.opacity = propio ? 0.95 : 0.22;
+    g.userData.fantasmas.forEach((f) => { f.material.opacity = pisoElegido === null ? 0.24 : (propio ? 0.42 : 0.08); });
+  });
+}
+function entrarPisos(i = null) {
+  if (modoPisos) return;
+  modoPisos = true; aperturaObjetivo = 1;
+  cerrarFicha();
+  document.body.classList.add('modo-pisos');
+  grupoPisos.visible = true;
+  if (!verTodo) edificio.visible = false;
+  cont.querySelectorAll('button').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+  if (i === null) { pisoElegido = null; acomodarPisos(); irA(CAM_PISOS()); mostrarPiso(3, false); }
+  else elegirPiso(i);
+}
+function salirPisos() {
+  if (!modoPisos) return;
+  modoPisos = false; aperturaObjetivo = 0; pisoElegido = null;
+  document.body.classList.remove('modo-pisos');
+  edificio.visible = true;
+  cerrarVisor();
+  irA(CAMARAS[0]);
+  cont.querySelectorAll('button').forEach((o, k) => o.setAttribute('aria-pressed', k === 0 ? 'true' : 'false'));
+}
+function elegirPiso(i, mover = true) {
+  pisoElegido = i; acomodarPisos();
+  if (mover) irA(camaraDePiso(i));
+  mostrarPiso(i, true);
+}
+
+/* ── el panel ── */
+const nivelesEl = $('p-niveles');
+NIVELES.forEach((nv, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = nv.k === 0 ? 'PB' : String(nv.k); b.setAttribute('aria-label', nv.n);
+  b.addEventListener('click', () => elegirPiso(i));
+  nivelesEl.appendChild(b);
+});
+function nombreAmbiente(k, nivel) {
+  const n = AMBIENTES[k].n;
+  if (!nivel || nivel.k === 0) return n;
+  const letra = /-fondo$/.test(k) ? 'B' : (/-frente$|kitchenette|-mono$/.test(k) ? 'A' : '');
+  return letra ? n + ' ' + nivel.k + letra : n;
+}
+function armarMarco(clave, conPuntos = true, nivel = null) {
+  const pl = PLANTAS[clave];
+  const marco = document.createElement('div'); marco.className = 'marco';
+  const img = document.createElement('img'); img.src = pl.src; img.alt = 'Plano de la planta'; img.loading = 'lazy';
+  marco.appendChild(img);
+  if (conPuntos) pl.puntos.forEach(([k, x, y], n) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'punto'; b.textContent = n + 1;
+    b.style.left = x + '%'; b.style.top = y + '%';
+    b.setAttribute('aria-label', nombreAmbiente(k, nivel) + ', ver el render');
+    b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirVisor(AMBIENTES[k].img, nombreAmbiente(k, nivel), 'Render ilustrativo del proyecto'); });
+    marco.appendChild(b);
+  });
+  return marco;
+}
+function mostrarPiso(i, elegido) {
+  const nv = NIVELES[i];
+  const us = UNIDADES.filter((u) => u.piso === nv.k).sort((a, b) => a.id < b.id ? -1 : 1);
+  $('p-tit').textContent = nv.n;
+  $('p-sub').textContent = nv.desc || us.map((u) => u.tip + ' ' + u.id).join(' · ');
+  nivelesEl.querySelectorAll('button').forEach((b, k) => b.setAttribute('aria-pressed', elegido && k === i ? 'true' : 'false'));
+  $('p-ant').disabled = i === 0; $('p-sig').disabled = i === NIVELES.length - 1;
+  const plano = $('p-plano'); plano.innerHTML = '';
+  const abrir = document.createElement('button'); abrir.type = 'button'; abrir.className = 'abrir'; abrir.setAttribute('aria-label', 'Ver el plano grande');
+  abrir.appendChild(armarMarco(nv.plano, true, nv));
+  abrir.addEventListener('click', () => abrirVisor(null, nv.n, 'Plano de CB Arquitectura · tocá un ambiente', nv.plano, nv));
+  plano.appendChild(abrir);
+  const ul = $('p-unidades'); ul.innerHTML = '';
+  us.forEach((u) => {
+    const d = document.createElement('div'); d.className = 'unidad';
+    const c = '#' + COLOR_ESTADO[u.estado].toString(16).padStart(6, '0');
+    d.innerHTML = '<i style="background:' + c + '"></i><b>' + u.id + '</b><span>' + u.tip + ' · ' + u.sup + ' m² · ' + NOMBRE_ESTADO[u.estado] + '</span>';
+    ul.appendChild(d);
+  });
+  const amb = $('p-ambientes'); amb.innerHTML = '';
+  PLANTAS[nv.plano].puntos.forEach(([k], n) => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.innerHTML = '<i>' + (n + 1) + '</i>' + nombreAmbiente(k, nv);
+    b.addEventListener('click', () => abrirVisor(AMBIENTES[k].img, nombreAmbiente(k, nv), 'Render ilustrativo del proyecto'));
+    amb.appendChild(b);
+  });
+  pisoMostrado = i;
+}
+let pisoMostrado = 3;
+$('p-ant').addEventListener('click', () => elegirPiso(Math.max(0, pisoMostrado - 1)));
+$('p-sig').addEventListener('click', () => elegirPiso(Math.min(NIVELES.length - 1, pisoMostrado + 1)));
+$('p-cerrar').addEventListener('click', salirPisos);
+
+/* ── el visor: un render, o el plano grande con sus puntos ── */
+const visor = $('p-visor');
+function abrirVisor(src, titulo, sub, plano = null, nivel = null) {
+  const l = $('v-lienzo'); l.innerHTML = '';
+  if (plano) l.appendChild(armarMarco(plano, true, nivel));
+  else { const img = document.createElement('img'); img.src = src; img.alt = titulo + ' — render ilustrativo'; l.appendChild(img); }
+  $('v-tit').textContent = titulo; $('v-sub').textContent = sub;
+  visor.classList.add('abierto');
+}
+function cerrarVisor() { visor.classList.remove('abierto'); $('v-lienzo').innerHTML = ''; }
+$('v-cerrar').addEventListener('click', cerrarVisor);
+visor.addEventListener('click', (ev) => { if (ev.target === visor || ev.target.id === 'v-lienzo') cerrarVisor(); });
+addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (visor.classList.contains('abierto')) cerrarVisor(); else if (modoPisos) salirPisos(); });
+
+/* el botón que abre el modo, al final de las cámaras */
+{
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = 'Piso por piso'; b.id = 'btn-pisos';
+  b.addEventListener('click', () => entrarPisos());
+  cont.appendChild(b);
+}
+function detectarPiso(ev) {
+  const r = render.domElement.getBoundingClientRect();
+  puntero.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
+  puntero.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+  rayo.setFromCamera(puntero, camara);
+  const h = rayo.intersectObjects(grupoPisos.children, true)[0];
+  if (!h) return null;
+  let o = h.object; while (o && !pisos3d.includes(o)) o = o.parent;
+  return o ? pisos3d.indexOf(o) : null;
+}
+{
+  const q = new URLSearchParams(location.search);
+  if (q.get('modo') === 'pisos') {
+    const p = q.get('piso');
+    entrarPisos(p !== null && NIVELES[+p] ? +p : null);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    10 · EL BUCLE
    ══════════════════════════════════════════════════════════════════════════ */
 const reduceMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1416,6 +1769,12 @@ function bucle() {
     }
   }
 
+  if (apertura !== aperturaObjetivo) {
+    apertura = reduceMovimiento ? aperturaObjetivo : THREE.MathUtils.clamp(apertura + (aperturaObjetivo - apertura) * Math.min(1, dt * 3.2) + Math.sign(aperturaObjetivo - apertura) * dt * 0.02, 0, 1);
+    if (Math.abs(apertura - aperturaObjetivo) < 0.004) apertura = aperturaObjetivo;
+    acomodarPisos();
+    if (apertura === 0 && !modoPisos) grupoPisos.visible = false;
+  }
   controles.update();
   if (entornoPendiente) { actualizarEntorno(); entornoPendiente = false; }
   // Sólo de noche cerrada: al atardecer el revoque todavía es claro y el
@@ -1439,7 +1798,7 @@ requestAnimationFrame(() => $('cargando').classList.add('listo'));
 setTimeout(() => { $('pista').style.opacity = 0; }, 7000);
 
 // Para poder trastear las medidas desde la consola sin recompilar nada.
-window.TORRE = { M, UNIDADES, irA, ponerHora, camara, escena, relleno, render, composer, cielo, actualizarEntorno, ventanas, lucesNoche };
+window.TORRE = { M, UNIDADES, irA, entrarPisos, salirPisos, elegirPiso, ponerHora, camara, escena, relleno, render, composer, cielo, actualizarEntorno, ventanas, lucesNoche };
 </script>
 </body>
 </html>
