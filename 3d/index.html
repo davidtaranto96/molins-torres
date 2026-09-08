@@ -75,7 +75,7 @@
   .capa > *{pointer-events:auto}
 
   /* ── rótulo ── */
-  #rotulo{top:0;left:0;padding:20px 24px}
+  #rotulo{top:12px;left:12px;padding:12px;background:var(--tinta);border-radius:8px}
   #rotulo h1{margin:0;font-family:var(--serif);font-weight:400;font-size:19px;letter-spacing:0.3em}
   /* el logotipo oficial, LA / TO / RRE apilado, como máscara sobre el color del texto */
   #rotulo .logo{display:block;width:39px;height:44px;background:currentColor;
@@ -233,7 +233,6 @@
     #ficha .caja{transition:opacity 200ms ease,visibility 200ms}
   }
 </style>
-<link rel="stylesheet" href="showroom.css?v=20260908b">
 </head>
 <body>
 
@@ -321,9 +320,7 @@
 
 <script type="module">
 import * as THREE from 'three';
-import { mejorarExterior } from './exterior.js?v=20260907';
-import { iniciarShowroom } from './showroom.js?v=20260908b';
-let showroom = null;
+import { mejorarExterior } from './exterior.js?v=20260908c';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1197,8 +1194,8 @@ UNIDADES.forEach((u) => {
     baranda(1.3, 2.55, y, zBar);
     baranda(-2.55, 0.05, y, zBar);
     /* las plantas: una maceta en el balcón del estar, y en pisos impares una colgante en el del dormitorio */
-    edificio.add(caja(0.55, 0.32, 0.3, mat.planta, -2.05, y + 0.02, zBorde - dir * 0.35, false));
-    if (u.piso % 2 === 1) edificio.add(caja(0.5, 0.55, 0.16, mat.planta, 1.9, y - 0.5, zBar, false));
+    const planta = caja(0.55, 0.32, 0.3, mat.planta, -2.05, y + 0.02, zBorde - dir * 0.35, false); planta.userData.follaje = true; edificio.add(planta);
+    if (u.piso % 2 === 1) { const planta = caja(0.5, 0.55, 0.16, mat.planta, 1.9, y - 0.5, zBar, false); planta.userData.follaje = true; edificio.add(planta); }
     /* el aplique bajo la losa del balcón, que de noche baña el balcón de abajo */
     apliques.caja(0.14, 0.05, 0.14, -1.2, y + M.altoPiso - M.losa - 0.06, zBorde - dir * 0.6);
   } else {
@@ -1215,13 +1212,10 @@ UNIDADES.forEach((u) => {
     });
   }
 
-  /* la terraza del 5.º A, sobre el techo del 4.º: baranda al frente y a los costados, y sus plantas */
+  /* la terraza del 5.º A, sobre el techo del 4.º: baranda al frente y a los costados, sin equipamiento: terraza no accesible según planos */
   if (retirado && u.piso === 5) {
     baranda(-2.55, 2.55, y, zLM + 0.06);
     [-1, 1].forEach((s) => barandaLateral(zLM + 0.06, zR - 0.05, y, s * (M.frente / 2 - 0.16)));
-    edificio.add(caja(0.6, 0.4, 0.4, mat.planta, 2.1, y + 0.02, zLM + 0.5, false));
-    edificio.add(caja(0.5, 0.55, 0.5, mat.planta, -2.2, y + 0.02, zR - 0.6, false));
-    edificio.add(caja(0.9, 0.36, 0.9, mat.hormigon, -0.9, y + 0.02, zLM + 1.9, false));
   }
 });
 
@@ -1346,7 +1340,6 @@ render.domElement.addEventListener('pointerup', (ev) => {
   const movio = Math.hypot(ev.clientX - abajo.x, ev.clientY - abajo.y) > 7;
   abajo = null;
   if (movio) return;
-  if (showroom?.activo) { showroom.click(ev); return; }
   if (modoPisos) { const i = detectarPiso(ev); if (i !== null) elegirPiso(i); return; }
   const m = detectar(ev);
   if (m) abrirFicha(m); else cerrarFicha();
@@ -1813,8 +1806,7 @@ function bucle() {
     acomodarPisos();
     if (apertura === 0 && !modoPisos) grupoPisos.visible = false;
   }
-  if (!showroom?.recorriendo) controles.update();
-  showroom?.actualizar();
+  controles.update();
   if (entornoPendiente) { actualizarEntorno(); entornoPendiente = false; }
   // Sólo de noche cerrada: al atardecer el revoque todavía es claro y el
   // bloom lo hacía brillar como si el edificio fuera una lámpara.
@@ -1837,9 +1829,6 @@ requestAnimationFrame(() => $('cargando').classList.add('listo'));
 setTimeout(() => { $('pista').style.opacity = 0; }, 7000);
 
 const exteriorListo=mejorarExterior({edificio,mat,M,zLM,zLF,yNivel}).catch(err=>console.warn(err));
-const btnShowroom = document.createElement('button');
-btnShowroom.textContent = 'Abrir showroom';btnShowroom.disabled=true;cont.appendChild(btnShowroom);
-iniciarShowroom({pisos:pisos3d,camara,controles,render,grupo:grupoPisos,M,escena,entrar:entrarPisos,salir:salirPisos,hora:ponerHora,detenerCamara(){animCam=null;apertura=1;aperturaObjetivo=1;}}).then(s=>{showroom=s;btnShowroom.disabled=false;btnShowroom.onclick=()=>s.abrir();window.TORRE.showroom=s;const q=new URLSearchParams(location.search);if(q.get('modo')==='showroom')s.abrir(Math.max(1,Math.min(6,Number(q.get('piso'))||3)));}).catch(err=>{btnShowroom.textContent='Showroom no disponible';console.error(err);});
 
 // Para poder trastear las medidas desde la consola sin recompilar nada.
 window.TORRE = { exteriorListo, M, UNIDADES, irA, entrarPisos, salirPisos, elegirPiso, ponerHora, camara, escena, relleno, render, composer, cielo, actualizarEntorno, ventanas, lucesNoche };

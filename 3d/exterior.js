@@ -17,14 +17,30 @@ export async function mejorarExterior({edificio,mat,M,zLM,zLF,yNivel}) {
       if(Math.abs(normal.getY(i))>.5)uv.setXY(i,x*.75,z*.75);else if(Math.abs(normal.getX(i))>.5)uv.setXY(i,z*.75,y*.75);else uv.setXY(i,x*.75,y*.75);}
     uv.needsUpdate=true;
   });
-  // Follaje de balcones en una malla: antes era una caja verde.
-  const geos=[],shape=new THREE.Shape();shape.moveTo(0,-1);shape.quadraticCurveTo(.7,0,0,1);shape.quadraticCurveTo(-.7,0,0,-1);const leaf=new THREE.ShapeGeometry(shape,5);
-  const hojas=new THREE.MeshStandardMaterial({color:0x527642,roughness:.7,side:THREE.DoubleSide});
-  for(let k=1;k<=6;k++)for(const z of k<=4?[zLM,zLF]:[zLF])for(const x of [-2.05,1.9])for(let j=0;j<100;j++){
-    const a=j*2.399+k,radio=.11+(j%3)*.045;const geo=leaf.clone();geo.scale(.055,.11,1);geo.rotateX(j*.71);geo.rotateY(a);geo.rotateZ(a);
-    geo.translate(x+Math.cos(a)*radio,yNivel(k)+.30+Math.sin(j*1.7)*.17,z+Math.sin(a)*radio+(z===zLM?.28:-.28));geos.push(geo);
+  // Reemplazar cada volumen de vegetación en su ubicación original.
+  // Se mantiene unido a su planta para la vista por niveles.
+  const plantas=[];
+  edificio.traverse(o=>{if(o.userData.follaje)plantas.push(o);});
+  const shape=new THREE.Shape();shape.moveTo(0,-1);shape.quadraticCurveTo(.7,0,0,1);shape.quadraticCurveTo(-.7,0,0,-1);
+  const leaf=new THREE.ShapeGeometry(shape,5);
+  const hojas=new THREE.MeshStandardMaterial({color:0x527642,roughness:.85,side:THREE.DoubleSide});
+  for(const planta of plantas){
+    planta.geometry.computeBoundingBox();const box=planta.geometry.boundingBox;
+    const size=box.getSize(new THREE.Vector3()).multiply(planta.scale);
+    const center=box.getCenter(new THREE.Vector3()).multiply(planta.scale).add(planta.position);
+    const geos=[];
+    for(let j=0;j<100;j++){
+      const a=j*2.399963, t=(j+.5)/100, radius=Math.sqrt(t)*.5;
+      const geo=leaf.clone();geo.scale(.045,.095,1);geo.rotateX(j*.71);geo.rotateY(a);geo.rotateZ(a);
+      geo.translate(center.x+Math.cos(a)*radius*size.x,center.y+Math.sin(j*1.7)*size.y*.5,center.z+Math.sin(a)*radius*size.z);geos.push(geo);
+    }
+    const foliage=new THREE.Mesh(mergeGeometries(geos),hojas);foliage.name='Follaje de balcón';foliage.castShadow=true;
+    planta.parent.add(foliage);planta.removeFromParent();geos.forEach(g=>g.dispose());
   }
-  const foliage=new THREE.Mesh(mergeGeometries(geos),hojas);foliage.name='Follaje de balcones';foliage.castShadow=true;edificio.add(foliage);geos.forEach(g=>g.dispose());leaf.dispose();
+  leaf.dispose();
+  for(const material of [mat.hormigon,mat.encofrado,mat.losa,mat.revoque]){
+    material.bumpMap=material.map;material.bumpScale=.025;material.needsUpdate=true;
+  }
   mat.metal.roughness=.32;mat.metal.metalness=.55;
   return {fuentes:['https://polyhaven.com/a/red_brick']};
 }
