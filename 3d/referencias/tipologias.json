@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "tipologias": [
+    {
+      "id": "sur-1d",
+      "titulo": "1 dormitorio · Torre sur",
+      "superficie_publicada_m2": 55,
+      "fuente": "1D 1.pdf",
+      "sha256": "050983e3c3574ed281c1f51a71a3a8e92e2934191d4fd8508d3aba0b7cd06d68",
+      "imagen": "sur-1d.webp",
+      "pdf": "sur-1d.pdf"
+    },
+    {
+      "id": "norte-1d",
+      "titulo": "1 dormitorio · Torre norte",
+      "superficie_publicada_m2": 55,
+      "fuente": "1D 2.pdf",
+      "sha256": "533e006e35ed786c9a4b13d5f463b1f8bacdb83a55ccb2f61a2f37f0a35471d2",
+      "imagen": "norte-1d.webp",
+      "pdf": "norte-1d.pdf"
+    },
+    {
+      "id": "norte-mono",
+      "titulo": "Monoambiente · Torre norte",
+      "superficie_publicada_m2": 37,
+      "fuente": "Mono.pdf",
+      "sha256": "8f2e9c45314b352f1ef742c06ff575be94938725e455263e2cc23501fe0a3968",
+      "imagen": "norte-mono.webp",
+      "pdf": "norte-mono.pdf"
+    }
+  ],
+  "plantas": {
+    "1-4": {
+      "A": "norte-1d",
+      "B": "sur-1d"
+    },
+    "5-6": {
+      "A": "norte-mono",
+      "B": "sur-1d"
+    }
+  }
+}

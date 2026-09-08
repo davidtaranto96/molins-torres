@@ -4,20 +4,37 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // El mismo catálogo de piezas y huellas alimenta Blender y el navegador.
 export async function iniciarShowroom(api) {
-  const [rd, rw] = await Promise.all([fetch('mobiliario.json'), fetch('muros.json')]);
-  if (!rd.ok || !rw.ok) throw new Error('No se pudo cargar el mobiliario o los muros');
-  const datos = await rd.json(), muros = await rw.json();
+  const [rd, rw, rt] = await Promise.all([fetch('mobiliario.json'), fetch('muros.json'), fetch('referencias/tipologias.json')]);
+  if (!rd.ok || !rw.ok || !rt.ok) throw new Error('No se pudo cargar el mobiliario o los muros');
+  const datos = await rd.json(), muros = await rw.json(), referencias = await rt.json();
   const {pisos, camara, controles, render, grupo, M} = api;
   const raiz = document.createElement('section'); raiz.id = 'showroom'; raiz.setAttribute('aria-label','Diseñar y recorrer el piso');
-  raiz.innerHTML = `<div class="s-fila"><strong>Tu espacio en La Torre</strong><button data-a="salir">Volver al edificio</button></div>
-  <div class="s-fila"><label>Piso <select id="s-piso">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></label><label>Vista <select id="s-vista"><option value="arriba">Desde arriba</option><option value="adentro">Recorrer adentro</option></select></label><label>Paredes <select id="s-muros"><option value="bajos">Bajas</option><option value="enteros">Completas</option><option value="ocultos">Ocultas</option></select></label></div>
-  <div class="s-fila"><button data-a="unidadA">Ver unidad A</button><button data-a="unidadB">Ver unidad B</button><button data-a="hora">Día / noche</button><button data-a="plano" aria-pressed="false">Ver plano</button></div>
+  raiz.innerHTML = `<div class="s-fila s-cabecera"><strong>Explorar La Torre</strong><button data-a="salir">Edificio</button></div>
+  <div class="s-fila s-elegir"><label>Piso <select id="s-piso">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></label><label>Unidad <select id="s-unidad"><option value="A">A · Norte</option><option value="B" selected>B · Sur</option></select></label></div>
+  <div class="s-fila s-segmentos" aria-label="Vista"><button data-a="general" aria-pressed="true">General</button><button data-a="tour" aria-pressed="false">Recorrer</button><button data-a="detalle" aria-pressed="false">Detalle</button></div>
+  <div class="s-fila s-luz" aria-label="Iluminación"><button data-a="dia" aria-pressed="true">Día</button><button data-a="noche" aria-pressed="false">Noche</button><button data-a="centrar">Centrar vista</button></div>
+  <div id="s-caminar" class="s-fila" hidden><button data-paso="izquierda" aria-label="Girar a la izquierda">←</button><button data-paso="adelante">Avanzar</button><button data-paso="atras">Retroceder</button><button data-paso="derecha" aria-label="Girar a la derecha">→</button></div>
+  <p id="s-estado" role="status" aria-live="polite"></p>
+  <details id="s-opciones"><summary>Más opciones</summary>
+  <div class="s-fila"><label>Paredes <select id="s-muros"><option value="bajos">Bajas</option><option value="enteros">Completas</option><option value="ocultos">Ocultas</option></select></label><button data-a="plano" aria-pressed="false">Ver plano</button><button data-a="tipologia">Tipología oficial</button></div>
   <details id="s-editor"><summary>Amueblar el piso</summary><div class="s-fila"><label>Mueble <select id="s-objeto"></select></label><button data-a="mover">Mover</button><button data-a="girar">Girar 90°</button><button data-a="quitar">Quitar</button></div><div class="s-fila"><label>Agregar <select id="s-catalogo"><option value="sofa">Sillón</option><option value="cama">Cama</option><option value="mesa">Mesa con sillas</option><option value="mesa-baja">Mesa ratona</option><option value="planta">Planta</option><option value="placard">Placard</option></select></label><button data-a="agregar">Colocar</button><button data-a="deshacer">Deshacer</button><button data-a="restaurar">Restaurar plano</button></div></details>
-  <div id="s-caminar" class="s-fila" hidden><button data-paso="izquierda" aria-label="Girar a la izquierda">Girar ←</button><button data-paso="adelante">Avanzar</button><button data-paso="atras">Retroceder</button><button data-paso="derecha" aria-label="Girar a la derecha">Girar →</button></div>
-  <p id="s-estado" role="status" aria-live="polite"></p><small>Distribución ilustrativa basada en planos. Muebles y terminaciones estimados. Tus cambios quedan en este navegador.</small>`;
+  <small>Modelo en revisión. Muebles y terminaciones estimados. Tus cambios quedan en este navegador.</small></details>`;
   document.body.appendChild(raiz);
+  const ficha=document.createElement('dialog');ficha.id='s-tipologia';ficha.setAttribute('aria-labelledby','s-tipologia-titulo');
+  ficha.innerHTML=`<form method="dialog"><button aria-label="Cerrar tipología">Cerrar</button></form><h2 id="s-tipologia-titulo"></h2><p id="s-tipologia-unidad"></p><img alt="" width="2200" height="1556"><p>Documento original del estudio. La reconstrucción 3D sigue en revisión.</p><a target="_blank" rel="noopener">Abrir PDF original</a>`;
+  document.body.appendChild(ficha);
+  function mostrarTipologia(){
+    const id=referencias.plantas[nivel<=4?'1-4':'5-6'][vistaUnidad];
+    const t=referencias.tipologias.find(t=>t.id===id);
+    ficha.querySelector('h2').textContent=`${t.titulo} · ${t.superficie_publicada_m2} m²`;
+    ficha.querySelector('#s-tipologia-unidad').textContent=`Referencia para la unidad ${nivel}${vistaUnidad}`;
+    const img=ficha.querySelector('img');img.src=`referencias/${t.imagen}`;img.alt=`Planta oficial: ${t.titulo}`;
+    ficha.querySelector('a').href=`referencias/${t.pdf}`;ficha.showModal();
+  }
+
   const $ = s => raiz.querySelector(s), estado = t => $('#s-estado').textContent = t;
   let activo=false, nivel=3, modo='arriba', pared='bajos', plano=false, elegido=null, colocar=null, noche=false;
+  let vistaDetalle=false, movimiento=null, ultimoPaso=0;
   let vistaUnidad='B', angulo=0, inclinacion=0, arrastre=null;
   let historial=[], objetos=[], items=[], originales=[], luces=[];
   const cubo = new THREE.BoxGeometry(1,1,1), materiales={};
@@ -72,7 +89,7 @@ export async function iniciarShowroom(api) {
     ['mover','girar','quitar'].forEach(a=>$(`[data-a="${a}"]`).disabled=!elegido);
     $('[data-a="deshacer"]').disabled=!historial.length;
   }
-  function resaltar(){const o=objetos.find(o=>o.userData.item.id===elegido);contorno.visible=activo&&modo==='arriba'&&!!o;if(o){grupo.updateMatrixWorld(true);contorno.setFromObject(o);}}
+  function resaltar(){const o=objetos.find(o=>o.userData.item.id===elegido);contorno.visible=activo&&modo==='arriba'&&$('#s-opciones').open&&$('#s-editor').open&&!!o;if(o){grupo.updateMatrixWorld(true);contorno.setFromObject(o);}}
   function recordar(){historial.push(JSON.stringify(items));if(historial.length>30)historial.shift();}
   function huella(i){
     let dx=i.ancho/2,dy=i.fondo/2;
@@ -129,22 +146,22 @@ export async function iniciarShowroom(api) {
     nivel=n;$('#s-piso').value=String(n);originales=structuredClone(datos.plantas[clave()]);items=structuredClone(originales);
     try{const saved=JSON.parse(localStorage.getItem(`torre-showroom-v1-${n}`));if(valido(saved))items=saved;}catch{}
     historial=[];elegido=null;colocar=null;g().add(mobiliario,capas);dibujar();terminaciones();aplicar();verUnidad(vistaUnidad);
-    estado('Arrastrá para girar. Elegí un mueble para moverlo o quitarlo.');
+    estado('Elegí una unidad o entrá a recorrerla. Arrastrá para girar la vista.');
   }
   function verUnidad(letra){
-    vistaUnidad=letra;const yy=letra==='B'?21:clave()==='tipo'?82:clave()==='p5'?77:85;
+    vistaUnidad=letra;$('#s-unidad').value=letra;sincronizar();const yy=letra==='B'?21:clave()==='tipo'?82:clave()==='p5'?77:85;
     if(modo==='adentro'){teleportar(letra);return;}
     const center=g().localToWorld(pos(50,yy,.3));
-    const offset=new THREE.Vector3(4,10,7).applyAxisAngle(new THREE.Vector3(0,1,0),grupo.rotation.y);
+    const offset=new THREE.Vector3(...(vistaDetalle?[2.2,4,3.5]:[4,10,7])).applyAxisAngle(new THREE.Vector3(0,1,0),grupo.rotation.y);
     api.detenerCamara();controles.target.copy(center);camara.position.copy(center).add(offset);camara.near=.08;camara.updateProjectionMatrix();controles.update();encuadrar();
   }
   function teleportar(letra){
     const y=letra==='B'?27:clave()==='tipo'?77:clave()==='p5'?74:81;
-    camara.position.copy(g().localToWorld(pos(62,y,1.78)));const destino=g().localToWorld(pos(letra==='B'?79:70,letra==='B'?14:clave()==='tipo'?88:clave()==='p5'?80:87,1.35));camara.lookAt(destino);camara.rotation.order='YXZ';angulo=camara.rotation.y;inclinacion=camara.rotation.x;mirar();encuadrar();
+    camara.position.copy(g().localToWorld(pos(62,y,1.78)));const destino=g().localToWorld(pos(letra==='B'?79:70,letra==='B'?14:clave()==='tipo'?88:clave()==='p5'?80:87,1.35));camara.lookAt(destino);const orientacion=new THREE.Euler().setFromQuaternion(camara.quaternion,'YXZ');angulo=orientacion.y;inclinacion=orientacion.x;mirar();encuadrar();
   }
   function mirar(){camara.rotation.order='YXZ';camara.rotation.set(inclinacion,angulo,0);}
-  function salirRecorrido(){modo='arriba';$('#s-vista').value=modo;$('#s-caminar').hidden=true;controles.enabled=true;arrastre=null;}
-  function recorrido(){modo='adentro';colocar=null;$('#s-editor').open=false;$('#s-caminar').hidden=false;controles.enabled=false;api.detenerCamara();pared='enteros';$('#s-muros').value=pared;teleportar(vistaUnidad);aplicar();estado('Arrastrá para mirar. Usá las flechas o W A S D para caminar.');}
+  function salirRecorrido(){modo='arriba';movimiento=null;sincronizar();$('#s-caminar').hidden=true;controles.enabled=true;arrastre=null;}
+  function recorrido(){vistaDetalle=false;modo='adentro';sincronizar();colocar=null;$('#s-editor').open=false;$('#s-opciones').open=false;$('#s-caminar').hidden=false;controles.enabled=false;api.detenerCamara();pared='enteros';$('#s-muros').value=pared;teleportar(vistaUnidad);aplicar();estado('Arrastrá para mirar. Mantené Avanzar o Retroceder para caminar. Flechas o W A S D también funcionan.');}
   function bloqueado(p,r=.18){
     const v=g().worldToLocal(p.clone()), xp=(.5-v.x/M.frente)*100,yp=(.5-(v.z-g().userData.zc)/g().userData.largo)*100;
     if(xp<9||xp>91||yp<9||yp>94)return true;
@@ -157,20 +174,29 @@ export async function iniciarShowroom(api) {
   function abrir(n=3){if(activo){cargar(n);return;}pisos.forEach(p=>p.userData.materialOriginal=p.userData.losa.material);api.entrar(n);activo=true;document.body.classList.add('showroom-activo');controles.minDistance=2;controles.maxDistance=45;cargar(n);}
   function cerrar(){if(!activo)return;salirRecorrido();activo=false;colocar=null;document.body.classList.remove('showroom-activo');pisos.forEach(p=>{p.visible=true;p.userData.plano.visible=true;p.userData.losa.material=p.userData.materialOriginal;p.userData.fantasmas.forEach(f=>f.visible=true);if(p.userData.muros)p.userData.muros.scale.y=1;});mobiliario.removeFromParent();capas.removeFromParent();contorno.visible=luz.visible=false;controles.minDistance=12;controles.maxDistance=130;camara.near=.5;camara.clearViewOffset();camara.updateProjectionMatrix();api.salir();}
   $('#s-piso').onchange=e=>cargar(Number(e.target.value));
-  $('#s-vista').onchange=e=>{if(e.target.value==='adentro')recorrido();else{salirRecorrido();pared='bajos';$('#s-muros').value=pared;verUnidad(vistaUnidad);aplicar();estado('Arrastrá para girar. Elegí un mueble para moverlo o quitarlo.');}};
+  $('#s-unidad').onchange=e=>verUnidad(e.target.value);
+  function sincronizar(){
+    for(const [a,on] of [['general',modo==='arriba'&&!vistaDetalle],['tour',modo==='adentro'],['detalle',modo==='arriba'&&vistaDetalle],['dia',!noche],['noche',noche]])$(`[data-a="${a}"]`).setAttribute('aria-pressed',String(on));
+  }
+  function general(detalle=false){vistaDetalle=detalle;salirRecorrido();pared='bajos';$('#s-muros').value=pared;verUnidad(vistaUnidad);aplicar();estado(detalle?'Arrastrá para girar. Usá la rueda o dos dedos para acercarte.':'Elegí una unidad o entrá a recorrerla.');}
   $('#s-muros').onchange=e=>{pared=e.target.value;aplicar();};
   $('#s-objeto').onchange=e=>{elegido=e.target.value;colocar=null;resaltar();};
   raiz.addEventListener('click',e=>{
-    const b=e.target.closest('button');if(!b)return;if(b.dataset.paso){paso(b.dataset.paso);return;}
+    const b=e.target.closest('button');if(!b)return;if(b.dataset.paso){if(e.detail===0)paso(b.dataset.paso);return;}
     const item=items.find(i=>i.id===elegido);
     switch(b.dataset.a){
       case 'salir':cerrar();break;
       case 'unidadA':verUnidad('A');break;case 'unidadB':verUnidad('B');break;
-      case 'hora':noche=!noche;api.hora(noche?1290:750);break;
+      case 'general':general();break;
+      case 'tour':recorrido();break;
+      case 'detalle':general(true);break;
+      case 'centrar':verUnidad(vistaUnidad);break;
+      case 'dia':case 'noche':noche=b.dataset.a==='noche';api.hora(noche?1290:750);sincronizar();break;
       case 'plano':plano=!plano;b.setAttribute('aria-pressed',String(plano));aplicar();break;
       case 'mover':if(item){colocar={...item};estado('Tocá el piso donde querés colocar el mueble. Escape cancela.');}break;
       case 'girar':if(item){const next={...item,giro:(item.giro+90)%360};if(disponible(next))cambiar(()=>Object.assign(item,next));else estado('No hay espacio para girar el mueble. Movelo primero.');}break;
       case 'quitar':if(item)cambiar(()=>{items=items.filter(i=>i!==item);});break;
+      case 'tipologia':mostrarTipologia();break;
       case 'agregar':{if(items.length>=100){estado('Llegaste al máximo de 100 muebles por piso.');break;}const tipo=$('#s-catalogo').value;const dim={sofa:[28,4],cama:[25,8],mesa:[16,3],'mesa-baja':[10,3],planta:[7,2],placard:[22,3]}[tipo];colocar={id:crypto.randomUUID(),tipo,nombre:$('#s-catalogo').selectedOptions[0].textContent,x:50,y:20,ancho:dim[0],fondo:dim[1],giro:0};estado('Tocá un lugar libre del piso para colocar el mueble.');break;}
       case 'deshacer':if(historial.length){items=JSON.parse(historial.pop());colocar=null;dibujar();guardar();}break;
       case 'restaurar':cambiar(()=>{items=structuredClone(originales);colocar=null;});estado('Distribución original restaurada. Podés deshacer.');break;
@@ -188,12 +214,15 @@ export async function iniciarShowroom(api) {
       if(!disponible(candidato)) {estado('Ese lugar está ocupado o fuera del espacio disponible. Elegí otro.');return true;}
       cambiar(()=>{items=items.filter(i=>i.id!==candidato.id);items.push(candidato);elegido=candidato.id;colocar=null;});estado('Mueble colocado.');return true;
     }
-    const hit=ray.intersectObjects(objetos,true)[0];if(hit){let o=hit.object;while(o&&!o.userData.item)o=o.parent;elegido=o.userData.item.id;$('#s-objeto').value=elegido;$('#s-editor').open=true;resaltar();}return true;
+    const hit=ray.intersectObjects(objetos,true)[0];if(hit){let o=hit.object;while(o&&!o.userData.item)o=o.parent;elegido=o.userData.item.id;$('#s-objeto').value=elegido;$('#s-opciones').open=true;$('#s-editor').open=true;resaltar();}return true;
   }
   render.domElement.addEventListener('pointerdown',e=>{if(activo&&modo==='adentro'){arrastre={x:e.clientX,y:e.clientY};render.domElement.setPointerCapture(e.pointerId);}});
   render.domElement.addEventListener('pointermove',e=>{if(!arrastre)return;angulo-=(e.clientX-arrastre.x)*.004;inclinacion=THREE.MathUtils.clamp(inclinacion-(e.clientY-arrastre.y)*.003,-1,1);arrastre={x:e.clientX,y:e.clientY};mirar();});
   for(const event of ['pointerup','pointercancel','lostpointercapture'])render.domElement.addEventListener(event,()=>arrastre=null);
-  addEventListener('blur',()=>arrastre=null);
-  addEventListener('keydown',e=>{if(!activo||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key==='Escape'){e.stopImmediatePropagation();if(colocar){colocar=null;estado('Colocación cancelada.');}else if(modo==='adentro'){salirRecorrido();verUnidad(vistaUnidad);}else cerrar();return;}const dir={w:'adelante',s:'atras',a:'izquierda',d:'derecha',ArrowUp:'adelante',ArrowDown:'atras',ArrowLeft:'izquierda',ArrowRight:'derecha'}[e.key];if(dir&&modo==='adentro'){e.preventDefault();paso(dir);}},true);
-  return {abrir,cerrar,click,pbrReady,get activo(){return activo;},get recorriendo(){return activo&&modo==='adentro';},actualizar(){if(activo){aplicar();if(modo==='adentro')mirar();}},diagnostico(){return {nivel,modo,muebles:items.length,pared,seleccion:elegido,guardado:items.map(i=>({...i}))};}};
+  addEventListener('blur',()=>{arrastre=null;movimiento=null;});
+  raiz.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-paso]');if(!b)return;e.preventDefault();movimiento=b.dataset.paso;ultimoPaso=performance.now();paso(movimiento);b.setPointerCapture(e.pointerId);});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])raiz.addEventListener(type,()=>movimiento=null);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)movimiento=null;});
+  addEventListener('keydown',e=>{if(ficha.open){movimiento=null;e.stopImmediatePropagation();return;}if(!activo||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key==='Escape'){e.stopImmediatePropagation();if(colocar){colocar=null;estado('Colocación cancelada.');}else if(modo==='adentro'){general();}else cerrar();return;}const dir={w:'adelante',s:'atras',a:'izquierda',d:'derecha',ArrowUp:'adelante',ArrowDown:'atras',ArrowLeft:'izquierda',ArrowRight:'derecha'}[e.key];if(dir&&modo==='adentro'){e.preventDefault();paso(dir);}},true);
+  return {abrir,cerrar,click,pbrReady,get activo(){return activo;},get recorriendo(){return activo&&modo==='adentro';},actualizar(){if(activo){if(movimiento&&!ficha.open&&performance.now()-ultimoPaso>80){ultimoPaso=performance.now();paso(movimiento);}aplicar();if(modo==='adentro')mirar();}},diagnostico(){return {nivel,modo,vistaUnidad,vistaDetalle,noche,movimiento,muebles:items.length,pared,seleccion:elegido,guardado:items.map(i=>({...i}))};}};
 }
