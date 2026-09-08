@@ -485,7 +485,7 @@ body.en-contacto .wa-flotante{opacity:0!important;visibility:hidden!important}
 /* ── movimiento: todo lo que anima respeta reduced-motion ── */
 @media (prefers-reduced-motion:reduce){
   #intro{transition:none}
-  .hero-boceto{display:none}
+  .hero-boceto{display:block}
   .hero-velo{opacity:1}
   .hero-texto{opacity:1}
   .partir .l{transform:none!important;opacity:1!important}
