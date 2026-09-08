@@ -694,12 +694,11 @@
   const heroTexto = $(".hero-texto");
   const LOGO = { la: { x0: 0.42, x1: 0.545, y0: 0.325, y1: 0.45 }, torre: { x0: 0.405, x1: 0.595, y0: 0.44, y1: 0.675 } };
   const EJE = { x: 0.43, y: 0.5 };
-  // el dibujo termina a los 4,8 s y se SOSTIENE hasta los 5,7: en el video el
-  // boceto completo se ve entero un momento antes de volverse arcilla
-  // 10 s en total (3/9: se dobló, y después dos veces «un 30 % más rápido»)
+  // El boceto se sostiene antes de la arcilla. Al completar el color,
+  // dejar una breve pausa sin guías antes de presentar el título (unos 11 s).
   const DUR = { lineas: 4.7, cotas: 1.5, arcilla: 1.2, materiales: 3.8, cierre: 0.7 };
-  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.6, materiales: 6.5, cierre: 10.4 };
-  const TOTAL = INICIO.cierre + DUR.cierre;
+  const INICIO = { lineas: 0, cotas: 2.9, arcilla: 5.2, materiales: 6.6, cierre: 9.5 };
+  const TOTAL = INICIO.materiales + DUR.materiales + 0.55;
   const esCelular = Math.min(screen.width, screen.height) < 700;
   let escena = null, tHero = 0, heroListo = false, heroTerminado = false, apurar = false, ultimoTs = null, preparando = false, tituloDisparado = false;
 
@@ -997,7 +996,7 @@
 
     escena = { W, H, base: sinLetras, trazos, porFin, guias, esc, arcilla, cielo, papel, ruido, ruido2, NW, NH, prepMs: Math.round(performance.now() - tPrep),
       hecho: lienzo(W, H), hechoHasta: 0, ultimoT: -1,
-      mascara: lienzo(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
+      mascara: lienzo(NW, NH), mascaraDatos: new ImageData(NW, NH), tmp: lienzo(W, H), out: lienzo(W, H) };
     heroListo = true;
   }
 
@@ -1039,14 +1038,14 @@
 
   function mascaraMateriales(p) {
     const { NW, NH, ruido, mascara, W, H } = escena;
-    const img = mascara.getContext("2d").createImageData(NW, NH);
+    const img = escena.mascaraDatos;
     const { ruido2 } = escena;
     const pe = Math.pow(p, 0.9);                       // casi lineal: la maqueta blanca se ve un buen rato en los bordes
-    const cx = EJE.x, cy = 0.5, R = pe * 1.3, pluma = 0.32;
+    const cx = EJE.x, cy = 0.5, R = pe * 1.4, pluma = 0.23;
     for (let y = 0; y < NH; y++) for (let x = 0; x < NW; x++) {
       const fx = x / NW, fy = y / NH, d = Math.hypot((fx - cx) * (W / H), fy - cy) / 1.1;
       const n = 0.62 * ruido[y * NW + x] + 0.38 * ruido2[y * NW + x];
-      const a = clamp01((R - d) / pluma + (n - 0.5) * 1.15), k = (y * NW + x) * 4;
+      const a = suave(clamp01((R - d) / pluma + (n - 0.5) * 2.1)), k = (y * NW + x) * 4;
       img.data[k] = img.data[k + 1] = img.data[k + 2] = 0; img.data[k + 3] = a * 255;
     }
     mascara.getContext("2d").putImageData(img, 0, 0);
@@ -1090,7 +1089,7 @@
       t2.globalCompositeOperation = "destination-in"; t2.imageSmoothingEnabled = true; t2.drawImage(m, 0, 0, W, H);
       o.drawImage(e.tmp, 0, 0);
     }
-    // 5 · las cotas y las guías se quedan sobre la torre a color, hasta el cierre (3/9)
+    // 5 · las guías desaparecen antes del render completo y de la entrada del título.
     const pCierre = fase(t, "cierre");
     const vivas = 1 - pCierre;
     if (vivas > 0 && t > INICIO.cotas) {
@@ -1117,18 +1116,14 @@
     const dpr = Math.min(2, devicePixelRatio || 1);          // a la densidad real de la pantalla
     const pw = Math.round(vw * dpr), ph = Math.round(vh * dpr);
     if (boceto.width !== pw || boceto.height !== ph) { boceto.width = pw; boceto.height = ph; }
-    // el cuadro baja una franja (16 % del alto): la azotea y su cota quedan a la
-    // vista debajo de la cabecera, y arriba el cielo sigue con las primeras
-    // filas del propio cuadro estiradas (pedido del 3/9: «bajar un poco el hero»)
-    // La torre completa en cualquier pantalla (3/9). El cuadro entra entero por
-    // alto y, en pantallas angostas, además la torre entera por ancho (ocupa
-    // el 36 % del cuadro). Lo que sobra alrededor se rellena con el propio
-    // cuadro espejado y muy desenfocado, con una pluma en la costura.
+    // Reservar cielo debajo de la cabecera sin recortar la azotea.
+    // En móvil prima el ancho completo de la torre; el título conserva su espacio al pie.
     const ANCHO_TORRE = 0.36;
-    const esc = Math.min(ph / e.H, pw / (ANCHO_TORRE * e.W));
+    const margenSuperior = Math.min(100, Math.max(72, vh * 0.10)) * dpr;
+    const esc = Math.min((ph - margenSuperior) / e.H, pw / (ANCHO_TORRE * e.W));
     const dw = e.W * esc, dh = e.H * esc;
     const dx = dw <= pw ? (pw - dw) / 2 : Math.max(pw - dw, Math.min(0, pw / 2 - EJE.x * dw));
-    const dy = dh <= ph ? (ph - dh) * 0.42 : 0;
+    const dy = margenSuperior + Math.max(0, ph - margenSuperior - dh) * 0.30;
     const g = boceto.getContext("2d"); g.imageSmoothingQuality = "high"; g.clearRect(0, 0, pw, ph);
     g.drawImage(e.papel, 0, 0, pw, ph);
     if (!e.mini) { e.mini = lienzo(1, 1); e.mini2 = lienzo(1, 1); }
@@ -1146,38 +1141,36 @@
     const arr = Math.max(0, Math.round(dy)), aba = Math.max(0, Math.round(ph - dy - dh));
     const relleno = Math.min(1, (e.fundido || 0) * 1.4);   // el relleno espejado aparece con el render; antes, papel liso
     g.globalAlpha = relleno;
+    const pluma = Math.min(100 * dpr, dh * 0.12);
     const sV = Math.min(e.H, Math.round(e.H * 0.06));
-    if (arr > 0) espejo(g, Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sV, 0, 0, pw, arr + 1, false, true);            // arriba: el cielo
-    if (aba > 0) espejo(g, 0, e.H - sV, e.W, sV, 0, dy + dh - 1, pw, aba + 1, false, true);                                    // abajo: la vereda
-    if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(g, 0, 0, sw, e.H, 0, dy, izq + 1, dh, true, false); }
-    if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(g, e.W - sw, 0, sw, e.H, dx + dw - 1, dy, der + 1, dh, true, false); }
+    if (arr > 0) espejo(g, Math.round(e.W * 0.6), 0, Math.round(e.W * 0.4), sV, 0, 0, pw, arr + pluma, false, true);            // arriba: el cielo
+    if (aba > 0) espejo(g, 0, e.H - sV, e.W, sV, 0, dy + dh - pluma, pw, aba + pluma, false, true);                                    // abajo: la vereda
+    if (izq > 0) { const sw = Math.min(e.W, Math.ceil(izq / esc)); espejo(g, 0, 0, sw, e.H, 0, dy, izq + pluma, dh, true, false); }
+    if (der > 0) { const sw = Math.min(e.W, Math.ceil(der / esc)); espejo(g, e.W - sw, 0, sw, e.H, dx + dw - pluma, dy, der + pluma, dh, true, false); }
     g.globalAlpha = 1;
-    g.drawImage(e.out, dx, dy, dw, dh);
-    // la pluma: el borde del cuadro se desenfoca hacia adentro, y la costura con el relleno desaparece
-    const pluma = Math.round(Math.min(90, Math.max(pw, ph) * 0.06));
-    const plumar = (sx, sy, sw, sh, tx, ty, tw, th, horizontal, alFinal) => {
-      if (!e.plumaC) e.plumaC = lienzo(1, 1);
-      const pc = e.plumaC, cx = pc.getContext("2d");
-      if (pc.width !== Math.round(tw) || pc.height !== Math.round(th)) { pc.width = Math.max(1, Math.round(tw)); pc.height = Math.max(1, Math.round(th)); }
-      cx.globalCompositeOperation = "source-over"; cx.clearRect(0, 0, pc.width, pc.height);
-      espejo(cx, sx, sy, sw, sh, 0, 0, pc.width, pc.height, false, false);
-      cx.globalCompositeOperation = "destination-in";
-      const gr = horizontal ? cx.createLinearGradient(0, 0, pc.width, 0) : cx.createLinearGradient(0, 0, 0, pc.height);
-      gr.addColorStop(0, alFinal ? "rgba(0,0,0,0)" : "rgba(0,0,0,1)"); gr.addColorStop(1, alFinal ? "rgba(0,0,0,1)" : "rgba(0,0,0,0)");
-      cx.fillStyle = gr; cx.fillRect(0, 0, pc.width, pc.height); cx.globalCompositeOperation = "source-over";
-      g.drawImage(pc, tx, ty);
+    // Fundir el cuadro contra el cielo y los márgenes extendidos. La pluma
+    // mezcla ambas capas; desenfocar sólo el borde dejaba una línea horizontal.
+    if (!e.encuadre) e.encuadre = lienzo(e.W, e.H);
+    const f = e.encuadre.getContext("2d");
+    f.globalCompositeOperation = "source-over";
+    f.clearRect(0, 0, e.W, e.H); f.drawImage(e.out, 0, 0);
+    const borde = pluma / esc;
+    const fundir = (horizontal, inicio, final, largo) => {
+      if (!inicio && !final) return;
+      const grad = horizontal ? f.createLinearGradient(0, 0, largo, 0) : f.createLinearGradient(0, 0, 0, largo);
+      const ancho = Math.min(0.2, borde / largo);
+      grad.addColorStop(0, inicio ? "transparent" : "black");
+      grad.addColorStop(ancho, "black"); grad.addColorStop(1 - ancho, "black");
+      grad.addColorStop(1, final ? "transparent" : "black");
+      f.globalCompositeOperation = "destination-in"; f.fillStyle = grad; f.fillRect(0, 0, e.W, e.H);
     };
-    const sPl = Math.ceil(pluma / esc);
-    g.globalAlpha = relleno;
-    if (izq > 0) plumar(0, 0, sPl, e.H, dx, dy, pluma, dh, true, false);
-    if (der > 0) plumar(e.W - sPl, 0, sPl, e.H, dx + dw - pluma, dy, pluma, dh, true, true);
-    if (arr > 0) plumar(0, 0, e.W, sPl, dx, dy, dw, pluma, false, false);
-    if (aba > 0) plumar(0, e.H - sPl, e.W, sPl, dx, dy + dh - pluma, dw, pluma, false, true);
-    g.globalAlpha = 1;
+    fundir(true, izq > 0, der > 0, e.W);
+    fundir(false, arr > 0, aba > 0, e.H);
+    g.drawImage(e.encuadre, dx, dy, dw, dh);
 
   }
 
-  /* el título aparece cuando el render está casi entero: «LA», y después «TORRE» */
+  /* el título aparece después de una pausa con el render limpio: «LA», y después «TORRE» */
   function dispararTitulo() {
     if (tituloDisparado) return; tituloDisparado = true;
     heroSec.classList.add("claro"); document.body.classList.add("hero-claro");
@@ -1200,12 +1193,16 @@
     const dt = Math.min(0.05, (ts - ultimoTs) / 1000); ultimoTs = ts;
     tHero += dt * (apurar ? 6 : 1);
     pintarHero(tHero); presentar();
-    if (fase(tHero, "materiales") > 0.8) dispararTitulo();
     if (tHero >= TOTAL) { terminarHero(); return; }
     requestAnimationFrame(bucleHero);
   }
   function arrancarHero() {
-    if (reduce) { boceto.style.display = "none"; heroSec.classList.add("claro"); document.body.classList.add("hero-claro"); heroTexto.classList.add("visible"); heroTerminado = true; return; }
+    if (reduce) {
+      const mostrar = () => { prepararHero(); pintarHero(TOTAL); presentar(); terminarHero(); };
+      if (heroImg.complete && heroImg.naturalWidth) mostrar();
+      else heroImg.addEventListener("load", mostrar, { once: true });
+      return;
+    }
     if (!heroListo) prepararHero();
     const apurarYa = () => { apurar = true; };
     addEventListener("wheel", apurarYa, { passive: true, once: true });
