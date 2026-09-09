@@ -27,7 +27,7 @@
 
   const RESPALDO = [
     { id:"6A", piso:6, torre:"Norte", tip:"Horizonte", sup:37, estado:"libre" },
-    { id:"5A", piso:5, torre:"Norte", tip:"Evolución", sup:42, estado:"libre" },
+    { id:"5A", piso:5, torre:"Norte", tip:"Evolución", sup:37, estado:"libre" },
     { id:"4A", piso:4, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
     { id:"3A", piso:3, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
     { id:"2A", piso:2, torre:"Norte", tip:"Esencia",   sup:55, estado:"libre" },
@@ -115,12 +115,12 @@
       "tipologias.rotulo": "Las plantas", "tipologias.titulo": "Cuatro tipologías",
       "tipologias.texto": "Del monoambiente al dormitorio en suite. Cada tipología con su lámina, su superficie y las unidades donde se repite.",
       "tipo.horizonte.desc": "Monoambiente · 37 m²", "tipo.horizonte.amb": "Dormitorio · Kitchenette · Baño", "tipo.horizonte.ubic": "Unidad 6.º A · Torre Norte",
-      "tipo.evolucion.desc": "Monoambiente con terraza propia · 42 m²", "tipo.evolucion.amb": "Dormitorio · Kitchenette · Baño · Terraza propia", "tipo.evolucion.ubic": "Unidad 5.º A · Torre Norte",
+      "tipo.evolucion.desc": "Monoambiente · 37 m²", "tipo.evolucion.amb": "Ambiente único · Kitchenette · Baño", "tipo.evolucion.ubic": "Unidad 5.º A · Torre Norte",
       "tipo.esencia.desc": "1 dormitorio en suite · 55 m²", "tipo.esencia.amb": "Cocina · Comedor-estar · Suite · 2 balcones", "tipo.esencia.ubic": "Unidades 1.º a 4.º A · Torre Norte",
       "tipo.cuspide.desc": "1 dormitorio en suite · 55 m²", "tipo.cuspide.amb": "Cocina · Comedor-estar · Suite · 2 balcones", "tipo.cuspide.ubic": "Unidades 1.º a 6.º B · Torre Sur",
       "tipo.laminaPie": "Lámina de la tipología, con su ubicación en planta", "tipo.renderPie": "Render ilustrativo del proyecto",
       "unidades.rotulo": "Las residencias", "unidades.titulo": "Elegí tu unidad",
-      "unidades.texto": "El esquema está vivo: muestra el estado real de cada unidad. La reserva se confirma siempre con una persona.",
+      "unidades.texto": "Elegí una torre y tocá una unidad para ver sus detalles.",
       "unidades.nota": "Los valores se conversan al consultar. Acá no se reserva ni se seña online.",
       "torre.norte": "Torre Norte", "torre.sur": "Torre Sur", "piso": "Piso",
       "estado.libre": "Libre", "estado.reservada": "Reservada", "estado.vendida": "Vendida",
@@ -133,22 +133,22 @@
       "vida.suite.t": "La suite", "vida.suite.p": "Dormitorio en suite, con dos balcones propios.",
       "vida.terraza.t": "Tu terraza", "vida.terraza.p": "La terraza propia del 5.º de Torre Norte, sobre el retiro del volumen, con los cerros de Salta de fondo.",
       "tresD.rotulo": "El edificio en 3D", "tresD.titulo": "Girá la torre y mirá cómo se prende de noche",
-      "tresD.texto": "El volumen del edificio, piso por piso, con el recorrido real del sol en Salta. Tocá una unidad para ver su ficha.",
-      "tresD.abrir": "Abrir el recorrido 3D", "tresD.peso": "Se carga al abrir", "tresD.showroom": "Probar showroom",
+      "tresD.texto": "Girá el edificio, elegí una vista y probá el día o la noche.",
+      "tresD.abrir": "Explorar el edificio", "tresD.peso": "Se carga al abrir", "tresD.showroom": "Probar showroom",
       "desdeArriba.rotulo": "Los alzados", "desdeArriba.titulo": "Dos torres, dos alzados",
-      "desdeArriba.texto": "Los alzados del proyecto, tal como están en los planos: el frente sobre Aniceto Latorre es Torre Norte y el contrafrente es Torre Sur. Elegí una torre para ver su alzado.",
-      "desdeArriba.norte": "Sobre Aniceto Latorre. Cuatro plantas con balcones y, arriba, dos plantas que retiran el frente unos cuatro metros: por eso el 5.º tiene terraza propia sobre el retiro y el 6.º es el monoambiente más chico.",
-      "desdeArriba.sur": "Al fondo del lote. Seis plantas iguales, una unidad de un dormitorio por planta, cada una con su balcón y su parasol de listones.",
+      "desdeArriba.texto": "Dos vistas del proyecto. Deslizá para descubrir ambas torres.",
+      "desdeArriba.norte": "Torre Norte · Frente sobre Aniceto Latorre.",
+      "desdeArriba.sur": "Torre Sur · Contrafrente.",
       "ubicacion.rotulo": "El entorno", "ubicacion.titulo": "La ciudad a mano. El ruido, lejos.",
       "ubicacion.texto": "Balcarce y Aniceto Latorre: comercio, salud y el polo gastronómico de Salta a distancia de caminata.",
       "ubicacion.shopping": "Portal Salta Shopping", "ubicacion.paseo": "Paseo Balcarce", "ubicacion.hospital": "Hospital Materno Infantil",
       "ubicacion.maps": "Abrir en Google Maps",
-      "plan.rotulo": "El plan de pago", "plan.titulo": "Se compra en pozo, en tres momentos",
-      "plan.texto": "Un solo cuadro de precios, el mismo para todos. Los valores se confirman al consultar.",
+      "plan.rotulo": "El plan de pago", "plan.titulo": "Tres momentos para tu unidad",
+      "plan.texto": "Consultá los valores y las condiciones vigentes.",
       "plan.anticipo.cuando": "Al firmar", "plan.anticipo.t": "Anticipo al boleto", "plan.anticipo.p": "Se firma el boleto de compraventa y se paga el anticipo. La unidad queda reservada a tu nombre.",
       "plan.cuotas.cuando": "Durante la obra", "plan.cuotas.t": "Cuotas durante la obra", "plan.cuotas.p": "El saldo se paga en cuotas mensuales mientras la obra avanza, hasta la entrega.",
       "plan.posesion.cuando": "Al terminar", "plan.posesion.t": "Posesión", "plan.posesion.p": "Con la obra terminada se escritura y recibís las llaves de tu unidad.",
-      "avance.rotulo": "La obra", "avance.titulo": "Avance de obra",
+      "avance.proximamente": "Próximamente", "avance.rotulo": "La obra", "avance.titulo": "Avance de obra",
       "avance.texto": "Una foto fechada por cada certificación de obra. Sin porcentajes que después no se puedan sostener.",
       "avance.sinFotos": "Todavía no hay fotos de obra cargadas. Cada certificación suma acá su foto con fecha.",
       "contacto.rotulo": "Hablemos", "contacto.titulo": "Consultar por una unidad",
@@ -159,9 +159,9 @@
       "contacto.fallo": "No pudimos registrar la consulta recién. Mandala por WhatsApp y llega igual.",
       "contacto.pie": "Te contestamos por WhatsApp o por teléfono, con el plano de la unidad y las formas de pago.",
       "contacto.sinUnidad": "Todavía no sé",
-      "pie.bajada": "Doce unidades en pozo entre Torre Norte y Torre Sur, sobre Balcarce y Aniceto Latorre, Salta Capital.",
+      "pie.bajada": "La Torre · Balcarce y Aniceto Latorre, Salta.",
       "pie.edificio": "El edificio", "pie.donde": "Dónde queda", "pie.quien": "Quién vende",
-      "pie.comercializa": "Comercialización exclusiva Grupo LPZ-Molins",
+      "pie.comercializa": "Molins Negocios Inmobiliarios",
       "pie.aviso": "Las imágenes son renders del proyecto. Medidas y terminaciones sujetas a ajustes de obra.",
       "cookies.texto": "Al navegar por este sitio <strong>aceptás el uso de cookies</strong> para mejorar tu experiencia.",
       "cookies.boton": "Entendido",
@@ -170,7 +170,7 @@
       "nav.galeria": "Desde la calle",
       "galeria.rotulo": "La galería",
       "galeria.titulo": "La Torre desde la calle",
-      "galeria.texto": "Seis vistas del edificio: de frente sobre Aniceto Latorre, desde la vereda, desde la esquina opuesta y desde las cocheras. Tocá una para verla en grande.",
+      "galeria.texto": "Seis miradas de La Torre. Tocá una foto para ampliarla.",
       "galeria.f1": "El frente sobre Aniceto Latorre",
       "galeria.f2": "La cuadra, desde la vereda de enfrente",
       "galeria.f3": "Los balcones de Torre Norte, de cerca",
@@ -293,7 +293,7 @@
       "plan.cuotas.p": "Spread across the construction period, as the building goes up.",
       "plan.posesion.cuando": "On completion", "plan.posesion.t": "Possession",
       "plan.posesion.p": "Once construction is finished, the unit is handed over to you.",
-      "avance.rotulo": "Construction progress",
+      "avance.proximamente": "Coming soon", "avance.rotulo": "Construction progress",
       "avance.titulo": "Stage by stage",
       "avance.texto": "Every time a stage of the work is certified, a dated photo is added here. You can follow the building from the ground up without having to ask.",
       "avance.sinFotos": "There are no construction photos yet. The first ones will be posted here as the work moves forward.",
@@ -310,7 +310,7 @@
       "contacto.fallo": "The message did not go through. Try again, or message us on WhatsApp.",
       "contacto.pie": "You will hear back from Francisco Molins, licensed real estate broker, CUCIS 251.",
       "pie.aviso": "The images are renders of the project. Dimensions and finishes are subject to adjustments during construction.",
-      "pie.comercializa": "Sold exclusively by Grupo LPZ-Molins",
+      "pie.comercializa": "Molins Real Estate",
       "nav.visita": "Tour",
       "nav.unidades": "Units",
       "nav.tipologias": "Layouts",
@@ -497,7 +497,7 @@
       "plan.cuotas.p": "Durante a obra, até a entrega.",
       "plan.posesion.cuando": "Na conclusão", "plan.posesion.t": "Entrega das chaves",
       "plan.posesion.p": "Com a obra concluída, você recebe o seu apartamento.",
-      "avance.rotulo": "Andamento da obra",
+      "avance.proximamente": "Em breve", "avance.rotulo": "Andamento da obra",
       "avance.titulo": "A obra, medição por medição.",
       "avance.texto": "A cada medição da obra entra uma foto nova, com data. Assim você acompanha o andamento sem precisar ir até lá.",
       "avance.sinFotos": "Ainda não há fotos da obra. As primeiras entram com a primeira medição.",
@@ -514,7 +514,7 @@
       "contacto.fallo": "Não conseguimos enviar a sua mensagem. Tente de novo ou chame no WhatsApp.",
       "contacto.pie": "Seus dados servem só para responder a esta mensagem.",
       "pie.aviso": "As imagens são renders do projeto. Medidas e acabamentos estão sujeitos a ajustes de obra.",
-      "pie.comercializa": "Comercialização exclusiva Grupo LPZ-Molins",
+      "pie.comercializa": "Molins Negócios Imobiliários",
       "nav.visita": "A visita",
       "nav.unidades": "Apartamentos",
       "nav.tipologias": "Plantas",
@@ -1307,6 +1307,7 @@
     });
     // la galería: cada foto sube, escalonada según su columna
     $$(".galeria-grid figure").forEach((el, i) => {
+      if(matchMedia("(max-width:759px)").matches)return;
       gsap.fromTo(el, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out", delay: (i % 3) * 0.1, scrollTrigger: { trigger: el, start: "top 90%", once: true } });
     });
     // las palabras grandes derivan de a poco con el scroll
@@ -1358,14 +1359,14 @@
     if (cambia) fotoActiva = fotoActiva === "a" ? "b" : "a";
     $("#res-lamina-img").src = tp.lamina; $("#res-lamina-img").alt = tp.nombre;
     $("#res-lamina-pie").textContent = tp.nombre + " · " + t("tipo.laminaPie");
-    $("#res-consultar").addEventListener("click", () => { const u = UNIDADES.find((x) => slugDe(x.tip) === clave); if (u) $("#form-unidad").value = u.id; }, { once: true });
+    $("#res-consultar")?.addEventListener("click", () => { const u = UNIDADES.find((x) => slugDe(x.tip) === clave); if (u) $("#form-unidad").value = u.id; }, { once: true });
   }
   const tipoIdx = () => TIPOS.findIndex((x) => x.clave === tipoActiva);
   $("#res-prev").addEventListener("click", () => pintarTipologia(TIPOS[(tipoIdx() + TIPOS.length - 1) % TIPOS.length].clave));
   $("#res-next").addEventListener("click", () => pintarTipologia(TIPOS[(tipoIdx() + 1) % TIPOS.length].clave));
-  $("#res-lamina-btn").addEventListener("click", () => { $("#res-lamina").hidden = false; });
+  $("#res-lamina-btn")?.addEventListener("click", () => { $("#res-lamina").hidden = false; });
   $("#res-lamina-cerrar").addEventListener("click", () => { $("#res-lamina").hidden = true; });
-  function pintarContador() { $("#res-libres").textContent = String(UNIDADES.filter((u) => u.estado === "libre").length); }
+  function pintarContador() { if ($("#res-libres")) $("#res-libres").textContent = String(UNIDADES.filter((u) => u.estado === "libre").length); }
 
   function pintarUnidades() {
     pintarContador();
@@ -1521,7 +1522,7 @@
   }
 
   /* ── plan de pago: las fichas se llenan una tras otra al ritmo del scroll ── */
-  const pasos = $("#pasos");
+  const pasos = null; // La secuencia compacta se configura junto a los alzados.
   if (pasos) {
     const fichas = $$(".paso", pasos);
     const marcar = () => fichas.forEach((f) => f.classList.toggle("lleno", parseFloat(getComputedStyle(f).getPropertyValue("--llenado")) > 0.55));
@@ -1556,7 +1557,7 @@
         return { id, piso: p.piso ?? +id[0], torre: id[1] === "A" ? "Norte" : "Sur", tip: p.tipologia || base.tip || "", sup: p.supTotal ?? base.sup ?? 0,
           estado: p.estado === "VENDIDA" ? "vendida" : p.estado === "RESERVADA" ? "reservada" : "libre" };
       }).filter(Boolean);
-      if (map.length) { UNIDADES = map; pintarUnidades(); }
+      if (map.length) { map.forEach(u=>{if(u.id==="5A")u.sup=37;}); UNIDADES = map; pintarUnidades(); }
     }).catch(() => {});
 
   let abActivo = "norte";
@@ -1567,6 +1568,30 @@
     $$("#alzados img").forEach((im, k) => im.classList.toggle("activa", (k === 0) === (cual === "norte")));
   }
   $$(".ab-btn").forEach((b) => b.addEventListener("click", () => pintarAB(b.dataset.ab)));
+
+  $$("[data-tab-torre]").forEach(b=>b.addEventListener("click",()=>{
+    $(".torres").dataset.activa=b.dataset.tabTorre;
+    $$("[data-tab-torre]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  }));
+  if(!window.gsap || !window.ScrollTrigger)document.documentElement.classList.add("sin-animaciones");
+  if(window.gsap && window.ScrollTrigger && !reduce){
+    const mm=gsap.matchMedia();
+    mm.add("(max-width:759px)",()=>{
+      const figs=$$("#galeria-grid figure");
+      gsap.set(figs,{clearProps:"all"});
+      gsap.set(figs.slice(1),{yPercent:110});
+      const tl=gsap.timeline({scrollTrigger:{trigger:"#galeria-grid",start:"top 100px",end:"+=850",pin:true,scrub:.5,invalidateOnRefresh:true}});
+      figs.slice(1).forEach((f,i)=>tl.to(f,{yPercent:0,duration:1,ease:"none"},i));
+      return ()=>gsap.set(figs,{clearProps:"all"});
+    });
+    ScrollTrigger.create({trigger:"#arriba",start:"top 90px",end:"+=420",pin:true,onUpdate:st=>{const next=st.progress>.48?"sur":"norte";if(next!==abActivo)pintarAB(next);}});
+    const cards=$$("#pasos .paso");
+    gsap.set(cards,{autoAlpha:0});gsap.set(cards[0],{autoAlpha:1});
+    ScrollTrigger.create({trigger:"#plan",start:"top 90px",end:"+=650",pin:true,onUpdate:st=>{
+      const active=Math.min(2,Math.floor(st.progress*3));
+      cards.forEach((c,i)=>{c.inert=i!==active;gsap.set(c,{autoAlpha:i===active?1:0,y:i===active?0:18});});
+    }});
+  }
 
   // el 3D se carga cuando se pide: es el asset más pesado de la página
   $("#tresd-pantalla").addEventListener("click", () => {

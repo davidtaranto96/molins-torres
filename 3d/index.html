@@ -232,6 +232,8 @@
   @media (prefers-reduced-motion: reduce){
     #ficha .caja{transition:opacity 200ms ease,visibility 200ms}
   }
+#reloj .caja{display:flex;justify-content:center;gap:8px;border-radius:16px;padding:8px}
+#reloj .fila,#reloj input,#reloj .pie{display:none}#reloj button{flex:1;min-height:44px;font-size:14px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -256,6 +258,7 @@
 
 <div class="capa" id="reloj">
   <div class="caja">
+    <button type="button" data-hora="810" aria-pressed="true">Día</button><button type="button" data-hora="1290" aria-pressed="false">Noche</button>
     <div class="fila">
       <span class="hora" id="hora">16:30</span>
       <span class="momento" id="momento">Media tarde</span>
@@ -320,7 +323,7 @@
 
 <script type="module">
 import * as THREE from 'three';
-import { mejorarExterior } from './exterior.js?v=20260908c';
+import { mejorarExterior } from './exterior.js?v=20260909a';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1441,6 +1444,7 @@ function ponerHora(m) {
   $('hora').textContent = String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
   $('momento').textContent = momentoDelDia(minutos, alt);
   if (slider.value != minutos) slider.value = minutos;
+  document.querySelectorAll('[data-hora]').forEach(b=>b.setAttribute('aria-pressed',String((+b.dataset.hora<1100)===(minutos>=420&&minutos<1100))));
 }
 slider.addEventListener('input', () => { corriendo = false; btnAuto.setAttribute('aria-pressed', 'false'); btnAuto.textContent = 'Que corra el día'; ponerHora(+slider.value); });
 btnAuto.addEventListener('click', () => {
@@ -1448,6 +1452,7 @@ btnAuto.addEventListener('click', () => {
   btnAuto.setAttribute('aria-pressed', corriendo ? 'true' : 'false');
   btnAuto.textContent = corriendo ? 'Parar el día' : 'Que corra el día';
 });
+document.querySelectorAll('[data-hora]').forEach(b=>b.addEventListener('click',()=>{corriendo=false;ponerHora(+b.dataset.hora);}));
 ponerHora(minutos);
 
 /* ══════════════════════════════════════════════════════════════════════════
