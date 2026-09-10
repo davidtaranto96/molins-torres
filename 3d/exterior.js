@@ -57,15 +57,12 @@ export async function mejorarExterior({edificio,mat,M,zLM,zLF,yNivel}) {
     }
   }
   const vines=new THREE.Mesh(mergeGeometries(colgantes),hojas);vines.name='Plantas colgantes';vines.castShadow=true;edificio.add(vines);colgantes.forEach(g=>g.dispose());
-  // Renders reales del proyecto: ambientación visible en las ventanas, también al encenderse.
-  const interiores=await Promise.all(['interior-estar.jpg','interior-comedor.jpg','area-dormitorio.jpg'].map(async file=>{
-    const tex=await loader.loadAsync('../img/'+file);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;return tex;
-  }));
-  let n=0;const vistos=new Set();
+  // Vidrio sin imágenes pegadas: reflejos suaves y luz cálida al anochecer.
+  const vistos=new Set();
   edificio.traverse(o=>{
     const m=o.material;
     if(!o.isMesh||!m||m.metalness!==.6||!m.emissive||vistos.has(m))return;
-    vistos.add(m);m.map=interiores[n++%interiores.length];m.emissiveMap=m.map;m.color.set(0xffffff);m.roughness=.32;m.metalness=.08;m.envMapIntensity=.3;m.needsUpdate=true;
+    vistos.add(m);m.roughness=.16;m.envMapIntensity=1.2;m.needsUpdate=true;
   });
   leaf.dispose();
   for(const material of [mat.hormigon,mat.encofrado,mat.losa,mat.revoque]){

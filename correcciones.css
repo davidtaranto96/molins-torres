@@ -13,3 +13,33 @@
 html.sin-animaciones #plan .pasos{display:flex;flex-direction:column;gap:12px}
 
 @media(max-width:759px){html.sin-animaciones .galeria-grid{height:auto;display:flex;overflow-x:auto}html.sin-animaciones .galeria-grid figure{flex:0 0 90%;height:55svh}}
+
+/* Recorridos con scroll: cada estado entra entero en pantalla. */
+.residencias.con-recorrido{height:calc(100svh - 80px);min-height:0;grid-template-rows:minmax(0,1fr)}
+.con-recorrido .res-foto{min-height:0;height:100%;order:0}
+.con-recorrido .res-panel{padding:32px var(--lado);gap:14px;min-height:0}
+.con-recorrido .res-lista button{font-size:clamp(30px,4.2vw,54px)}
+#plan{padding-top:36px;padding-bottom:36px}
+#plan .titulo{font-size:clamp(30px,3.5vw,44px);margin:10px 0}
+#plan .parrafo{font-size:15px;margin:10px auto 0}
+#plan .pasos{max-width:600px;margin-top:32px;gap:0;min-height:250px}
+#plan .paso-cuerpo{min-height:250px;padding:24px 28px}
+#plan .paso h3,#plan .paso-texto,#plan .paso-cuando{mix-blend-mode:normal;color:var(--tinta)}
+#plan .paso-num{font-size:48px}
+.paso-logro{position:absolute;right:24px;top:24px;width:54px;height:54px;color:var(--terracota)}
+.paso-logro svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.paso-logro circle,.paso-logro path{stroke-dasharray:1}
+@media(max-width:899px){
+ .residencias.con-recorrido{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+ .con-recorrido .res-panel{padding:16px var(--lado);gap:8px}
+ .con-recorrido .res-panel>.rotulo{display:none}
+ .con-recorrido .res-lista{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin:0}
+ .con-recorrido .res-lista button{font-size:28px;padding:4px 0;min-height:44px}
+ .con-recorrido .res-ficha{padding-top:8px}
+ .con-recorrido .res-desc{font-size:14px;margin:0}
+ .con-recorrido .res-amb,.con-recorrido .res-ubic{font-size:12px;margin:4px 0 0}
+ .con-recorrido .res-palabra{font-size:36px;bottom:16px}
+ #plan{padding:24px var(--lado)}
+ #plan .paso-cuerpo{padding:20px;min-height:270px}
+ #plan .paso-texto{font-size:15px}
+}

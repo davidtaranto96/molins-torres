@@ -1333,12 +1333,22 @@
 
   /* ── 7 · tipologías, unidades, A/B, 3D ─────────────────────────────────── */
   let tipoActiva = TIPOS[0].clave;
+  let recorridoTipos;
+  function elegirTipologia(clave) {
+    pintarTipologia(clave);
+    if (recorridoTipos?.isActive) {
+      const i = TIPOS.findIndex(tp => tp.clave === clave);
+      const destino = recorridoTipos.start + (recorridoTipos.end - recorridoTipos.start) * ((i + .35) / TIPOS.length);
+      if (lenis) lenis.scrollTo(destino, {immediate:true});
+      else window.scrollTo({top:destino,behavior:"instant"});
+    }
+  }
   const resLista = $("#res-lista");
   TIPOS.forEach((tp) => {
     const li = document.createElement("li");
     const b = document.createElement("button");
     b.type = "button"; b.setAttribute("role", "tab"); b.textContent = tp.nombre; b.dataset.tipo = tp.clave;
-    b.addEventListener("click", () => pintarTipologia(tp.clave));
+    b.addEventListener("click", () => elegirTipologia(tp.clave));
     li.appendChild(b); resLista.appendChild(li);
   });
   let fotoActiva = "a";
@@ -1362,8 +1372,8 @@
     $("#res-consultar")?.addEventListener("click", () => { const u = UNIDADES.find((x) => slugDe(x.tip) === clave); if (u) $("#form-unidad").value = u.id; }, { once: true });
   }
   const tipoIdx = () => TIPOS.findIndex((x) => x.clave === tipoActiva);
-  $("#res-prev").addEventListener("click", () => pintarTipologia(TIPOS[(tipoIdx() + TIPOS.length - 1) % TIPOS.length].clave));
-  $("#res-next").addEventListener("click", () => pintarTipologia(TIPOS[(tipoIdx() + 1) % TIPOS.length].clave));
+  $("#res-prev").addEventListener("click", () => elegirTipologia(TIPOS[(tipoIdx() + TIPOS.length - 1) % TIPOS.length].clave));
+  $("#res-next").addEventListener("click", () => elegirTipologia(TIPOS[(tipoIdx() + 1) % TIPOS.length].clave));
   $("#res-lamina-btn")?.addEventListener("click", () => { $("#res-lamina").hidden = false; });
   $("#res-lamina-cerrar").addEventListener("click", () => { $("#res-lamina").hidden = true; });
   function pintarContador() { if ($("#res-libres")) $("#res-libres").textContent = String(UNIDADES.filter((u) => u.estado === "libre").length); }
@@ -1521,25 +1531,6 @@
     $("#ubicacion").addEventListener("keydown", (ev) => { if (ev.key === "Escape") activar(null); });
   }
 
-  /* ── plan de pago: las fichas se llenan una tras otra al ritmo del scroll ── */
-  const pasos = null; // La secuencia compacta se configura junto a los alzados.
-  if (pasos) {
-    const fichas = $$(".paso", pasos);
-    const marcar = () => fichas.forEach((f) => f.classList.toggle("lleno", parseFloat(getComputedStyle(f).getPropertyValue("--llenado")) > 0.55));
-    if (reduce || !window.gsap || !window.ScrollTrigger) {
-      fichas.forEach((f) => { f.style.setProperty("--llenado", 1); f.classList.add("lleno"); }); pasos.style.setProperty("--progreso", 1);
-    } else {
-      const ancho = matchMedia("(min-width:760px)").matches;
-      const tl = gsap.timeline({ scrollTrigger: ancho
-        ? { trigger: "#plan", start: () => $("#plan").offsetHeight > innerHeight ? "bottom bottom" : "center center", end: "+=160%", pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true, onUpdate: marcar }
-        : { trigger: pasos, start: "top 78%", end: "bottom 45%", scrub: 0.6, onUpdate: marcar } });
-      fichas.forEach((f, i) => {
-        tl.to(pasos, { "--progreso": (i + 1) / fichas.length, duration: 0.55, ease: "none" }, i)
-          .to(f, { "--llenado": 1, duration: 0.7, ease: "power2.inOut" }, i + 0.1);
-      });
-    }
-  }
-
   const slugDe = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   function irA(sel) { const el = $(sel); if (!el) return; if (lenis) lenis.scrollTo(el, { offset: -92 }); else el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); }
 
@@ -1585,12 +1576,30 @@
       return ()=>gsap.set(figs,{clearProps:"all"});
     });
     ScrollTrigger.create({trigger:"#arriba",start:"top 90px",end:"+=420",pin:true,onUpdate:st=>{const next=st.progress>.48?"sur":"norte";if(next!==abActivo)pintarAB(next);}});
+    $("#tipologias").classList.add("con-recorrido");
+    recorridoTipos=ScrollTrigger.create({trigger:"#tipologias",start:"top 80px",end:()=>"+="+Math.max(1200,innerHeight*2),pin:true,invalidateOnRefresh:true,
+      onUpdate:st=>{const tp=TIPOS[Math.min(TIPOS.length-1,Math.floor(st.progress*TIPOS.length))];if(tp.clave!==tipoActiva)pintarTipologia(tp.clave);}});
     const cards=$$("#pasos .paso");
-    gsap.set(cards,{autoAlpha:0});gsap.set(cards[0],{autoAlpha:1});
-    ScrollTrigger.create({trigger:"#plan",start:"top 90px",end:"+=650",pin:true,onUpdate:st=>{
-      const active=Math.min(2,Math.floor(st.progress*3));
-      cards.forEach((c,i)=>{c.inert=i!==active;gsap.set(c,{autoAlpha:i===active?1:0,y:i===active?0:18});});
-    }});
+    const cierre=document.createElement("span");
+    cierre.className="paso-logro";cierre.setAttribute("aria-hidden","true");
+    cierre.innerHTML='<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" pathLength="1"/><path d="m19 32 9 9 18-19" pathLength="1"/></svg>';
+    cards[2].appendChild(cierre);
+    gsap.set(cards,{autoAlpha:0,y:65,scale:.96});gsap.set(cards[0],{autoAlpha:1,y:0,scale:1});
+    const pagos=gsap.timeline({scrollTrigger:{trigger:"#plan",start:()=>$("#plan").offsetHeight>innerHeight-100?"bottom bottom":"center center",end:"+=950",pin:true,scrub:.35,invalidateOnRefresh:true},
+      onUpdate:()=>{const time=pagos.time();const active=time<1.15?0:time<2.45?1:2;cards.forEach((c,i)=>{c.inert=i!==active;c.setAttribute("aria-hidden",String(i!==active));});}});
+    pagos.to({}, {duration:.8});
+    [1,2].forEach((i)=>{
+      const at=.8+(i-1)*1.3;
+      pagos.to(cards[i-1],{autoAlpha:0,y:-45,scale:.94,duration:.55,ease:"power2.inOut"},at)
+        .to(cards[i],{autoAlpha:1,y:0,scale:1,duration:.65,ease:"power2.out"},at+.15);
+    });
+    pagos.fromTo(cierre,{autoAlpha:0,scale:.7},{autoAlpha:1,scale:1,duration:.4},2.85)
+      .fromTo(cierre.querySelectorAll("circle,path"),{strokeDashoffset:1},{strokeDashoffset:0,stagger:.15,duration:.4},2.9)
+      .to("#pasos",{"--progreso":1,duration:3.35,ease:"none"},0)
+      .to({}, {duration:.45});
+    // Los pins se miden en orden visual, incluidos los recorridos creados antes.
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
   }
 
   // el 3D se carga cuando se pide: es el asset más pesado de la página
