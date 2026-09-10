@@ -1,0 +1,9 @@
+# Sólo los archivos de la experiencia pública se despliegan en Pages.
+exclude:
+  - AGENTS.md
+  - README.md
+  - docs
+  - scripts
+  - laboratorio
+  - 3d/blender
+  - sellar.sh

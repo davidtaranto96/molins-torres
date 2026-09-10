@@ -655,8 +655,10 @@
   setTimeout(terminarIntro, 4000);   // pase lo que pase, no se queda clavada
 
   const cab = $(".cab"), menuBtn = $("#cab-menu");
+  $("#cab-panel").inert = true;
   const menuAbierto = () => cab.classList.contains("abierta");
   function abrirMenu(si) {
+    $("#cab-panel").inert = !si;
     cab.classList.toggle("abierta", si); document.body.classList.toggle("menu-abierto", si);
     menuBtn.setAttribute("aria-expanded", si ? "true" : "false");
     $("#cab-menu-t").textContent = t(si ? "nav.cerrar" : "nav.menu");
@@ -1229,7 +1231,9 @@
       gsap.ticker.lagSmoothing(0);
       // los anclas del menú pasan por Lenis, si no saltan sin animar
       $$('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
-        const el = $(a.getAttribute("href")); if (!el) return;
+        const href = a.getAttribute("href");
+        if (!href || !href.startsWith("#") || href.length < 2) return;
+        const el = document.getElementById(href.slice(1)); if (!el) return;
         e.preventDefault(); lenis.scrollTo(el, { offset: -92 });
       }));
     }
@@ -1270,6 +1274,7 @@
     // la burbuja de WhatsApp se esconde donde ya hay un botón grande
     ScrollTrigger.create({ trigger: "#contacto", start: "top 65%", end: "bottom top", onToggle: (st) => document.body.classList.toggle("en-contacto", st.isActive) });
 
+    if (!reduce) {
     // la visita, horizontal y pinneada
     const riel = $("#visita-riel");
     if (riel) {
@@ -1325,6 +1330,7 @@
     // el marco de adentro se abre al llegar: la máscara pasa de un óvalo a la caja entera
     const marco = $("#adentro-marco");
     if (marco) gsap.fromTo(marco, { clipPath: "inset(12% 16% round 220px)" }, { clipPath: "inset(0% 0% round 18px)", ease: "none", scrollTrigger: { trigger: marco, start: "top 90%", end: "top 30%", scrub: true } });
+    }
   } else {
     document.body.classList.add("paso-el-hero");
   }
@@ -1385,18 +1391,44 @@
       UNIDADES.filter((u) => u.torre === torre).sort((a, b) => b.piso - a.piso).forEach((u) => {
         const b = document.createElement("button");
         b.type = "button"; b.className = "unidad " + u.estado;
-        b.innerHTML = `<b>${u.piso}.º ${u.id.slice(-1)}</b><small>${u.tip} · ${t("tipo." + slugDe(u.tip) + ".desc").split(" · ")[0]}</small><span class="m2">${u.sup} m²</span><i class="${u.estado}" title="${t("estado." + u.estado)}"></i>`;
+        b.innerHTML = '<b></b><small></small><span class="m2"></span><i></i>';
+        b.querySelector('b').textContent = `${u.piso}.º ${u.id.slice(-1)}`;
+        b.querySelector('small').textContent = `${u.tip} · ${t("tipo." + slugDe(u.tip) + ".desc").split(" · ")[0]}`;
+        b.querySelector('.m2').textContent = `${u.sup} m²`;
+        b.querySelector('i').className = u.estado;
+        b.querySelector('i').title = t("estado." + u.estado);
         b.addEventListener("click", () => abrirFicha(u));
         cont.appendChild(b);
       });
     });
     const sel = $("#form-unidad"); const actual = sel.value;
-    sel.innerHTML = `<option value="">${t("contacto.sinUnidad")}</option>` + UNIDADES.map((u) => `<option value="${u.id}">${u.piso}.º ${u.id.slice(-1)} · ${u.tip} · ${u.sup} m²</option>`).join("");
+    sel.replaceChildren(new Option(t("contacto.sinUnidad"), ""), ...UNIDADES.map(u => new Option(`${u.piso}.º ${u.id.slice(-1)} · ${u.tip} · ${u.sup} m²`, u.id)));
     if (actual) sel.value = actual;
   }
 
+  // Los diálogos retienen el foco y dejan el contenido de fondo inactivo.
+  const fondosInertes = new Map();
+  function aislarDialogo(dialogo, abrir) {
+    if (abrir) {
+      [...document.body.children].forEach(el => {
+        if (el === dialogo || el.contains(dialogo) || el.id === 'ficha-fondo') return;
+        fondosInertes.set(el, el.inert); el.inert = true;
+      });
+    } else {
+      fondosInertes.forEach((valor, el) => {el.inert = valor;});fondosInertes.clear();
+    }
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const dialogo = document.querySelector('.ficha.visible, .visor.visible, .cab.abierta');
+    if (!dialogo) return;
+    const controles = [...dialogo.querySelectorAll('button:not(:disabled), a[href], input, select, textarea, [tabindex="0"]')].filter(el => el.getClientRects().length);
+    const primero=controles[0], ultimo=controles.at(-1);
+    if (e.shiftKey && document.activeElement === primero) {e.preventDefault();ultimo?.focus();}
+    else if (!e.shiftKey && document.activeElement === ultimo) {e.preventDefault();primero?.focus();}
+  });
   /* la ficha de la unidad */
-  let fichaU = null, fichaVista = "render";
+  let fichaU = null, fichaVista = "render", fichaFoco = null;
   const fichaTexto = (u) => `${u.piso}.º ${u.id.slice(-1)} · ${t(u.torre === "Norte" ? "torre.norte" : "torre.sur")}`;
   function pintarFicha() {
     if (!fichaU) return;
@@ -1417,6 +1449,7 @@
     $("#ficha-wa").href = wa(t("wa.unidad").replace("{u}", fichaTexto(u)));
   }
   function abrirFicha(u) {
+    fichaFoco = document.activeElement; aislarDialogo($("#ficha"), true);
     fichaU = u; fichaVista = "render"; pintarFicha();
     $("#ficha").hidden = false; $("#ficha-fondo").hidden = false;
     void $("#ficha").offsetWidth; // fuerza el reflow para que la transición arranque desde afuera
@@ -1425,6 +1458,8 @@
     $("#ficha-cerrar").focus();
   }
   function cerrarFicha() {
+    aislarDialogo($("#ficha"), false);
+    fichaFoco?.focus({preventScroll:true});
     $("#ficha").classList.remove("visible"); $("#ficha-fondo").classList.remove("visible");
     document.body.classList.remove("con-ficha"); if (lenis) lenis.start();
     setTimeout(() => { $("#ficha").hidden = true; $("#ficha-fondo").hidden = true; }, 450);
@@ -1492,13 +1527,14 @@
       pintarContador();
     };
     function abrirVisor(i) {
-      visorFoco = document.activeElement;
+      visorFoco = document.activeElement; aislarDialogo(visor, true);
       visor.hidden = false; void visor.offsetWidth; visor.classList.add("visible");
       irAFoto(i, true);
       document.body.classList.add("con-visor"); if (lenis) lenis.stop();
       $("#visor-cerrar").focus();
     }
     function cerrarVisor() {
+      aislarDialogo(visor, false);
       visor.classList.remove("visible"); document.body.classList.remove("con-visor"); if (lenis) lenis.start();
       setTimeout(() => { visor.hidden = true; }, reduce ? 0 : 300);
       if (visorFoco && visorFoco.focus) visorFoco.focus();
@@ -1524,7 +1560,7 @@
     let activo = null;
     const activar = (k) => {
       activo = k;
-      puntos.forEach((p) => p.classList.toggle("activo", p.dataset.poi === k));
+      puntos.forEach((p) => {p.classList.toggle("activo", p.dataset.poi === k);p.setAttribute("aria-pressed", String(p.dataset.poi === k));});
       escenaMapa.classList.toggle("cerca-de", !!k);
     };
     puntos.forEach((p) => p.addEventListener("click", () => activar(activo === p.dataset.poi ? null : p.dataset.poi)));
@@ -1544,8 +1580,9 @@
         const armado = p.piso != null && p.unidad ? String(p.piso) + String(p.unidad) : "";
         const id = (armado || String(p.codigo || "")).toUpperCase().match(/[0-9][AB]/)?.[0];
         if (!id) return null;
-        const base = RESPALDO.find((r) => r.id === id) || {};
-        return { id, piso: p.piso ?? +id[0], torre: id[1] === "A" ? "Norte" : "Sur", tip: p.tipologia || base.tip || "", sup: p.supTotal ?? base.sup ?? 0,
+        const base = RESPALDO.find((r) => r.id === id);
+        if (!base) return null;
+        return { id, piso: base.piso, torre: id[1] === "A" ? "Norte" : "Sur", tip: base.tip, sup: base.sup,
           estado: p.estado === "VENDIDA" ? "vendida" : p.estado === "RESERVADA" ? "reservada" : "libre" };
       }).filter(Boolean);
       if (map.length) { map.forEach(u=>{if(u.id==="5A")u.sup=37;}); UNIDADES = map; pintarUnidades(); }
@@ -1652,12 +1689,13 @@
     const f = new FormData(form);
     if (f.get("empresa")) return;   // la trampa para bots
     const nombre = String(f.get("nombre") || "").trim(), tel = String(f.get("telefono") || "").trim();
-    if (nombre.length < 2 || tel.length < 6) { form.reportValidity(); return; }
+    if (btn.disabled || !form.reportValidity()) return;
+    if (nombre.length < 2 || tel.length < 6) return;
     btn.disabled = true; btn.textContent = t("contacto.enviando");
     const unidad = String(f.get("unidad") || "");
-    const cuerpo = { nombre, telefono: tel, interes: unidad ? "Edificio La Torre — unidad " + unidad : "Edificio La Torre", mensaje: [modo !== "consulta" ? t("contacto.modo." + modo) : "", String(f.get("mensaje") || ""), f.get("novedades") ? t("contacto.novedades") : ""].filter(Boolean).join(" · ") || null, canal: "PORTAL", utm_campaign: ctx.campania || null, utm_source: ctx.origen || null, paginaConsulta: location.href, dispositivo: innerWidth < 768 ? "celular" : "escritorio", idioma };
+    const cuerpo = { nombre, telefono: tel, propiedadCodigo: unidad ? "TORRE-" + unidad : null, empresa: String(f.get("empresa") || ""), interes: unidad ? "Edificio La Torre — unidad " + unidad : "Edificio La Torre", mensaje: [modo !== "consulta" ? t("contacto.modo." + modo) : "", String(f.get("mensaje") || ""), f.get("novedades") ? t("contacto.novedades") : ""].filter(Boolean).join(" · ") || null, canal: "PORTAL", utm_campaign: ctx.campania || null, utm_source: ctx.origen || null, paginaConsulta: location.href, dispositivo: innerWidth < 768 ? "celular" : "escritorio", idioma };
     try {
-      const r = await fetch(CFG.crm + "/api/publico/consultas", { method: "POST", headers: cabeceras(), body: JSON.stringify(cuerpo) });
+      const r = await fetch(CFG.crm + "/api/publico/consultas", { method: "POST", headers: cabeceras(), body: JSON.stringify(cuerpo), signal: AbortSignal.timeout(15000) });
       if (!r.ok) throw new Error("crm");
       aviso.hidden = false; aviso.className = "form-aviso"; aviso.textContent = t("contacto.ok"); form.reset();
     } catch (err) {

@@ -59,3 +59,5 @@ html.sin-animaciones #plan .pasos{display:flex;flex-direction:column;gap:12px}
 .pie .pie-firma small{line-height:1.5}
 @media(min-width:860px){.pie .pie-grid{grid-template-columns:1.1fr .8fr 1fr 1.3fr}.pie .pie-marca{align-items:flex-start;flex-direction:column;gap:14px}}
 @media(max-width:640px){.pie{padding-top:30px}.pie .pie-grid{grid-template-columns:1fr 1fr;gap:22px 20px}.pie .pie-col:last-child{padding-top:18px;border-top:1px solid color-mix(in srgb,var(--crema) 18%,transparent)}.pie .pie-col a{font-size:13px}.pie .pie-col h4{font-size:16px}.pie .pie-firma span{font-size:14px}.pie .pie-firma small{font-size:12px}}
+
+@media(max-width:640px){.form input,.form select,.form textarea{font-size:16px}.form-modos button{min-height:44px}.pie .pie-col a{min-height:44px}}
