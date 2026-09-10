@@ -43,3 +43,19 @@ html.sin-animaciones #plan .pasos{display:flex;flex-direction:column;gap:12px}
  #plan .paso-cuerpo{padding:20px;min-height:270px}
  #plan .paso-texto{font-size:15px}
 }
+
+/* Pie: dirección visible, navegación breve y firma agrupada. */
+.pie .pie-grid{gap:24px 28px;align-items:start}
+.pie .pie-marca{display:flex;align-items:center;gap:22px}
+.pie .pie-torres{margin:0;display:flex;flex-direction:column;gap:2px}
+.pie .pie-col h4{font-size:17px;margin:0 0 10px}
+.pie .pie-col a{min-height:40px}
+.pie .pie-ubicacion h4 a{display:flex;gap:16px;min-height:24px;font:inherit;color:var(--crema)}
+.pie .pie-ubicacion p{font-size:13px;line-height:1.7;margin:0;max-width:23ch;text-wrap:pretty}
+.pie .pie-col:last-child{display:grid;grid-template-columns:48px 1fr;gap:10px 14px;align-items:center}
+.pie .pie-col:last-child h4{grid-column:1/-1;width:auto;margin:0 0 4px}
+.pie .pie-col:last-child .pie-molins{grid-column:1;grid-row:2;width:48px;margin:0}
+.pie .pie-col:last-child .pie-firma{grid-column:2;grid-row:2;padding:0}
+.pie .pie-firma small{line-height:1.5}
+@media(min-width:860px){.pie .pie-grid{grid-template-columns:1.1fr .8fr 1fr 1.3fr}.pie .pie-marca{align-items:flex-start;flex-direction:column;gap:14px}}
+@media(max-width:640px){.pie{padding-top:30px}.pie .pie-grid{grid-template-columns:1fr 1fr;gap:22px 20px}.pie .pie-col:last-child{padding-top:18px;border-top:1px solid color-mix(in srgb,var(--crema) 18%,transparent)}.pie .pie-col a{font-size:13px}.pie .pie-col h4{font-size:16px}.pie .pie-firma span{font-size:14px}.pie .pie-firma small{font-size:12px}}
