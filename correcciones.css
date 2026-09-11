@@ -61,3 +61,26 @@ html.sin-animaciones #plan .pasos{display:flex;flex-direction:column;gap:12px}
 @media(max-width:640px){.pie{padding-top:30px}.pie .pie-grid{grid-template-columns:1fr 1fr;gap:22px 20px}.pie .pie-col:last-child{padding-top:18px;border-top:1px solid color-mix(in srgb,var(--crema) 18%,transparent)}.pie .pie-col a{font-size:13px}.pie .pie-col h4{font-size:16px}.pie .pie-firma span{font-size:14px}.pie .pie-firma small{font-size:12px}}
 
 @media(max-width:640px){.form input,.form select,.form textarea{font-size:16px}.form-modos button{min-height:44px}.pie .pie-col a{min-height:44px}}
+
+/* Pie compacto (11/9): una fila en escritorio; en el celular marca, quién vende y la línea legal */
+.pie{padding:24px var(--lado) 18px}
+.pie-fila{max-width:var(--ancho);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px 32px;padding-bottom:16px;border-bottom:1px solid color-mix(in srgb,var(--crema) 14%,transparent)}
+.pie-logo{width:40px;flex:0 0 auto;color:var(--crema)}
+.pie-links{display:flex;flex-wrap:wrap;gap:4px 24px}
+.pie-links a{font-size:13px;color:rgba(245,243,222,.66);text-decoration:none;padding:6px 0;transition:color .2s}
+.pie-links a:hover{color:var(--crema)}
+.pie .pie-logos{display:flex;align-items:center;gap:18px}
+.pie .pie-logos img{height:26px;width:auto;opacity:.7}
+.pie .pie-abajo{max-width:var(--ancho);margin:0 auto;border:0;padding-top:12px;display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:flex-start;font-size:11.5px;color:rgba(245,243,222,.5)}
+.pie-vende{display:block;color:rgba(245,243,222,.78)}
+.pie-vende img{display:inline-block;width:20px;height:20px;border-radius:4px;vertical-align:-5px;margin-right:8px}
+.pie-aviso{margin-left:auto}
+@media(max-width:859px){
+  .pie{padding:18px var(--lado) 88px}
+  .pie-links{display:none}
+  .pie-logo{width:32px}
+  .pie .pie-logos{gap:12px}.pie .pie-logos img{height:20px}
+  .pie .pie-abajo{flex-direction:column;gap:4px;font-size:11px;line-height:1.45}
+  .pie-aviso{margin-left:0}
+  .pie-vende img{display:none}
+}

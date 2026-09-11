@@ -308,7 +308,7 @@
       "contacto.enviando": "Sending…",
       "contacto.ok": "Received. Francisco will get back to you.",
       "contacto.fallo": "The message did not go through. Try again, or message us on WhatsApp.",
-      "contacto.pie": "You will hear back from Francisco Molins, licensed real estate broker, CUCIS 251.",
+      "contacto.pie": "We reply by WhatsApp or phone, with the unit plan and payment options.",
       "pie.aviso": "The images are renders of the project. Dimensions and finishes are subject to adjustments during construction.",
       "pie.comercializa": "Licensed broker Luis López",
       "nav.visita": "Tour",
@@ -1306,7 +1306,7 @@
     });
     // cada bloque de contenido llega entero, subiendo, y recién adentro el
     // texto se arma por palabras (la demo: nada está quieto cuando aparece)
-    const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .contacto-sobre, .form, .visita-cab, .pie-grid";
+    const BLOQUES = ".centrado, .diseno-texto, .diseno-fotos, .res-panel, .partida-panel, .torre, .leyenda, .adentro-cab, .adentro-marco, .tresd-marco, .bloque-texto, .contacto-sobre, .form, .visita-cab";
     $$(BLOQUES).forEach((el) => {
       gsap.fromTo(el, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 84%", once: true } });
     });
