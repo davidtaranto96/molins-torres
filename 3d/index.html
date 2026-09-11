@@ -232,8 +232,17 @@
   @media (prefers-reduced-motion: reduce){
     #ficha .caja{transition:opacity 200ms ease,visibility 200ms}
   }
-#reloj .caja{display:flex;justify-content:center;gap:8px;border-radius:16px;padding:8px}
-#reloj .fila,#reloj input,#reloj .pie{display:none}#reloj button{flex:1;min-height:44px;font-size:14px;border-radius:10px}
+/* Selector de iluminación compacto, independiente del antiguo deslizador. */
+#reloj{width:104px;max-width:104px;padding:0;bottom:18px}
+#reloj .caja{display:flex;justify-content:center;gap:4px;border-radius:100px;padding:5px;background:var(--tinta-oscura)}
+#reloj .fila,#reloj input,#reloj .pie{display:none}
+#reloj button[data-hora]{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;color:var(--crema);transition:background 180ms ease,color 180ms ease}
+#reloj button[data-hora] svg{width:21px;height:21px;pointer-events:none}
+#reloj button[data-hora]:hover{background:var(--gris-calido)}
+#reloj button[data-hora][aria-pressed=true]{background:var(--crema);color:var(--tinta-oscura)}
+#reloj button[data-hora]:focus-visible{outline:2px solid var(--terracota-claro);outline-offset:3px}
+@media(max-width:680px){#reloj{bottom:64px}}
+@media(prefers-reduced-motion:reduce){#reloj button[data-hora]{transition:none}}
 </style>
 </head>
 <body>
@@ -258,7 +267,8 @@
 
 <div class="capa" id="reloj">
   <div class="caja">
-    <button type="button" data-hora="810" aria-pressed="true">Día</button><button type="button" data-hora="1290" aria-pressed="false">Noche</button>
+    <button type="button" data-hora="810" aria-label="Activar modo día" title="Día" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
+    <button type="button" data-hora="1290" aria-label="Activar modo noche" title="Noche" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.1A8.7 8.7 0 0 1 9.9 3.5a8.8 8.8 0 1 0 10.6 10.6Z"/></svg></button>
     <div class="fila">
       <span class="hora" id="hora">16:30</span>
       <span class="momento" id="momento">Media tarde</span>
