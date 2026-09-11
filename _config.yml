@@ -7,3 +7,6 @@ exclude:
   - laboratorio
   - 3d/blender
   - sellar.sh
+  - 3d/terraza
+  - la-torre.blend
+  - _MATERIAL-MOVIDO.md
