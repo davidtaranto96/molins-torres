@@ -22,7 +22,7 @@
     cartera: "torre",
     whatsapp: "5493874153669",
     campaniaPorDefecto: "organico",
-    tresd: "3d/",
+    tresd: "3d/?v=e0b6073b22b2",
   }, window.TORRE_CONFIG || {});
 
   const RESPALDO = [
